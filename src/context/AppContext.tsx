@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   UserRole,
   OrgProfile,
@@ -14,6 +14,7 @@ import {
   BudgetPlan,
   DocumentItem,
   Announcement,
+  ProkerTask,
 } from '../types';
 import {
   initialOrgProfile,
@@ -66,47 +67,56 @@ interface AppContextType {
   addWorkProgram: (proker: Omit<WorkProgram, 'id' | 'createdAt'>) => void;
   updateWorkProgram: (id: string, proker: Partial<WorkProgram>) => void;
   deleteWorkProgram: (id: string) => void;
-  
+  addProkerTask: (prokerId: string, task: Omit<ProkerTask, 'id'>) => void;
+  toggleProkerTask: (prokerId: string, taskId: string) => void;
+  deleteProkerTask: (prokerId: string, taskId: string) => void;
+
   events: EventItem[];
   addEvent: (evt: Omit<EventItem, 'id'>) => void;
   updateEvent: (id: string, evt: Partial<EventItem>) => void;
   deleteEvent: (id: string) => void;
   addEventPhoto: (eventId: string, photoUrl: string) => void;
-  
+
   meetings: Meeting[];
   addMeeting: (meet: Omit<Meeting, 'id'>) => void;
   updateMeeting: (id: string, meet: Partial<Meeting>) => void;
   deleteMeeting: (id: string) => void;
-  
+
   attendances: AttendanceRecord[];
   recordAttendance: (record: Omit<AttendanceRecord, 'id' | 'checkInTime'>) => { success: boolean; message: string };
   updateAttendanceStatus: (id: string, status: AttendanceRecord['status'], notes?: string) => void;
-  
+
   cashTransactions: CashTransaction[];
   addCashTransaction: (trx: Omit<CashTransaction, 'id'>) => void;
   deleteCashTransaction: (id: string) => void;
-  
+
   memberDues: MemberDue[];
   updateMemberDueStatus: (id: string, status: MemberDue['status'], verifiedBy?: string) => void;
   uploadMemberDueProof: (id: string, proofUrl: string) => void;
-  
+
   budgets: BudgetPlan[];
   addBudget: (b: Omit<BudgetPlan, 'id'>) => void;
   updateBudget: (id: string, b: Partial<BudgetPlan>) => void;
   deleteBudget: (id: string) => void;
-  
+
   documents: DocumentItem[];
   addDocument: (doc: Omit<DocumentItem, 'id'>) => void;
   deleteDocument: (id: string) => void;
-  
+
   announcements: Announcement[];
   addAnnouncement: (ann: Omit<Announcement, 'id' | 'date'>) => void;
   deleteAnnouncement: (id: string) => void;
-  
-  // Helpers
+
+  // Theme & Appearance
+  theme: 'light' | 'dark';
+  setTheme: (theme: 'light' | 'dark') => void;
+  toggleTheme: () => void;
+
+  // Helpers & Maintenance
   toast: Toast | null;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   resetAllData: () => void;
+  importAllData: (jsonData: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -237,12 +247,45 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Anggota telah dihapus.', 'info');
   };
 
+  // Theme State
+  const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
+    try {
+      const saved = localStorage.getItem('schoolorg_theme');
+      if (saved === 'dark' || saved === 'light') return saved;
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('schoolorg_theme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {
+      console.warn('Error applying theme:', e);
+    }
+  }, [theme]);
+
+  const setTheme = (t: 'light' | 'dark') => {
+    setThemeState(t);
+  };
+
+  const toggleTheme = () => {
+    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
   // Work Programs
   const addWorkProgram = (proker: Omit<WorkProgram, 'id' | 'createdAt'>) => {
     const newProker: WorkProgram = {
       ...proker,
       id: `proker-${Date.now()}`,
       createdAt: new Date().toISOString().split('T')[0],
+      tasks: proker.tasks || [],
     };
     setWorkPrograms((prev) => [...prev, newProker]);
     showToast(`Program Kerja "${newProker.title}" berhasil diajukan!`);
@@ -256,6 +299,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteWorkProgram = (id: string) => {
     setWorkPrograms((prev) => prev.filter((p) => p.id !== id));
     showToast('Program kerja dihapus.', 'info');
+  };
+
+  // Proker Tasks (Kepanitiaan & Jobdesk)
+  const addProkerTask = (prokerId: string, task: Omit<ProkerTask, 'id'>) => {
+    const newTask: ProkerTask = {
+      ...task,
+      id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    };
+    setWorkPrograms((prev) =>
+      prev.map((p) => {
+        if (p.id !== prokerId) return p;
+        const currentTasks = p.tasks || [];
+        const nextTasks = [...currentTasks, newTask];
+        const completedCount = nextTasks.filter((t) => t.isCompleted).length;
+        const autoProgress = Math.round((completedCount / nextTasks.length) * 100);
+        return {
+          ...p,
+          tasks: nextTasks,
+          progressPercent: autoProgress,
+        };
+      })
+    );
+    showToast(`Tugas baru berhasil ditambahkan!`);
+  };
+
+  const toggleProkerTask = (prokerId: string, taskId: string) => {
+    setWorkPrograms((prev) =>
+      prev.map((p) => {
+        if (p.id !== prokerId) return p;
+        const currentTasks = p.tasks || [];
+        const nextTasks = currentTasks.map((t) =>
+          t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
+        );
+        const completedCount = nextTasks.filter((t) => t.isCompleted).length;
+        const autoProgress = nextTasks.length > 0 ? Math.round((completedCount / nextTasks.length) * 100) : p.progressPercent;
+        return {
+          ...p,
+          tasks: nextTasks,
+          progressPercent: autoProgress,
+          status: autoProgress === 100 ? 'selesai' : (autoProgress > 0 && p.status === 'disetujui' ? 'berjalan' : p.status),
+        };
+      })
+    );
+  };
+
+  const deleteProkerTask = (prokerId: string, taskId: string) => {
+    setWorkPrograms((prev) =>
+      prev.map((p) => {
+        if (p.id !== prokerId) return p;
+        const nextTasks = (p.tasks || []).filter((t) => t.id !== taskId);
+        const completedCount = nextTasks.filter((t) => t.isCompleted).length;
+        const autoProgress = nextTasks.length > 0 ? Math.round((completedCount / nextTasks.length) * 100) : 0;
+        return {
+          ...p,
+          tasks: nextTasks,
+          progressPercent: autoProgress,
+        };
+      })
+    );
+    showToast('Tugas kepanitiaan dihapus.', 'info');
   };
 
   // Events
@@ -439,6 +542,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Data berhasil di-reset ke nilai default UKK!', 'info');
   };
 
+  // Import Data from JSON Backup
+  const importAllData = (jsonData: string): boolean => {
+    try {
+      const parsed = JSON.parse(jsonData);
+      if (parsed.orgProfile) setOrgProfile(parsed.orgProfile);
+      if (parsed.divisions) setDivisions(parsed.divisions);
+      if (parsed.positions) setPositions(parsed.positions);
+      if (parsed.members) setMembers(parsed.members);
+      if (parsed.workPrograms) setWorkPrograms(parsed.workPrograms);
+      if (parsed.events) setEvents(parsed.events);
+      if (parsed.meetings) setMeetings(parsed.meetings);
+      if (parsed.attendances) setAttendances(parsed.attendances);
+      if (parsed.cashTransactions) setCashTransactions(parsed.cashTransactions);
+      if (parsed.memberDues) setMemberDues(parsed.memberDues);
+      if (parsed.budgets) setBudgets(parsed.budgets);
+      if (parsed.documents) setDocuments(parsed.documents);
+      if (parsed.announcements) setAnnouncements(parsed.announcements);
+      showToast('Seluruh data berhasil dipulihkan dari cadangan!', 'success');
+      return true;
+    } catch (e) {
+      console.error(e);
+      showToast('Gagal memulihkan data: format file JSON tidak valid.', 'error');
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -465,6 +594,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addWorkProgram,
         updateWorkProgram,
         deleteWorkProgram,
+        addProkerTask,
+        toggleProkerTask,
+        deleteProkerTask,
         events,
         addEvent,
         updateEvent,
@@ -493,9 +625,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         announcements,
         addAnnouncement,
         deleteAnnouncement,
+        theme,
+        setTheme,
+        toggleTheme,
         toast,
         showToast,
         resetAllData,
+        importAllData,
       }}
     >
       {children}

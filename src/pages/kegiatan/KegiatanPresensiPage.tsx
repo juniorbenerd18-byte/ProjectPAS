@@ -20,9 +20,17 @@ import {
   Download,
   TrendingUp,
   Users,
+  ListTodo,
+  CheckSquare,
+  Square,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  UserCheck,
+  User,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { WorkProgram, Meeting } from '../../types';
+import { WorkProgram, Meeting, ProkerTask, CommitteeSection } from '../../types';
 import { formatRupiah, formatDateIndo, formatNumber, parseFormattedNumber } from '../../lib/utils';
 import { FaceRecognitionScanner } from '../../components/presensi/FaceRecognitionScanner';
 import { Modal } from '../../components/common/Modal';
@@ -36,8 +44,12 @@ export const KegiatanPresensiPage: React.FC = () => {
     events,
     attendances,
     divisions,
+    members,
     addWorkProgram,
     updateWorkProgram,
+    addProkerTask,
+    toggleProkerTask,
+    deleteProkerTask,
     addMeeting,
     updateMeeting,
     addEventPhoto,
@@ -82,6 +94,68 @@ export const KegiatanPresensiPage: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>(events[0]?.id || '');
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
+
+  // Proker Committee Task Management State
+  const [expandedProkerId, setExpandedProkerId] = useState<string | null>('proker-1');
+  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [activeProkerForTask, setActiveProkerForTask] = useState<WorkProgram | null>(null);
+  const [taskForm, setTaskForm] = useState({
+    title: '',
+    section: 'Seksi Acara' as CommitteeSection,
+    assignedMemberId: '',
+    assignedMemberName: '',
+    dueDate: new Date().toISOString().split('T')[0],
+  });
+
+  const handleOpenAddTask = (proker: WorkProgram) => {
+    setActiveProkerForTask(proker);
+    const defaultMember = members[0];
+    setTaskForm({
+      title: '',
+      section: 'Seksi Acara',
+      assignedMemberId: defaultMember?.id || '',
+      assignedMemberName: defaultMember?.fullName || '',
+      dueDate: proker.targetDate || new Date().toISOString().split('T')[0],
+    });
+    setIsAddTaskModalOpen(true);
+  };
+
+  const handleTaskSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeProkerForTask || !taskForm.title.trim()) return;
+    const assigned = members.find((m) => m.id === taskForm.assignedMemberId);
+    addProkerTask(activeProkerForTask.id, {
+      title: taskForm.title,
+      section: taskForm.section,
+      assignedMemberId: taskForm.assignedMemberId,
+      assignedMemberName: assigned?.fullName || taskForm.assignedMemberName,
+      dueDate: taskForm.dueDate,
+      isCompleted: false,
+    });
+    setIsAddTaskModalOpen(false);
+    setExpandedProkerId(activeProkerForTask.id);
+  };
+
+  const getSectionBadgeColor = (sec: CommitteeSection) => {
+    switch (sec) {
+      case 'Ketua Pelaksana':
+        return 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800';
+      case 'Seksi Acara':
+        return 'bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+      case 'Seksi Perlengkapan':
+        return 'bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800';
+      case 'Seksi Konsumsi':
+        return 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800';
+      case 'Seksi Pubdok':
+        return 'bg-purple-50 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+      case 'Seksi Humas':
+        return 'bg-cyan-50 dark:bg-cyan-950/70 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-800';
+      case 'Seksi Keamanan':
+        return 'bg-rose-50 dark:bg-rose-950/70 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-800';
+      default:
+        return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+    }
+  };
 
   const currentMeeting = meetings.find((m) => m.id === selectedMeetingId) || meetings[0];
   const canApprove = currentRole === 'ketua' || currentRole === 'pembina' || currentRole === 'admin';
@@ -431,84 +505,208 @@ export const KegiatanPresensiPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {workPrograms.map((p) => (
-              <div
-                key={p.id}
-                className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full uppercase">
-                      {p.divisionName}
-                    </span>
-                    <span
-                      className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                        p.status === 'selesai'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
+            {workPrograms.map((p) => {
+              const tasks = p.tasks || [];
+              const completedCount = tasks.filter((t) => t.isCompleted).length;
+              const isExpanded = expandedProkerId === p.id;
 
-                  <h4 className="text-sm font-bold text-slate-900">{p.title}</h4>
-                  <p className="text-xs text-slate-600 mt-1 line-clamp-2 leading-relaxed">
-                    {p.description}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 text-xs">
-                    <div>
-                      <span className="text-[10px] text-slate-400 block">Kebutuhan Anggaran:</span>
-                      <span className="font-bold text-slate-800">{formatRupiah(p.estimatedBudget)}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 block">Target Waktu:</span>
-                      <span className="font-semibold text-slate-700">{formatDateIndo(p.targetDate)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-slate-100 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-semibold flex items-center gap-1">
-                      <Sliders className="w-3.5 h-3.5 text-slate-400" />
-                      Progress:
-                    </span>
-                    <span className="font-extrabold text-indigo-600">{p.progressPercent}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={p.progressPercent}
-                    onChange={(e) => handleProgressChange(p.id, Number(e.target.value))}
-                    className="w-full accent-indigo-600 h-2 bg-slate-100 rounded-lg cursor-pointer"
-                  />
-                </div>
-
-                {canApprove && p.status === 'diajukan' && (
-                  <div className="pt-2 flex items-center justify-between bg-amber-50 p-2.5 rounded-xl border border-amber-200/60">
-                    <span className="text-[10px] font-bold text-amber-900">Perlu Persetujuan:</span>
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => updateWorkProgram(p.id, { status: 'disetujui' })}
-                        className="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"
+              return (
+                <div
+                  key={p.id}
+                  className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4 flex flex-col justify-between transition-colors"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200/60 dark:border-indigo-800 px-2.5 py-0.5 rounded-full uppercase">
+                        {p.divisionName}
+                      </span>
+                      <span
+                        className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                          p.status === 'selesai'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                            : 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800'
+                        }`}
                       >
-                        <Check className="w-3 h-3" /> Setujui
-                      </button>
-                      <button
-                        onClick={() => updateWorkProgram(p.id, { status: 'ditolak' })}
-                        className="px-2.5 py-1 bg-rose-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"
-                      >
-                        <X className="w-3 h-3" /> Tolak
-                      </button>
+                        {p.status}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">{p.title}</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                        {p.description}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800 text-xs">
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Kebutuhan Anggaran:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{formatRupiah(p.estimatedBudget)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-400 block">Target Waktu:</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{formatDateIndo(p.targetDate)}</span>
+                      </div>
+                    </div>
+
+                    {/* Progress Slider */}
+                    <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
+                          <Sliders className="w-3.5 h-3.5 text-slate-400" />
+                          Progres Capaian Proker:
+                        </span>
+                        <span className="font-extrabold text-indigo-600 dark:text-indigo-400">{p.progressPercent}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={p.progressPercent}
+                        onChange={(e) => handleProgressChange(p.id, Number(e.target.value))}
+                        className="w-full accent-indigo-600 h-2 bg-slate-100 dark:bg-slate-800 rounded-lg cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Kepanitiaan & Jobdesk Checklist Accordion */}
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex items-center justify-between">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedProkerId(isExpanded ? null : p.id)}
+                          className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer"
+                        >
+                          <ListTodo className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                          <span>Jobdesk Panitia</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full font-extrabold bg-indigo-50 dark:bg-indigo-950/70 text-indigo-700 dark:text-indigo-300 border border-indigo-200/60 dark:border-indigo-800">
+                            {completedCount}/{tasks.length} Selesai
+                          </span>
+                        </button>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAddTask(p)}
+                            className="px-2 py-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
+                            title="Tambah Tugas Kepanitiaan"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>Tugas</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setExpandedProkerId(isExpanded ? null : p.id)}
+                            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md cursor-pointer"
+                          >
+                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Expanded Task List */}
+                      {isExpanded && (
+                        <div className="mt-3 space-y-2 pt-2 border-t border-slate-100/80 dark:border-slate-800/80 animate-in fade-in duration-200">
+                          {tasks.length === 0 ? (
+                            <div className="text-center py-3 px-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-800 text-[11px] text-slate-400">
+                              Belum ada checklist tugas panitia. Klik tombol <strong className="text-indigo-600 dark:text-indigo-400">+ Tugas</strong> untuk menambahkan.
+                            </div>
+                          ) : (
+                            <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                              {tasks.map((task) => (
+                                <div
+                                  key={task.id}
+                                  className={`p-2.5 rounded-xl border transition-all flex items-start justify-between gap-2 text-xs ${
+                                    task.isCompleted
+                                      ? 'bg-slate-50/70 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-400'
+                                      : 'bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/80 text-slate-800 dark:text-slate-200 shadow-2xs'
+                                  }`}
+                                >
+                                  <div className="flex items-start gap-2.5 min-w-0">
+                                    <button
+                                      type="button"
+                                      onClick={() => toggleProkerTask(p.id, task.id)}
+                                      className="mt-0.5 text-indigo-600 dark:text-indigo-400 cursor-pointer shrink-0"
+                                      title={task.isCompleted ? 'Tandai belum selesai' : 'Tandai selesai'}
+                                    >
+                                      {task.isCompleted ? (
+                                        <CheckSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                                      ) : (
+                                        <Square className="w-4 h-4 text-slate-400 hover:text-indigo-600" />
+                                      )}
+                                    </button>
+
+                                    <div className="min-w-0">
+                                      <p
+                                        className={`font-semibold leading-snug break-words ${
+                                          task.isCompleted ? 'line-through text-slate-400 dark:text-slate-500' : ''
+                                        }`}
+                                      >
+                                        {task.title}
+                                      </p>
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                        <span
+                                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${getSectionBadgeColor(
+                                            task.section
+                                          )}`}
+                                        >
+                                          {task.section}
+                                        </span>
+                                        {task.assignedMemberName && (
+                                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400">
+                                            <User className="w-3 h-3 text-slate-400" />
+                                            {task.assignedMemberName}
+                                          </span>
+                                        )}
+                                        {task.dueDate && (
+                                          <span className="inline-flex items-center gap-1 text-[10px] text-slate-400">
+                                            <Clock className="w-3 h-3 text-slate-400" />
+                                            {task.dueDate}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={() => deleteProkerTask(p.id, task.id)}
+                                    className="p-1 text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 rounded-md cursor-pointer transition-colors shrink-0"
+                                    title="Hapus tugas ini"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-              </div>
-            ))}
+
+                  {canApprove && p.status === 'diajukan' && (
+                    <div className="pt-2 flex items-center justify-between bg-amber-50 dark:bg-amber-950/50 p-2.5 rounded-xl border border-amber-200/60 dark:border-amber-800">
+                      <span className="text-[10px] font-bold text-amber-900 dark:text-amber-200">Perlu Persetujuan:</span>
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => updateWorkProgram(p.id, { status: 'disetujui' })}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Check className="w-3 h-3" /> Setujui
+                        </button>
+                        <button
+                          onClick={() => updateWorkProgram(p.id, { status: 'ditolak' })}
+                          className="px-2.5 py-1 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <X className="w-3 h-3" /> Tolak
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -839,6 +1037,104 @@ export const KegiatanPresensiPage: React.FC = () => {
               className="px-4 py-2 bg-indigo-600 disabled:opacity-50 text-white text-xs font-bold rounded-xl cursor-pointer"
             >
               Simpan Foto Dokumentasi
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Add Committee Task */}
+      <Modal
+        isOpen={isAddTaskModalOpen}
+        onClose={() => setIsAddTaskModalOpen(false)}
+        title="Tambah Tugas Kepanitiaan"
+        subtitle={activeProkerForTask ? `Untuk Proker: ${activeProkerForTask.title}` : 'Penugasan jobdesk anggota panitia'}
+      >
+        <form onSubmit={handleTaskSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Nama / Deskripsi Tugas <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={taskForm.title}
+              onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
+              placeholder="Contoh: Booking Sound System & Genset 5000W"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                Seksi Kepanitiaan
+              </label>
+              <select
+                value={taskForm.section}
+                onChange={(e) => setTaskForm({ ...taskForm, section: e.target.value as CommitteeSection })}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+              >
+                <option value="Ketua Pelaksana">Ketua Pelaksana</option>
+                <option value="Seksi Acara">Seksi Acara</option>
+                <option value="Seksi Perlengkapan">Seksi Perlengkapan</option>
+                <option value="Seksi Konsumsi">Seksi Konsumsi</option>
+                <option value="Seksi Pubdok">Seksi Pubdok</option>
+                <option value="Seksi Humas">Seksi Humas</option>
+                <option value="Seksi Keamanan">Seksi Keamanan</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                Penanggung Jawab (PIC)
+              </label>
+              <select
+                value={taskForm.assignedMemberId}
+                onChange={(e) => {
+                  const m = members.find((mem) => mem.id === e.target.value);
+                  setTaskForm({
+                    ...taskForm,
+                    assignedMemberId: e.target.value,
+                    assignedMemberName: m?.fullName || '',
+                  });
+                }}
+                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+              >
+                {members.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.fullName} ({m.classRoom})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+              Target Selesai / Deadline
+            </label>
+            <input
+              type="date"
+              value={taskForm.dueDate}
+              onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
+              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setIsAddTaskModalOpen(false)}
+              className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold rounded-xl cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer transition-colors"
+            >
+              Simpan Tugas
             </button>
           </div>
         </form>

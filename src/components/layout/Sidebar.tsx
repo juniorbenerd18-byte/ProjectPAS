@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import {
   LayoutDashboard,
   Users,
@@ -78,18 +78,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       )}
 
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-white border-r border-slate-200/80 flex flex-col transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-40 w-64 bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 flex flex-col transition-transform duration-300 lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100 shrink-0">
+        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100 dark:border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-sm shadow-indigo-200">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-sm font-extrabold text-slate-900 tracking-tight leading-none">
+              <h1 className="text-sm font-extrabold text-slate-900 dark:text-white tracking-tight leading-none">
                 SCHOOL<span className="text-indigo-600">ORG</span>
               </h1>
               <p className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">
@@ -99,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+            className="lg:hidden p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <X className="w-5 h-5" />
           </button>
@@ -116,7 +116,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-2xl transition-all cursor-pointer ${
                   isActive
                     ? 'bg-indigo-600 text-white font-bold shadow-md shadow-indigo-200'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -140,11 +140,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* Bottom Quick Feature Highlights & Settings */}
-        <div className="p-3 border-t border-slate-100 space-y-2 bg-slate-50/50 text-xs shrink-0">
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 space-y-2 bg-slate-50/50 dark:bg-slate-900/50 text-xs shrink-0">
           <button
             onClick={() => handleNavClick('pengaturan')}
-            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 hover:bg-white hover:text-slate-900 transition-colors cursor-pointer ${
-              activePage === 'pengaturan' ? 'bg-white text-indigo-700 font-bold shadow-xs' : ''
+            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer ${
+              activePage === 'pengaturan' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 font-bold shadow-xs' : ''
             }`}
           >
             <Settings className="w-4 h-4 text-slate-400" />
@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           <div className="px-3 py-1 flex items-center justify-between text-[11px] text-slate-400">
             <span>Masa Bakti:</span>
-            <span className="font-bold text-slate-700">{orgProfile.academicYear}</span>
+            <span className="font-bold text-slate-700 dark:text-slate-300">{orgProfile.academicYear}</span>
           </div>
         </div>
       </aside>
