@@ -1,4 +1,4 @@
-﻿export type UserRole = 'admin' | 'pembina' | 'ketua' | 'bendahara' | 'sekretaris' | 'koordinator_sekbid' | 'anggota';
+export type UserRole = 'admin' | 'pembina' | 'ketua' | 'bendahara' | 'sekretaris' | 'koordinator_sekbid' | 'anggota';
 
 export interface Division {
   id: string;
@@ -38,6 +38,26 @@ export interface Member {
   alumniYear?: string;
 }
 
+export type CommitteeSection =
+  | 'Ketua Pelaksana'
+  | 'Seksi Acara'
+  | 'Seksi Perlengkapan'
+  | 'Seksi Konsumsi'
+  | 'Seksi Pubdok'
+  | 'Seksi Humas'
+  | 'Seksi Keamanan'
+  | 'Lainnya';
+
+export interface ProkerTask {
+  id: string;
+  title: string;
+  assignedMemberId?: string;
+  assignedMemberName?: string;
+  section: CommitteeSection;
+  isCompleted: boolean;
+  dueDate?: string;
+}
+
 export interface WorkProgram {
   id: string;
   divisionId: string;
@@ -52,6 +72,7 @@ export interface WorkProgram {
   lpjUrl?: string;
   evaluation?: string;
   createdAt: string;
+  tasks?: ProkerTask[];
 }
 
 export interface EventItem {
@@ -167,10 +188,19 @@ export interface OrgProfile {
   history: string;
   logoUrl: string;
   pembinaName: string;
+  nipPembina?: string;
   headmasterName: string;
+  nipHeadmaster?: string;
   ketuaName: string;
+  nisnKetua?: string;
+  motto?: string;
   address: string;
   phone: string;
   email: string;
   instagram: string;
+  monthlyDueAmount?: number;
+  dueDueDay?: number;
+  bankName?: string;
+  bankAccountNumber?: string;
+  bankAccountHolder?: string;
 }
