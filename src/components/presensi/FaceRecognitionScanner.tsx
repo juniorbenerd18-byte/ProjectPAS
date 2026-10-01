@@ -110,6 +110,8 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       setModelsLoading(true);
       setModelError(null);
       try {
+        // Pastikan TensorFlow.js backend sudah siap (wajib untuk @vladmandic/face-api)
+        await faceapi.tf.ready();
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -118,7 +120,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         setModelsLoaded(true);
       } catch (err) {
         console.error('Failed to load face-api models:', err);
-        setModelError('Gagal memuat model AI wajah. Periksa koneksi internet atau coba refresh halaman.');
+        setModelError(
+          `Gagal memuat model AI wajah. Pastikan file model ada di /public/models/. Error: ${err instanceof Error ? err.message : String(err)}`
+        );
       } finally {
         setModelsLoading(false);
       }
@@ -233,7 +237,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         await videoRef.current.play();
       }
       setCameraActive(true);
-      setScanStatus('scanning');
+      setScanStatus('scanning'); // langsung set scanning agar loop bisa mulai saat model ready
     } catch (err) {
       console.warn('Camera error:', err);
       setCameraError(
@@ -256,13 +260,15 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   };
 
   useEffect(() => {
-    if (mode === 'face' && isAttendanceOpen && modelsLoaded) {
+    // Kamera langsung nyala saat mode face & presensi terbuka
+    // Tidak perlu tunggu model loaded — deteksi akan jalan otomatis setelah model siap
+    if (mode === 'face' && isAttendanceOpen) {
       startCamera();
     } else {
       stopCamera();
     }
     return () => stopCamera();
-  }, [mode, isAttendanceOpen, facingMode, modelsLoaded]);
+  }, [mode, isAttendanceOpen, facingMode]);
 
   // =========================================================
   // 4. REAL-TIME FACE DETECTION LOOP
@@ -638,16 +644,18 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
               {/* Top bar (Clean Glassmorphism) */}
               <div className="flex items-center justify-between text-[11px] text-slate-300 bg-slate-950/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
                 <span className="flex items-center gap-2 font-medium">
-                  <span className={`w-2 h-2 rounded-full ${modelsLoaded ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                  <span className={`w-2 h-2 rounded-full ${modelsLoaded ? 'bg-emerald-400 animate-pulse' : modelsLoading ? 'bg-amber-400 animate-pulse' : 'bg-rose-400'}`} />
                   <span className="text-white font-semibold">AI Face Scanner</span>
                 </span>
                 <span className="font-bold">
-                  {scanStatus === 'scanning' && <span className="text-slate-300">Siap Memindai</span>}
-                  {scanStatus === 'verifying' && <span className="text-cyan-400 animate-pulse">Menganalisis...</span>}
-                  {scanStatus === 'matched' && <span className="text-emerald-400">Wajah Terverifikasi</span>}
-                  {scanStatus === 'already_checked' && <span className="text-blue-400">Sudah Hadir</span>}
-                  {scanStatus === 'unregistered' && <span className="text-amber-300">Wajah Belum Terdaftar</span>}
-                  {(scanStatus === 'idle' || scanStatus === 'no_face') && <span className="text-slate-400">Menunggu...</span>}
+                  {modelsLoading && <span className="text-amber-300 animate-pulse">Memuat Model AI...</span>}
+                  {!modelsLoading && !modelsLoaded && <span className="text-rose-400">Model Gagal Dimuat</span>}
+                  {modelsLoaded && scanStatus === 'scanning' && <span className="text-slate-300">Siap Memindai</span>}
+                  {modelsLoaded && scanStatus === 'verifying' && <span className="text-cyan-400 animate-pulse">Menganalisis...</span>}
+                  {modelsLoaded && scanStatus === 'matched' && <span className="text-emerald-400">Wajah Terverifikasi</span>}
+                  {modelsLoaded && scanStatus === 'already_checked' && <span className="text-blue-400">Sudah Hadir</span>}
+                  {modelsLoaded && scanStatus === 'unregistered' && <span className="text-amber-300">Wajah Belum Terdaftar</span>}
+                  {modelsLoaded && (scanStatus === 'idle' || scanStatus === 'no_face') && <span className="text-slate-400">Menunggu...</span>}
                 </span>
               </div>
 
@@ -757,9 +765,12 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
             {/* Models loading overlay */}
             {modelsLoading && (
-              <div className="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center text-white space-y-3">
+              <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center text-white space-y-3">
                 <Loader2 className="w-10 h-10 text-indigo-400 animate-spin" />
-                <p className="text-xs text-slate-300">Memuat model AI face recognition...</p>
+                <div>
+                  <p className="text-sm font-bold text-white">Memuat Model AI...</p>
+                  <p className="text-xs text-slate-300 mt-1">Harap tunggu, ini hanya perlu beberapa detik</p>
+                </div>
               </div>
             )}
           </div>
