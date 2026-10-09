@@ -21,7 +21,7 @@ import { StudentAspiration, Member } from '../../types';
 interface PortalAboutAndAspirasiProps {
   organization: PortalOrganization;
   aspirations: StudentAspiration[];
-  onAddAspiration: (aspiration: Omit<StudentAspiration, 'id' | 'createdAt' | 'likes'>) => void;
+  onAddAspiration: (aspiration: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>) => void;
   onLikeAspiration: (id: string) => void;
   members: Member[];
 }
@@ -61,7 +61,6 @@ export const PortalAboutAndAspirasi: React.FC<PortalAboutAndAspirasiProps> = ({
       category: formCategory,
       title: formTitle.trim(),
       content: formContent.trim(),
-      status: 'pending',
     });
 
     confetti({
@@ -360,7 +359,7 @@ export const PortalAboutAndAspirasi: React.FC<PortalAboutAndAspirasiProps> = ({
                     </p>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700/60 text-[11px] text-slate-400">
-                      <span>{asp.createdAt || 'Hari ini'}</span>
+                      <span>{asp.date || 'Hari ini'}</span>
                       <button
                         onClick={() => onLikeAspiration(asp.id)}
                         className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-blue-50 dark:hover:bg-blue-950 text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
