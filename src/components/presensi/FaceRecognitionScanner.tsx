@@ -111,7 +111,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       setModelError(null);
       try {
         // Pastikan TensorFlow.js backend sudah siap (wajib untuk @vladmandic/face-api)
-        await faceapi.tf.ready();
+        await (faceapi.tf as any)?.ready?.();
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),

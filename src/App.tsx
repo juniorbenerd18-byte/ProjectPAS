@@ -11,6 +11,7 @@ import { KegiatanPresensiPage } from './pages/kegiatan/KegiatanPresensiPage';
 import { KeuanganTerpaduPage } from './pages/keuangan/KeuanganTerpaduPage';
 import { ArsipDokumenPage } from './pages/surat/ArsipDokumenPage';
 import { PengaturanPage } from './pages/pengaturan/PengaturanPage';
+import { PublicPortalPage } from './pages/public/PublicPortalPage';
 
 // ===== Legacy Pages (backward-compat for old routes) =====
 import { ProfilOrganisasi } from './pages/organisasi/ProfilOrganisasi';
@@ -136,8 +137,17 @@ const MainLayout: React.FC = () => {
     }
   };
 
+  if (activePage === 'portal-publik' || activePage === 'public') {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
+        <PublicPortalPage />
+        <Toast />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50/80 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 

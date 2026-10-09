@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Building2, Award, Edit3, Save, Plus, Trash2, Mail, Phone, Globe, MapPin } from 'lucide-react';
+import { Building2, Award, Edit3, Save, Plus, Trash2, Mail, MapPin } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 import { ImagePicker } from '../../components/common/ImagePicker';
@@ -237,16 +237,8 @@ export const ProfilOrganisasi: React.FC = () => {
                 <span>{orgProfile.address}</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-slate-400 shrink-0" />
-                <span>{orgProfile.phone}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-slate-400 shrink-0" />
                 <span>{orgProfile.email}</span>
-              </div>
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="text-indigo-600 font-semibold">{orgProfile.instagram}</span>
               </div>
             </div>
 

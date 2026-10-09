@@ -204,3 +204,51 @@ export interface OrgProfile {
   bankAccountNumber?: string;
   bankAccountHolder?: string;
 }
+
+export interface StudentAspiration {
+  id: string;
+  studentName: string;
+  isAnonymous: boolean;
+  classRoom: string;
+  category: 'fasilitas' | 'kegiatan' | 'organisasi' | 'kebersihan' | 'akademik' | 'lainnya';
+  title: string;
+  content: string;
+  date: string;
+  status: 'diterima' | 'diproses' | 'terealisasi' | 'ditolak';
+  response?: string;
+  respondedBy?: string;
+  likes: number;
+}
+
+export interface RecruitmentApplication {
+  id: string;
+  registrationNumber: string;
+  fullName: string;
+  nisn: string;
+  grade: 'X' | 'XI' | 'XII';
+  classRoom: string;
+  major: string;
+  phone: string;
+  email?: string;
+  divisionChoice1: string;
+  divisionChoice2: string;
+  reason: string;
+  skills: string[];
+  appliedDate: string;
+  status: 'menunggu' | 'lolos_berkas' | 'wawancara' | 'diterima' | 'ditolak';
+  interviewSchedule?: string;
+  notes?: string;
+}
+
+export interface EventRegistration {
+  id: string;
+  ticketCode: string;
+  eventId: string;
+  eventTitle: string;
+  studentName: string;
+  nisn: string;
+  classRoom: string;
+  phone: string;
+  registeredAt: string;
+}
+
