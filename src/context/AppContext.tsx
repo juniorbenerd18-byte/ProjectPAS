@@ -15,6 +15,9 @@ import {
   DocumentItem,
   Announcement,
   ProkerTask,
+  StudentAspiration,
+  RecruitmentApplication,
+  EventRegistration,
 } from '../types';
 import {
   initialOrgProfile,
@@ -30,6 +33,9 @@ import {
   initialBudgets,
   initialDocuments,
   initialAnnouncements,
+  initialAspirations,
+  initialRecruitments,
+  initialEventRegistrations,
 } from '../data/mockData';
 
 interface Toast {
@@ -107,6 +113,19 @@ interface AppContextType {
   addAnnouncement: (ann: Omit<Announcement, 'id' | 'date'>) => void;
   deleteAnnouncement: (id: string) => void;
 
+  // Public Portal Features (Aspirasi Siswa, Oprec, & Registrasi Event)
+  aspirations: StudentAspiration[];
+  addAspiration: (asp: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>) => void;
+  likeAspiration: (id: string) => void;
+  updateAspirationStatus: (id: string, status: StudentAspiration['status'], response?: string, respondedBy?: string) => void;
+
+  recruitments: RecruitmentApplication[];
+  addRecruitment: (rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>) => RecruitmentApplication;
+  updateRecruitment: (id: string, partial: Partial<RecruitmentApplication>) => void;
+
+  eventRegistrations: EventRegistration[];
+  registerForEvent: (reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>) => EventRegistration;
+
   // Theme & Appearance
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
@@ -122,10 +141,6 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activePage, setActivePage] = useState<string>('dashboard');
-  const [currentRole, setCurrentRole] = useState<UserRole>('ketua');
-  const [toast, setToast] = useState<Toast | null>(null);
-
   // Load state from localStorage or use initial data
   const loadStored = <T,>(key: string, initial: T): T => {
     try {
@@ -135,6 +150,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return initial;
     }
   };
+
+  const [activePage, setActivePage] = useState<string>(() => loadStored('activePage', 'portal-publik'));
+  const [currentRole, setCurrentRole] = useState<UserRole>('ketua');
+  const [toast, setToast] = useState<Toast | null>(null);
 
   const [orgProfile, setOrgProfile] = useState<OrgProfile>(() => loadStored('orgProfile', initialOrgProfile));
   const [divisions, setDivisions] = useState<Division[]>(() => loadStored('divisions', initialDivisions));
@@ -149,6 +168,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [budgets, setBudgets] = useState<BudgetPlan[]>(() => loadStored('budgets', initialBudgets));
   const [documents, setDocuments] = useState<DocumentItem[]>(() => loadStored('documents', initialDocuments));
   const [announcements, setAnnouncements] = useState<Announcement[]>(() => loadStored('announcements', initialAnnouncements));
+  
+  // Public Portal States
+  const [aspirations, setAspirations] = useState<StudentAspiration[]>(() => loadStored('aspirations', initialAspirations));
+  const [recruitments, setRecruitments] = useState<RecruitmentApplication[]>(() => loadStored('recruitments', initialRecruitments));
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>(() => loadStored('eventRegistrations', initialEventRegistrations));
 
   // Determine current user based on active role
   const currentUser = members.find((m) => m.role === currentRole) || members[0];
@@ -158,6 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Sync to localStorage
   useEffect(() => {
+    localStorage.setItem('schoolorg_activePage', JSON.stringify(activePage));
     localStorage.setItem('schoolorg_orgProfile', JSON.stringify(orgProfile));
     localStorage.setItem('schoolorg_divisions', JSON.stringify(divisions));
     localStorage.setItem('schoolorg_positions', JSON.stringify(positions));
@@ -171,10 +196,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('schoolorg_budgets', JSON.stringify(budgets));
     localStorage.setItem('schoolorg_documents', JSON.stringify(documents));
     localStorage.setItem('schoolorg_announcements', JSON.stringify(announcements));
+    localStorage.setItem('schoolorg_aspirations', JSON.stringify(aspirations));
+    localStorage.setItem('schoolorg_recruitments', JSON.stringify(recruitments));
+    localStorage.setItem('schoolorg_eventRegistrations', JSON.stringify(eventRegistrations));
   }, [
-    orgProfile, divisions, positions, members, workPrograms, events,
+    activePage, orgProfile, divisions, positions, members, workPrograms, events,
     meetings, attendances, cashTransactions, memberDues, budgets,
-    documents, announcements
+    documents, announcements, aspirations, recruitments, eventRegistrations
   ]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -247,12 +275,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Anggota telah dihapus.', 'info');
   };
 
-  // Theme State
+  // Theme State (Default to Clean White Light Mode)
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
     try {
-      const saved = localStorage.getItem('schoolorg_theme');
+      const saved = localStorage.getItem('schoolorg_theme_v3');
       if (saved === 'dark' || saved === 'light') return saved;
-      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'light'; // Default: Clean White
     } catch {
       return 'light';
     }
@@ -260,7 +288,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     try {
-      localStorage.setItem('schoolorg_theme', theme);
+      localStorage.setItem('schoolorg_theme_v3', theme);
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
       } else {
@@ -523,6 +551,87 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Pengumuman dihapus.', 'info');
   };
 
+  // Public Portal Actions: Aspirasi Siswa
+  const addAspiration = (asp: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>) => {
+    const newAsp: StudentAspiration = {
+      ...asp,
+      id: `asp-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      status: 'diterima',
+      likes: 1,
+    };
+    setAspirations((prev) => [newAsp, ...prev]);
+    showToast('Aspirasi Anda berhasil dikirim dan akan ditinjau oleh Pengurus OSIS!', 'success');
+  };
+
+  const likeAspiration = (id: string) => {
+    setAspirations((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, likes: a.likes + 1 } : a))
+    );
+    showToast('Dukungan aspirasi berhasil ditambahkan!');
+  };
+
+  const updateAspirationStatus = (
+    id: string,
+    status: StudentAspiration['status'],
+    response?: string,
+    respondedBy?: string
+  ) => {
+    setAspirations((prev) =>
+      prev.map((a) =>
+        a.id === id
+          ? {
+              ...a,
+              status,
+              response: response !== undefined ? response : a.response,
+              respondedBy: respondedBy || currentUser.fullName,
+            }
+          : a
+      )
+    );
+    showToast(`Status aspirasi diperbarui menjadi: ${status.toUpperCase()}`);
+  };
+
+  // Public Portal Actions: Open Recruitment
+  const addRecruitment = (
+    rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>
+  ): RecruitmentApplication => {
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    const newRec: RecruitmentApplication = {
+      ...rec,
+      id: `rec-${Date.now()}`,
+      registrationNumber: `OPREC-2026-${rec.grade}${randomSuffix}`,
+      appliedDate: new Date().toISOString().split('T')[0],
+      status: 'menunggu',
+    };
+    setRecruitments((prev) => [newRec, ...prev]);
+    showToast(`Pendaftaran Oprec berhasil! No. Registrasi: ${newRec.registrationNumber}`, 'success');
+    return newRec;
+  };
+
+  const updateRecruitment = (id: string, partial: Partial<RecruitmentApplication>) => {
+    setRecruitments((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, ...partial } : r))
+    );
+    showToast('Status pendaftaran calon anggota diperbarui!');
+  };
+
+  // Public Portal Actions: Event Registrations
+  const registerForEvent = (
+    reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>
+  ): EventRegistration => {
+    const randomCode = Math.floor(1000 + Math.random() * 9000);
+    const newReg: EventRegistration = {
+      ...reg,
+      id: `evtr-${Date.now()}`,
+      ticketCode: `TKT-${randomCode}`,
+      registeredAt: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }),
+    };
+    setEventRegistrations((prev) => [newReg, ...prev]);
+    showToast(`Tiket pendaftaran ${newReg.ticketCode} berhasil diterbitkan!`, 'success');
+    return newReg;
+  };
+
   // Reset Data to Factory Initial
   const resetAllData = () => {
     localStorage.clear();
@@ -539,6 +648,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setBudgets(initialBudgets);
     setDocuments(initialDocuments);
     setAnnouncements(initialAnnouncements);
+    setAspirations(initialAspirations);
+    setRecruitments(initialRecruitments);
+    setEventRegistrations(initialEventRegistrations);
     showToast('Data berhasil di-reset ke nilai default UKK!', 'info');
   };
 
@@ -559,6 +671,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (parsed.budgets) setBudgets(parsed.budgets);
       if (parsed.documents) setDocuments(parsed.documents);
       if (parsed.announcements) setAnnouncements(parsed.announcements);
+      if (parsed.aspirations) setAspirations(parsed.aspirations);
+      if (parsed.recruitments) setRecruitments(parsed.recruitments);
+      if (parsed.eventRegistrations) setEventRegistrations(parsed.eventRegistrations);
       showToast('Seluruh data berhasil dipulihkan dari cadangan!', 'success');
       return true;
     } catch (e) {
@@ -625,6 +740,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         announcements,
         addAnnouncement,
         deleteAnnouncement,
+        aspirations,
+        addAspiration,
+        likeAspiration,
+        updateAspirationStatus,
+        recruitments,
+        addRecruitment,
+        updateRecruitment,
+        eventRegistrations,
+        registerForEvent,
         theme,
         setTheme,
         toggleTheme,
