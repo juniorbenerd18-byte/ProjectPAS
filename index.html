@@ -4,22 +4,42 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'/><circle cx='9' cy='7' r='4'/><path d='M22 21v-2a4 4 0 0 0-3-3.87'/><path d='M16 3.13a4 4 0 0 1 0 7.75'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SCHOOLORG — Sistem Manajemen Organisasi SMK</title>
+    <title>Portal Transparansi & Program Kerja OSIS — SMKN 1 Cerdas Bangsa</title>
+    <meta name="description" content="Platform transparansi kegiatan, informasi program kerja, linimasa agenda, dokumentasi, dan struktur kepengurusan resmi OSIS SMKN 1 Cerdas Bangsa." />
+    <meta name="keywords" content="OSIS, SMKN 1 Cerdas Bangsa, transparansi proker, program kerja osis, dokumentasi sekolah, struktur organisasi osis, agenda kegiatan sekolah" />
+    <meta name="author" content="OSIS SMKN 1 Cerdas Bangsa" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://osis.smkn1cerdas.sch.id/" />
+    <meta property="og:title" content="Portal Transparansi & Program Kerja OSIS — SMKN 1 Cerdas Bangsa" />
+    <meta property="og:description" content="Pusat informasi publik dan transparansi kegiatan organisasi sekolah: pantau program kerja, linimasa kegiatan, galeri dokumentasi, dan struktur pengurus." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&auto=format&fit=crop&q=80" />
+    <meta property="og:locale" content="id_ID" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Portal Transparansi & Program Kerja OSIS — SMKN 1 Cerdas Bangsa" />
+    <meta name="twitter:description" content="Pusat informasi publik dan transparansi kegiatan organisasi sekolah." />
+    <meta name="twitter:image" content="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1200&auto=format&fit=crop&q=80" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script>
       (function() {
         try {
           var t = localStorage.getItem('schoolorg_theme_v3');
-          if (t !== 'dark') {
+          if (t === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
             document.documentElement.classList.remove('dark');
           }
         } catch(e) {}
       })();
     </script>
   </head>
-  <body class="bg-white text-slate-800 antialiased min-h-screen">
+  <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 antialiased min-h-screen selection:bg-blue-600 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
