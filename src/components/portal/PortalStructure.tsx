@@ -4,13 +4,13 @@ import {
   GraduationCap,
   Award,
   BookOpen,
-  Instagram,
   Mail,
   Sparkles,
   ChevronRight,
   Shield,
   HeartHandshake,
 } from 'lucide-react';
+import { InstagramIcon } from './SocialIcons';
 import {
   PortalMember,
   PortalDivision,
@@ -154,7 +154,7 @@ export const PortalStructure: React.FC<PortalStructureProps> = ({
                     rel="noreferrer"
                     className="text-slate-400 hover:text-pink-500 transition-colors flex items-center gap-1"
                   >
-                    <Instagram className="w-3.5 h-3.5" />
+                    <InstagramIcon className="w-3.5 h-3.5" />
                     <span>{member.instagram}</span>
                   </a>
                 </div>
