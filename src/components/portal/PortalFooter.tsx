@@ -5,14 +5,12 @@ import {
   Mail,
   Phone,
   Clock,
-  Instagram,
-  Youtube,
-  Github,
   ArrowUp,
   LogIn,
   Heart,
   ExternalLink,
 } from 'lucide-react';
+import { InstagramIcon, YoutubeIcon, GithubIcon } from './SocialIcons';
 import { PortalOrganization } from '../../data/portalData';
 
 interface PortalFooterProps {
@@ -77,7 +75,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({
                 className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-pink-600 hover:text-white flex items-center justify-center text-slate-400 transition-colors"
                 title="Instagram OSIS"
               >
-                <Instagram className="w-4 h-4" />
+                <InstagramIcon className="w-4 h-4" />
               </a>
               <a
                 href={organization.socials.youtube}
@@ -86,7 +84,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({
                 className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-red-600 hover:text-white flex items-center justify-center text-slate-400 transition-colors"
                 title="YouTube Resmi"
               >
-                <Youtube className="w-4 h-4" />
+                <YoutubeIcon className="w-4 h-4" />
               </a>
               <a
                 href={organization.socials.github}
@@ -95,7 +93,7 @@ export const PortalFooter: React.FC<PortalFooterProps> = ({
                 className="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 hover:text-white flex items-center justify-center text-slate-400 transition-colors"
                 title="Source Code Repository"
               >
-                <Github className="w-4 h-4" />
+                <GithubIcon className="w-4 h-4" />
               </a>
             </div>
           </div>
