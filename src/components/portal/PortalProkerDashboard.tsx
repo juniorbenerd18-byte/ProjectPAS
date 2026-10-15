@@ -27,18 +27,32 @@ import {
 interface PortalProkerDashboardProps {
   workPrograms: PortalWorkProgram[];
   divisions: PortalDivision[];
+  externalSearchQuery?: string;
+  externalDivision?: string;
+  onSearchQueryChange?: (q: string) => void;
+  onDivisionChange?: (div: string) => void;
 }
 
 export const PortalProkerDashboard: React.FC<PortalProkerDashboardProps> = ({
   workPrograms,
   divisions,
+  externalSearchQuery,
+  externalDivision,
+  onSearchQueryChange,
+  onDivisionChange,
 }) => {
   // Search & Filters
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDivision, setSelectedDivision] = useState<string>('ALL');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const [internalDivision, setInternalDivision] = useState<string>('ALL');
   const [selectedMonth, setSelectedMonth] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+  const setSearchQuery = onSearchQueryChange || setInternalSearchQuery;
+
+  const selectedDivision = externalDivision !== undefined ? externalDivision : internalDivision;
+  const setSelectedDivision = onDivisionChange || setInternalDivision;
 
   // Detail Modal
   const [selectedProker, setSelectedProker] = useState<PortalWorkProgram | null>(null);
