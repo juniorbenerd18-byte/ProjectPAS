@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/layout/Sidebar';
 import { Navbar } from './components/layout/Navbar';
 import { Toast } from './components/common/Toast';
+import { initSmoothScroll } from './lib/smoothScroll';
 
 // ===== Unified Pages (Clean 5-Menu) =====
 import { DashboardPage } from './pages/dashboard/DashboardPage';
@@ -47,6 +48,12 @@ import { LaporanPusatPage } from './pages/laporan/LaporanPusatPage';
 const MainLayout: React.FC = () => {
   const { activePage } = useApp();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Inisialisasi smooth inertia momentum scroll (sensasi scroll licin & halus)
+  useEffect(() => {
+    const cleanup = initSmoothScroll();
+    return cleanup;
+  }, []);
 
   const renderCurrentPage = () => {
     switch (activePage) {

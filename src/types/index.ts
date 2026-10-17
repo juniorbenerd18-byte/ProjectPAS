@@ -185,6 +185,7 @@ export interface OrgProfile {
   academicYear: string;
   vision: string;
   mission: string[];
+  visionPhotoUrl?: string;
   history: string;
   logoUrl: string;
   pembinaName: string;
@@ -203,6 +204,12 @@ export interface OrgProfile {
   bankName?: string;
   bankAccountNumber?: string;
   bankAccountHolder?: string;
+  // Pengaturan Akses Pendaftaran Anggota via Google Form
+  isRegistrationOpen?: boolean;
+  registrationGFormUrl?: string;
+  registrationOpenDate?: string;
+  registrationCloseDate?: string;
+  registrationNotice?: string;
 }
 
 export interface StudentAspiration {

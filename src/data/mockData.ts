@@ -30,6 +30,7 @@ export const initialOrgProfile: OrgProfile = {
     'Memperluas sinergi antara organisasi sekolah dengan dunia usaha dan dunia industri (DUDI).'
   ],
   history: 'OSIS SMKN 1 Cerdas Bangsa didirikan sejak berdirinya sekolah pada tahun 2005. Telah mencetak puluhan angkatan pemimpin muda berprestasi di tingkat regional maupun nasional.',
+  visionPhotoUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80',
   logoUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80',
   pembinaName: 'Drs. H. Bambang Sudiro, M.Pd.',
   nipPembina: '19750812 200212 1 003',
@@ -47,6 +48,11 @@ export const initialOrgProfile: OrgProfile = {
   bankName: 'Bank BCA / Seabank / DANA',
   bankAccountNumber: '8271-9920-1123',
   bankAccountHolder: 'KAS OSIS SMKN 1 CERDAS (Rizky A)',
+  isRegistrationOpen: true,
+  registrationGFormUrl: 'https://forms.gle/contohFormPendaftaranOSIS',
+  registrationOpenDate: '01 November 2026',
+  registrationCloseDate: '20 November 2026',
+  registrationNotice: 'Pendaftaran Anggota Baru Gelombang 1 ditutup sementara. Gelombang 2 akan dibuka kembali pada 15 Januari 2027 pukul 08:00 WIB.',
 };
 
 export const initialDivisions: Division[] = [
