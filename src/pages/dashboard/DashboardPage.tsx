@@ -26,6 +26,7 @@ import { AttendanceStatsWidget } from '../../components/dashboard/AttendanceStat
 import { RecentActivityTimeline } from '../../components/dashboard/RecentActivityTimeline';
 import { VisiMisiAdminWidget } from '../../components/dashboard/VisiMisiAdminWidget';
 import { RegistrationAdminWidget } from '../../components/dashboard/RegistrationAdminWidget';
+import { AspirationAdminWidget } from '../../components/dashboard/AspirationAdminWidget';
 import { ScrollReveal } from '../../components/common/ScrollReveal';
 
 export const DashboardPage: React.FC = () => {
@@ -265,6 +266,11 @@ export const DashboardPage: React.FC = () => {
       {/* ROW 0B: AKSES PENDAFTARAN ANGGOTA (GOOGLE FORM)          */}
       {/* ======================================================== */}
       <RegistrationAdminWidget />
+
+      {/* ======================================================== */}
+      {/* ROW 0C: KOTAK IDE & MASUKAN PUBLIK (BALAS VIA GMAIL)     */}
+      {/* ======================================================== */}
+      <AspirationAdminWidget />
 
       {/* ======================================================== */}
       {/* ROW 1: CASH FLOW CHART (2/3) + RECENT TIMELINE (1/3)     */}

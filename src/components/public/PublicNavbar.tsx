@@ -18,7 +18,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['beranda', 'visi-misi', 'tentang', 'kegiatan', 'galeri', 'pengurus', 'pengumuman', 'testimoni', 'cta'];
+      const sections = ['beranda', 'visi-misi', 'tentang', 'kegiatan', 'galeri', 'pengurus', 'pengumuman', 'testimoni', 'ide-masukan', 'cta'];
       const current = sections.find((sec) => {
         const el = document.getElementById(sec);
         if (el) {
@@ -46,6 +46,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
     { href: '#pengurus', id: 'pengurus', label: 'Struktur' },
     { href: '#kegiatan', id: 'kegiatan', label: 'Kegiatan' },
     { href: '#galeri', id: 'galeri', label: 'Galeri' },
+    { href: '#ide-masukan', id: 'ide-masukan', label: 'Kotak Ide' },
     { href: '#cta', id: 'cta', label: 'Kontak' },
   ];
 
