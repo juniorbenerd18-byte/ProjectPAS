@@ -1,22 +1,73 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ============================================================
+   SIMO – Design Token System
+   Palet: Biru + Putih + Abu Netral
+   Font: Plus Jakarta Sans (satu font untuk semua)
+   ============================================================ */
+
+:root {
+  /* --- Warna Inti --- */
+  --color-blue-primary:   #2563EB; /* tombol utama, link, menu aktif */
+  --color-blue-dark:      #1E3A8A; /* judul penting, tooltip, footer */
+  --color-blue-light:     #EFF6FF; /* latar ikon, badge, hover, track grafik */
+  --color-blue-mid:       #3B82F6; /* grafik sekunder */
+  --color-blue-pale:      #93C5FD; /* grafik tersier */
+
+  /* --- Netral --- */
+  --color-white:          #FFFFFF;
+  --color-bg-page:        #F8FAFC;
+  --color-border:         #E2E8F0;
+  --color-text-primary:   #0F172A;
+  --color-text-secondary: #64748B;
+  --color-highlight:      #DBEAFE; /* highlight stabilo judul */
+
+  /* --- Status (hanya di badge kecil) --- */
+  --color-success:        #16A34A;
+  --color-success-bg:     #F0FDF4;
+  --color-danger:         #DC2626;
+  --color-danger-bg:      #FEF2F2;
+
+  /* --- Typografi --- */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+  /* --- Radius --- */
+  --radius-card: 0.75rem; /* rounded-xl */
+  --radius-btn:  0.5rem;  /* rounded-lg */
+}
+
+/* ============================================================
+   Base / Reset
+   ============================================================ */
 html {
   scroll-behavior: smooth;
 }
 
-:root {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-h1, h2, h3, h4, h5, h6, .font-heading {
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+body,
+html {
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-page);
 }
 
-/* Custom scrollbars for clean UI */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
+
+/* ============================================================
+   Custom Scrollbar
+   ============================================================ */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -24,7 +75,7 @@ h1, h2, h3, h4, h5, h6, .font-heading {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-border);
   border-radius: 9999px;
 }
 
@@ -40,15 +91,133 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   background: #475569;
 }
 
-@keyframes float-slow {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
+/* ============================================================
+   Komponen Dasar (utility classes tambahan)
+   ============================================================ */
+
+/* Kartu standar */
+.simo-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 1.25rem;
 }
 
-.animate-float-slow {
-  animation: float-slow 4s ease-in-out infinite;
+/* Tombol utama biru solid */
+.simo-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--color-blue-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-btn);
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
 }
 
+.simo-btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.simo-btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Tombol outline */
+.simo-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--color-blue-primary);
+  border: 1px solid var(--color-blue-primary);
+  border-radius: var(--radius-btn);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.simo-btn-outline:hover {
+  background-color: var(--color-blue-light);
+}
+
+/* Badge status */
+.simo-badge-success {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.simo-badge-danger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  background-color: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+/* Highlight stabilo: background linear-gradient setengah tinggi teks, sedikit miring natural */
+.highlight-stabilo {
+  position: relative;
+  display: inline;
+  background-image: linear-gradient(179deg, transparent 48%, #DBEAFE 49%, #DBEAFE 90%, transparent 92%);
+  background-repeat: no-repeat;
+  padding: 0.05em 0.35em 0.15em 0.35em;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Section background alternates */
+.bg-section-white {
+  background-color: #FFFFFF;
+}
+
+.bg-section-gray {
+  background-color: #F8FAFC;
+}
+
+.bg-section-blue {
+  background-color: #EFF6FF;
+}
+
+.bg-section-navy {
+  background-color: #1E3A8A;
+}
+
+/* Simple fade-in utility */
+@keyframes simoFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: simoFadeIn 0.4s ease-out forwards;
+}
+
+/* ============================================================
+   Print
+   ============================================================ */
 @media print {
   .no-print {
     display: none !important;
@@ -57,4 +226,3 @@ h1, h2, h3, h4, h5, h6, .font-heading {
     display: block !important;
   }
 }
-
