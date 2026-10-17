@@ -18,7 +18,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['beranda', 'visi-misi', 'tentang', 'pengurus', 'kegiatan', 'galeri', 'pengumuman', 'testimoni', 'kontak'];
+      const sections = ['beranda', 'visi-misi', 'tentang', 'pengurus', 'kegiatan', 'galeri', 'pengumuman', 'kontak', 'testimoni'];
       const current = sections.find((sec) => {
         const el = document.getElementById(sec);
         if (el) {
@@ -30,6 +30,8 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
       if (current) {
         if (current === 'visi-misi' || current === 'tentang') {
           setActiveSection('tentang');
+        } else if (current === 'testimoni') {
+          setActiveSection('kontak');
         } else {
           setActiveSection(current);
         }
