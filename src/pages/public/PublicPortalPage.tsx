@@ -204,11 +204,11 @@ export const PublicPortalPage: React.FC = () => {
         {/* 9. Pengumuman Publik (Latar: Putih) */}
         <AnnouncementsSection announcements={publicAnnouncements} />
 
-        {/* 10. Kata Anggota / Testimoni (Latar: Putih) */}
-        <TestimonialsSection />
-
-        {/* 11. Kontak & Kotak Ide Terpadu (Latar: Biru Muda #EFF6FF) */}
+        {/* 10. Kontak & Kotak Ide Terpadu (Latar: Biru Muda #EFF6FF) */}
         <CtaSection organization={organizationData} />
+
+        {/* 11. Kata Anggota / Testimoni: Cerita Nyata dari Kami (Latar: Putih) */}
+        <TestimonialsSection />
       </main>
 
       {/* 12. Footer (Latar: Biru Gelap #1E3A8A) */}
