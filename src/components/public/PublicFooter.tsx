@@ -126,11 +126,11 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
               </li>
               <li>
                 <a
-                  href="#cta"
-                  onClick={(e) => scrollToSection(e, 'cta')}
+                  href="#kontak"
+                  onClick={(e) => scrollToSection(e, 'kontak')}
                   className="hover:text-white transition-colors"
                 >
-                  Pendaftaran Anggota
+                  Kontak &amp; Pendaftaran
                 </a>
               </li>
             </ul>
