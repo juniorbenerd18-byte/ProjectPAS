@@ -189,6 +189,9 @@ export const PublicPortalPage: React.FC = () => {
         {/* 4. Sambutan Ketua OSIS (Latar: Putih) */}
         <AboutSection organization={organizationData} />
 
+        {/* 5. Pengurus / Struktur Organisasi (Latar: Abu Muda #F8FAFC) */}
+        <BoardSection members={boardMembers} />
+
         {/* 6. Kegiatan Mendatang (Latar: Biru Muda #EFF6FF) */}
         <EventsSection
           events={publicEvents}
@@ -197,9 +200,6 @@ export const PublicPortalPage: React.FC = () => {
 
         {/* 7. Galeri / Dokumentasi Kegiatan Lalu (Latar: Putih) */}
         <GallerySection />
-
-        {/* 8. Pengurus (Latar: Abu Muda #F8FAFC) */}
-        <BoardSection members={boardMembers} />
 
         {/* 9. Pengumuman Publik (Latar: Putih) */}
         <AnnouncementsSection announcements={publicAnnouncements} />
