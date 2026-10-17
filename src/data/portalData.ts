@@ -11,6 +11,13 @@ export interface PortalOrganization {
   description: string;
   vision: string;
   missions: string[];
+  visionPhotoUrl?: string;
+  logoUrl?: string;
+  isRegistrationOpen?: boolean;
+  registrationGFormUrl?: string;
+  registrationOpenDate?: string;
+  registrationCloseDate?: string;
+  registrationNotice?: string;
   pembina: {
     name: string;
     nip: string;

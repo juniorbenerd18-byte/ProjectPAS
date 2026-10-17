@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, ArrowDownLeft, ArrowUpRight, DollarSign, Calendar } from 'lucide-react';
+import { TrendingUp, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
 import { CashTransaction } from '../../types';
 import { formatRupiah } from '../../lib/utils';
 
@@ -17,9 +17,8 @@ interface MonthlyData {
 
 export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) => {
   const [hoveredMonth, setHoveredMonth] = useState<MonthlyData | null>(null);
-  const [activeView, setActiveView] = useState<'all' | '6m'>('6m');
 
-  // Month list for Semester Gasal (Jul - Des 2026)
+  // Bulan Semester Gasal (Jul - Des 2026)
   const monthLabels: { [key: string]: string } = {
     '2026-07': 'Jul',
     '2026-08': 'Agu',
@@ -29,7 +28,6 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
     '2026-12': 'Des',
   };
 
-  // Group transactions by YYYY-MM
   const monthlyAggregates: MonthlyData[] = Object.keys(monthLabels).map((monthKey) => {
     const monthlyTrx = transactions.filter((t) => t.transactionDate.startsWith(monthKey));
     const income = monthlyTrx
@@ -38,76 +36,67 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
     const expense = monthlyTrx
       .filter((t) => t.type === 'pengeluaran')
       .reduce((sum, t) => sum + t.amount, 0);
-
-    return {
-      key: monthKey,
-      label: monthLabels[monthKey],
-      income,
-      expense,
-      count: monthlyTrx.length,
-    };
+    return { key: monthKey, label: monthLabels[monthKey], income, expense, count: monthlyTrx.length };
   });
 
-  // Calculate highest value for Y-axis scaling
   const maxVal = Math.max(
     ...monthlyAggregates.map((m) => Math.max(m.income, m.expense)),
-    10000000 // minimum scale baseline 10 juta
+    10000000
   );
 
-  const totalIncomeSemester = monthlyAggregates.reduce((sum, m) => sum + m.income, 0);
-  const totalExpenseSemester = monthlyAggregates.reduce((sum, m) => sum + m.expense, 0);
-  const netSurplus = totalIncomeSemester - totalExpenseSemester;
+  const totalIncome = monthlyAggregates.reduce((sum, m) => sum + m.income, 0);
+  const totalExpense = monthlyAggregates.reduce((sum, m) => sum + m.expense, 0);
+  const netSurplus = totalIncome - totalExpense;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-2xs space-y-4 h-full flex flex-col justify-between">
-      {/* Chart Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 h-full flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-6 h-6 rounded-md bg-[#EFF6FF] flex items-center justify-center">
+              <TrendingUp className="w-3.5 h-3.5 text-[#2563EB]" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900">Grafik Arus Kas Bulanan (Cash Flow)</h3>
+            <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">Arus Kas Bulanan</h3>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Komparasi pemasukan & pengeluaran kas OSIS Semester Gasal 2026
+          <p className="text-[11px] text-[#64748B] pl-8">
+            Pemasukan vs pengeluaran kas OSIS · Semester Gasal 2026
           </p>
         </div>
-
-        {/* Legend */}
-        <div className="flex items-center gap-4 text-xs">
+        {/* Legenda */}
+        <div className="flex items-center gap-4 text-[11px] shrink-0">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-md bg-emerald-500 inline-block shadow-2xs" />
-            <span className="text-slate-600 font-medium">Pemasukan</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#2563EB]" />
+            <span className="text-[#64748B] font-medium">Pemasukan</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-md bg-rose-500 inline-block shadow-2xs" />
-            <span className="text-slate-600 font-medium">Pengeluaran</span>
+            <span className="w-2.5 h-2.5 rounded-sm bg-[#E2E8F0]" />
+            <span className="text-[#64748B] font-medium">Pengeluaran</span>
           </div>
         </div>
       </div>
 
-      {/* Main Chart Area */}
-      <div className="relative pt-4 pb-2">
-        {/* Hover Tooltip Overlay */}
+      {/* Chart area */}
+      <div className="relative flex-1">
+        {/* Tooltip */}
         {hoveredMonth && (
-          <div className="absolute top-0 right-4 z-20 bg-slate-900/95 backdrop-blur-md text-white p-3 rounded-xl shadow-xl text-xs space-y-1.5 border border-slate-800 pointer-events-none animate-in fade-in-50">
-            <div className="flex items-center justify-between gap-4 font-bold border-b border-slate-800 pb-1">
-              <span className="text-indigo-400">Bulan {hoveredMonth.label} 2026</span>
-              <span className="text-[10px] text-slate-400 font-normal">{hoveredMonth.count} Transaksi</span>
-            </div>
+          <div className="absolute top-0 right-0 z-10 bg-[#1E3A8A] text-white p-3 rounded-xl text-xs shadow-lg pointer-events-none min-w-[180px]">
+            <p className="font-bold border-b border-blue-700 pb-1.5 mb-1.5">
+              {hoveredMonth.label} 2026
+              <span className="ml-2 text-[10px] font-normal text-blue-300">{hoveredMonth.count} transaksi</span>
+            </p>
             <div className="space-y-1 text-[11px]">
-              <div className="flex items-center justify-between gap-3 text-emerald-400">
-                <span>Pemasukan:</span>
+              <div className="flex justify-between gap-4">
+                <span className="text-blue-300">Pemasukan</span>
                 <span className="font-bold">{formatRupiah(hoveredMonth.income)}</span>
               </div>
-              <div className="flex items-center justify-between gap-3 text-rose-400">
-                <span>Pengeluaran:</span>
+              <div className="flex justify-between gap-4">
+                <span className="text-slate-400">Pengeluaran</span>
                 <span className="font-bold">{formatRupiah(hoveredMonth.expense)}</span>
               </div>
-              <div className="flex items-center justify-between gap-3 text-slate-300 pt-1 border-t border-slate-800 font-semibold">
-                <span>Net:</span>
-                <span className={hoveredMonth.income >= hoveredMonth.expense ? 'text-emerald-300' : 'text-rose-300'}>
+              <div className="flex justify-between gap-4 pt-1 border-t border-blue-700">
+                <span className="text-blue-200">Net</span>
+                <span className={`font-bold ${hoveredMonth.income >= hoveredMonth.expense ? 'text-green-300' : 'text-red-300'}`}>
                   {hoveredMonth.income >= hoveredMonth.expense ? '+' : ''}
                   {formatRupiah(hoveredMonth.income - hoveredMonth.expense)}
                 </span>
@@ -116,11 +105,11 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
           </div>
         )}
 
-        {/* Chart Bars Grid */}
-        <div className="h-52 flex items-end justify-between gap-2 sm:gap-4 px-2 sm:px-4 border-b border-slate-200">
+        {/* Bar chart */}
+        <div className="h-48 flex items-end gap-2 sm:gap-3 border-b border-slate-200 dark:border-slate-700">
           {monthlyAggregates.map((data) => {
-            const incomeHeight = Math.max((data.income / maxVal) * 100, 4);
-            const expenseHeight = Math.max((data.expense / maxVal) * 100, 4);
+            const incomeH = Math.max((data.income / maxVal) * 100, data.income > 0 ? 5 : 2);
+            const expenseH = Math.max((data.expense / maxVal) * 100, data.expense > 0 ? 5 : 2);
             const isHovered = hoveredMonth?.key === data.key;
 
             return (
@@ -128,76 +117,62 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
                 key={data.key}
                 onMouseEnter={() => setHoveredMonth(data)}
                 onMouseLeave={() => setHoveredMonth(null)}
-                className={`flex-1 flex flex-col items-center h-full justify-end cursor-pointer group transition-all duration-200 ${
-                  isHovered ? 'opacity-100 scale-105' : 'opacity-90 hover:opacity-100'
-                }`}
+                className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
               >
-                {/* Bars Pair */}
-                <div className="w-full flex items-end justify-center gap-1 sm:gap-1.5 h-full pb-1">
-                  {/* Income Bar */}
+                <div className="w-full flex items-end justify-center gap-1 h-full pb-0.5">
+                  {/* Income bar – biru */}
                   <div
-                    style={{ height: `${data.income > 0 ? incomeHeight : 3}%` }}
-                    className={`w-1/2 max-w-[20px] rounded-t-lg transition-all duration-300 ${
+                    style={{ height: `${incomeH}%` }}
+                    className={`w-[40%] max-w-[16px] rounded-t-md transition-all duration-200 ${
                       data.income > 0
-                        ? 'bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-sm shadow-emerald-200 group-hover:from-emerald-500 group-hover:to-emerald-300'
-                        : 'bg-slate-100'
+                        ? isHovered
+                          ? 'bg-[#1d4ed8]'
+                          : 'bg-[#2563EB] group-hover:bg-[#1d4ed8]'
+                        : 'bg-[#EFF6FF] dark:bg-slate-800'
                     }`}
                   />
-                  {/* Expense Bar */}
+                  {/* Expense bar – abu muda (track) */}
                   <div
-                    style={{ height: `${data.expense > 0 ? expenseHeight : 3}%` }}
-                    className={`w-1/2 max-w-[20px] rounded-t-lg transition-all duration-300 ${
+                    style={{ height: `${expenseH}%` }}
+                    className={`w-[40%] max-w-[16px] rounded-t-md transition-all duration-200 ${
                       data.expense > 0
-                        ? 'bg-gradient-to-t from-rose-600 to-rose-400 shadow-sm shadow-rose-200 group-hover:from-rose-500 group-hover:to-rose-300'
-                        : 'bg-slate-100'
+                        ? isHovered
+                          ? 'bg-[#94a3b8]'
+                          : 'bg-[#CBD5E1] group-hover:bg-[#94a3b8] dark:bg-slate-600'
+                        : 'bg-[#F8FAFC] dark:bg-slate-800'
                     }`}
                   />
                 </div>
-
-                {/* X-axis Month Label */}
-                <span
-                  className={`text-[11px] font-bold mt-2 transition-colors ${
-                    isHovered ? 'text-indigo-600' : 'text-slate-500'
-                  }`}
-                >
+                <span className={`text-[11px] font-semibold mt-1.5 ${
+                  isHovered ? 'text-[#2563EB]' : 'text-[#64748B]'
+                }`}>
                   {data.label}
                 </span>
               </div>
             );
           })}
         </div>
-
-        {/* Y-axis Guides */}
-        <div className="flex justify-between items-center text-[10px] text-slate-400 px-2 pt-1 font-mono">
-          <span>Rp 0</span>
-          <span>{formatRupiah(maxVal / 2)}</span>
-          <span>Max: {formatRupiah(maxVal)}</span>
-        </div>
       </div>
 
-      {/* Financial Health Summary Pills */}
-      <div className="grid grid-cols-3 gap-3 pt-1">
-        <div className="p-3 bg-emerald-50/70 border border-emerald-100 rounded-xl">
-          <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
-            Total Pemasukan
-          </span>
-          <span className="text-xs sm:text-sm font-black text-emerald-900 mt-0.5 block">
-            {formatRupiah(totalIncomeSemester)}
-          </span>
+      {/* Summary pills */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <div className="p-2.5 rounded-xl bg-[#EFF6FF] border border-blue-100">
+          <div className="flex items-center gap-1 mb-1">
+            <ArrowDownLeft className="w-3 h-3 text-[#2563EB]" />
+            <span className="text-[9px] font-bold text-[#2563EB] uppercase tracking-wide">Pemasukan</span>
+          </div>
+          <span className="text-xs font-extrabold text-[#1E3A8A] block">{formatRupiah(totalIncome)}</span>
         </div>
-        <div className="p-3 bg-rose-50/70 border border-rose-100 rounded-xl">
-          <span className="text-[10px] font-bold text-rose-700 uppercase tracking-wider block">
-            Total Pengeluaran
-          </span>
-          <span className="text-xs sm:text-sm font-black text-rose-900 mt-0.5 block">
-            {formatRupiah(totalExpenseSemester)}
-          </span>
+        <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200">
+          <div className="flex items-center gap-1 mb-1">
+            <ArrowUpRight className="w-3 h-3 text-[#64748B]" />
+            <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wide">Pengeluaran</span>
+          </div>
+          <span className="text-xs font-extrabold text-[#0F172A] dark:text-white block">{formatRupiah(totalExpense)}</span>
         </div>
-        <div className="p-3 bg-indigo-50/70 border border-indigo-100 rounded-xl">
-          <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider block">
-            Surplus Kas Bersih
-          </span>
-          <span className="text-xs sm:text-sm font-black text-indigo-900 mt-0.5 block">
+        <div className="p-2.5 rounded-xl bg-[#EFF6FF] border border-blue-100">
+          <span className="text-[9px] font-bold text-[#2563EB] uppercase tracking-wide block mb-1">Surplus Bersih</span>
+          <span className={`text-xs font-extrabold block ${netSurplus >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
             {netSurplus >= 0 ? '+' : ''}{formatRupiah(netSurplus)}
           </span>
         </div>
