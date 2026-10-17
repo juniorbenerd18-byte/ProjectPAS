@@ -13,6 +13,7 @@ import { KeuanganTerpaduPage } from './pages/keuangan/KeuanganTerpaduPage';
 import { ArsipDokumenPage } from './pages/surat/ArsipDokumenPage';
 import { PengaturanPage } from './pages/pengaturan/PengaturanPage';
 import { PublicPortalPage } from './pages/public/PublicPortalPage';
+import { AspirasiAdminPage } from './pages/aspirasi/AspirasiAdminPage';
 
 // ===== Legacy Pages (backward-compat for old routes) =====
 import { ProfilOrganisasi } from './pages/organisasi/ProfilOrganisasi';
@@ -69,6 +70,8 @@ const MainLayout: React.FC = () => {
         return <KeuanganTerpaduPage />;
       case 'dokumen':
         return <ArsipDokumenPage />;
+      case 'aspirasi':
+        return <AspirasiAdminPage />;
       case 'pengaturan':
         return <PengaturanPage />;
 

@@ -23,7 +23,7 @@ export const RegistrationAdminWidget: React.FC = () => {
   const isRegistrationOpen = orgProfile.isRegistrationOpen !== false;
   const gformUrl =
     orgProfile.registrationGFormUrl ||
-    'https://forms.gle/contohFormPendaftaranOSIS';
+    'https://forms.gle/zG5aSLW3MzWud3uz7';
   const openDate = orgProfile.registrationOpenDate || '01 November 2026';
   const closeDate = orgProfile.registrationCloseDate || '20 November 2026';
   const noticeMessage =

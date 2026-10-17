@@ -10,6 +10,7 @@ import {
   Building2,
   Globe,
   ChevronRight,
+  Lightbulb,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -19,10 +20,11 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activePage, setActivePage, orgProfile, memberDues, workPrograms } = useApp();
+  const { activePage, setActivePage, orgProfile, memberDues, workPrograms, aspirations } = useApp();
 
   const pendingDuesCount = memberDues.filter((d) => d.status === 'menunggu_verifikasi').length;
   const pendingProkerCount = workPrograms.filter((p) => p.status === 'diajukan').length;
+  const pendingAspirationsCount = aspirations ? aspirations.filter((a) => a.status === 'diterima' || a.status === 'diproses').length : 0;
 
   const handleNavClick = (pageId: string) => {
     setActivePage(pageId);
@@ -61,6 +63,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       label: 'Arsip & Dokumen',
       icon: <FileText className="w-4 h-4 shrink-0" />,
       badge: null as string | null,
+    },
+    {
+      id: 'aspirasi',
+      label: 'Kotak Ide & Aspirasi',
+      icon: <Lightbulb className="w-4 h-4 shrink-0 text-amber-500" />,
+      badge: pendingAspirationsCount > 0 ? `${pendingAspirationsCount}` : null,
     },
   ];
 

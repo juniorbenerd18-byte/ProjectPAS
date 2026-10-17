@@ -217,7 +217,9 @@ export interface StudentAspiration {
   studentName: string;
   isAnonymous: boolean;
   classRoom: string;
-  category: 'fasilitas' | 'kegiatan' | 'organisasi' | 'kebersihan' | 'akademik' | 'lainnya';
+  email?: string;
+  senderRole?: 'siswa' | 'orang_tua' | 'alumni' | 'guru' | 'masyarakat_umum';
+  category: 'fasilitas' | 'kegiatan' | 'organisasi' | 'kebersihan' | 'akademik' | 'inovasi' | 'lainnya';
   title: string;
   content: string;
   date: string;
