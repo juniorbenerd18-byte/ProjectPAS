@@ -29,7 +29,7 @@ export const EditRegistrationModal: React.FC<EditRegistrationModalProps> = ({
     orgProfile.isRegistrationOpen !== false
   );
   const [gformUrl, setGformUrl] = useState(
-    orgProfile.registrationGFormUrl || 'https://forms.gle/contohFormPendaftaranOSIS'
+    orgProfile.registrationGFormUrl || 'https://forms.gle/zG5aSLW3MzWud3uz7'
   );
   const [openDate, setOpenDate] = useState(
     orgProfile.registrationOpenDate || '01 November 2026'
@@ -46,7 +46,7 @@ export const EditRegistrationModal: React.FC<EditRegistrationModalProps> = ({
     if (isOpen) {
       setIsOpenRegistration(orgProfile.isRegistrationOpen !== false);
       setGformUrl(
-        orgProfile.registrationGFormUrl || 'https://forms.gle/contohFormPendaftaranOSIS'
+        orgProfile.registrationGFormUrl || 'https://forms.gle/zG5aSLW3MzWud3uz7'
       );
       setOpenDate(orgProfile.registrationOpenDate || '01 November 2026');
       setCloseDate(orgProfile.registrationCloseDate || '20 November 2026');

@@ -31,7 +31,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({
   const isRegistrationOpen = organization.isRegistrationOpen !== false;
   const gformUrl =
     organization.registrationGFormUrl ||
-    'https://forms.gle/contohFormPendaftaranOSIS';
+    'https://forms.gle/zG5aSLW3MzWud3uz7';
   const openDate = organization.registrationOpenDate || '01 November 2026';
   const closeDate = organization.registrationCloseDate || '20 November 2026';
   const noticeMessage =

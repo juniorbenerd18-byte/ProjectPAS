@@ -12,6 +12,7 @@ import { GallerySection } from '../../components/public/GallerySection';
 import { BoardSection, BoardMember } from '../../components/public/BoardSection';
 import { AnnouncementsSection, AnnouncementItem } from '../../components/public/AnnouncementsSection';
 import { TestimonialsSection } from '../../components/public/TestimonialsSection';
+import { IdeaFeedbackSection } from '../../components/public/IdeaFeedbackSection';
 import { CtaSection } from '../../components/public/CtaSection';
 import { PublicFooter } from '../../components/public/PublicFooter';
 import { PublicEventCardData } from '../../components/public/PublicEventCard';
@@ -207,7 +208,10 @@ export const PublicPortalPage: React.FC = () => {
         {/* 10. Kata Anggota / Testimoni (Latar: Putih) */}
         <TestimonialsSection />
 
-        {/* 11. CTA Penutup (Latar: Biru Muda #EFF6FF) */}
+        {/* 11. Kotak Ide & Masukan Publik (Dengan Integrasi Gmail) */}
+        <IdeaFeedbackSection />
+
+        {/* 12. CTA Penutup (Latar: Biru Muda #EFF6FF) */}
         <CtaSection organization={organizationData} />
       </main>
 
