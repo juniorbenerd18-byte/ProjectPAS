@@ -40,8 +40,11 @@
 /* ============================================================
    Base / Reset
    ============================================================ */
+/* scroll-behavior: smooth dihapus dari level html agar scroll pengguna tetap
+   responsif dan tidak terasa delay. Anchor navigation menggunakan JS smooth
+   scroll jika diperlukan. */
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
 }
 
 *,
