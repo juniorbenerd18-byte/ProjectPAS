@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Eye, Target, Sparkles, Compass } from 'lucide-react';
+import { Eye, Target, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Highlight } from './Highlight';
 import { PortalOrganization } from '../../data/portalData';
 
@@ -53,8 +53,8 @@ export const VisionMissionSection: React.FC<VisionMissionSectionProps> = ({
     direction: 'up' | 'left' | 'right' = 'up'
   ): React.CSSProperties => {
     let transformHidden = 'translateY(36px)';
-    if (direction === 'left') transformHidden = 'translateX(-36px) translateY(12px)';
-    if (direction === 'right') transformHidden = 'translateX(36px) translateY(12px)';
+    if (direction === 'left') transformHidden = 'translateX(-32px) translateY(12px)';
+    if (direction === 'right') transformHidden = 'translateX(32px) translateY(12px)';
 
     return {
       opacity: visible ? 1 : 0,
@@ -66,6 +66,32 @@ export const VisionMissionSection: React.FC<VisionMissionSectionProps> = ({
       willChange: 'opacity, transform',
     };
   };
+
+  // Ambil tepat 3 butir misi utama terarah
+  const missionItems =
+    organization.missions && organization.missions.length > 0
+      ? organization.missions.slice(0, 3)
+      : [
+          'Menanamkan nilai integritas, keimanan, dan etika kepemimpinan dalam setiap gerak langkah organisasi.',
+          'Mewujudkan tata kelola program kerja dan anggaran yang transparan, terbuka, dan dapat dipantau seluruh siswa.',
+          'Mengoptimalkan pemanfaatan teknologi digital untuk publikasi, sistem informasi, dan dokumentasi kegiatan sekolah.',
+        ];
+
+  // 3 Pilar penjabaran Visi agar berstruktur simetris (bentuk yang sama persis)
+  const visionPillars = [
+    {
+      title: 'Karakter Unggul & Integritas',
+      desc: 'Membina etika kepemimpinan, moralitas keagamaan, serta budi pekerti luhur bagi seluruh pengurus dan anggota.',
+    },
+    {
+      title: 'Adaptif Inovasi & Transformasi Digital',
+      desc: 'Memaksimalkan teknologi modern untuk keterbukaan informasi, publikasi interaktif, dan efisiensi sistem.',
+    },
+    {
+      title: 'Daya Saing Vokasi & Jiwa Wirausaha',
+      desc: 'Mengasah kompetensi kejuruan, kemandirian kreatif, serta kesiapan sinergi nyata bersama dunia industri.',
+    },
+  ];
 
   return (
     <section id="visi-misi" className="bg-white py-16 sm:py-20 border-b border-[#E2E8F0] overflow-hidden">
@@ -135,86 +161,99 @@ export const VisionMissionSection: React.FC<VisionMissionSectionProps> = ({
           </div>
         </div>
 
-        {/* 2. Grid Visi & Misi Bersebelahan dengan Efek Staggered Scroll Delay */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-stretch">
-          {/* Kolom Kiri: Visi Organisasi (Delay: 150ms, Slide dari Kiri) */}
+        {/* 2. Grid Visi & Misi Bersebelahan: Bentuk Sama (Symmetric Twin Cards) & Masing-Masing 3 Butir */}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-stretch">
+          {/* Kartu 1: Visi Organisasi (Delay: 150ms, Slide dari Kiri) */}
           <div
             ref={vision.ref}
             style={revealStyle(vision.visible, 150, 'left')}
-            className="lg:col-span-5 bg-gradient-to-br from-[#1E3A8A] via-[#1D4ED8] to-[#0F172A] rounded-3xl p-6 sm:p-8 shadow-xl border border-blue-400/20 text-white flex flex-col justify-between relative overflow-hidden group"
+            className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-xl border border-slate-200/90 hover:border-blue-300/80 transition-all duration-300 flex flex-col justify-between group"
           >
-            {/* Dekorasi Aksen Glow & Watermark */}
-            <div className="absolute -right-10 -top-10 w-44 h-44 bg-blue-400/15 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-6 -right-4 text-white/5 pointer-events-none text-9xl font-serif select-none">
-              “
-            </div>
-
-            <div className="relative z-10">
-              <div className="flex items-center justify-between gap-3 mb-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur-md text-white flex items-center justify-center shadow-inner">
-                    <Eye className="w-6 h-6" />
+            <div>
+              {/* Header Kartu */}
+              <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E3A8A] border border-blue-100 flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                    <Eye className="w-6 h-6 text-[#1E3A8A]" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-blue-200/90 block">
+                    <span className="text-[11px] font-extrabold tracking-wider uppercase text-blue-600 block">
                       Arah Pandang
                     </span>
-                    <h3 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
                       Visi Organisasi
                     </h3>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md text-blue-100 text-[11px] font-semibold border border-white/15">
-                  Fokus Utama
+
+                <span className="text-xs font-bold text-[#1E3A8A] bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100 shadow-2xs shrink-0">
+                  3 Pilar Utama
                 </span>
               </div>
 
-              {/* Kutipan Visi */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 shadow-sm">
-                <p className="text-base sm:text-lg text-white font-medium leading-relaxed italic">
+              {/* Kutipan Visi Inti */}
+              <div className="p-4 sm:p-4.5 rounded-2xl bg-slate-50/90 border border-slate-100/90 mb-5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                  Pernyataan Visi:
+                </p>
+                <p className="text-sm sm:text-[15px] text-[#1E3A8A] font-semibold leading-relaxed italic">
                   "{organization.vision ||
-                    'Mewujudkan OSIS SMK Negeri 1 Cerdas Bangsa sebagai organisasi yang berkarakter unggul, adaptif terhadap teknologi digital, berintegritas tinggi, dan berjiwa wirausaha.'}"
+                    'Mewujudkan OSIS SMK Negeri 1 Cerdas Bangsa sebagai organisasi yang berkarakter unggul, adaptif terhadap inovasi digital, serta berdaya saing kejuruan.'}"
                 </p>
               </div>
-            </div>
 
-            {/* Bagian Bawah: 4 Pilar Nilai Inti */}
-            <div className="relative z-10 mt-6 pt-5 border-t border-white/15">
-              <p className="text-xs font-bold text-blue-200 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5 text-blue-300" />
-                <span>4 Pilar Nilai Inti Keunggulan</span>
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  'Karakter Unggul',
-                  'Adaptif Digital',
-                  'Integritas Tinggi',
-                  'Jiwa Wirausaha',
-                ].map((pill, idx) => (
+              {/* 3 Butir Pilar Visi */}
+              <div className="space-y-3 sm:space-y-3.5">
+                {visionPillars.map((pillar, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 backdrop-blur-xs text-white text-xs font-semibold border border-white/10 hover:bg-white/15 transition-colors"
+                    style={{
+                      opacity: vision.visible ? 1 : 0,
+                      transform: vision.visible ? 'translateX(0px)' : 'translateX(-20px)',
+                      transition: `all 650ms cubic-bezier(0.16, 1, 0.3, 1) ${450 + idx * 80}ms`,
+                    }}
+                    className="flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-blue-50/50 hover:border-blue-200 hover:shadow-xs transition-all duration-200 group/item"
                   >
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-300 shrink-0" />
-                    <span className="truncate">{pill}</span>
+                    <span className="w-7 h-7 rounded-xl bg-[#1E3A8A] group-hover/item:bg-[#2563EB] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-2xs transition-colors">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1">
+                      <h4 className="text-xs sm:text-sm font-bold text-[#0F172A] mb-0.5">
+                        {pillar.title}
+                      </h4>
+                      <p className="text-xs text-[#475569] leading-relaxed font-normal">
+                        {pillar.desc}
+                      </p>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Footer Kartu */}
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-[#64748B]">
+              <span className="flex items-center gap-1.5 font-medium">
+                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                Landasan Cita-Cita Organisasi
+              </span>
+              <span className="font-semibold text-[#1E3A8A]">
+                Masa Bakti {organization.academicYear || '2025/2026'}
+              </span>
+            </div>
           </div>
 
-          {/* Kolom Kanan: Misi Strategis (Delay Berurutan: 380ms, Slide dari Kanan) */}
+          {/* Kartu 2: Misi Strategis (Delay: 350ms, Slide dari Kanan) */}
           <div
             ref={mission.ref}
-            style={revealStyle(mission.visible, 380, 'right')}
-            className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-md border border-[#E2E8F0] hover:border-blue-300/60 transition-all flex flex-col justify-between"
+            style={revealStyle(mission.visible, 350, 'right')}
+            className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm hover:shadow-xl border border-slate-200/90 hover:border-blue-300/80 transition-all duration-300 flex flex-col justify-between group"
           >
             <div>
-              {/* Header Misi */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#1E3A8A] text-white flex items-center justify-center shadow-md">
-                    <Target className="w-6 h-6" />
+              {/* Header Kartu */}
+              <div className="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1E3A8A] border border-blue-100 flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                    <Target className="w-6 h-6 text-[#1E3A8A]" />
                   </div>
                   <div>
                     <span className="text-[11px] font-extrabold tracking-wider uppercase text-blue-600 block">
@@ -226,43 +265,56 @@ export const VisionMissionSection: React.FC<VisionMissionSectionProps> = ({
                   </div>
                 </div>
 
-                <span className="text-xs font-bold text-[#2563EB] bg-[#EFF6FF] px-3.5 py-1.5 rounded-full border border-blue-100 self-start sm:self-auto shadow-2xs">
-                  {organization.missions?.length || 5} Butir Misi Terarah
+                <span className="text-xs font-bold text-[#1E3A8A] bg-blue-50 px-3.5 py-1.5 rounded-full border border-blue-100 shadow-2xs shrink-0">
+                  3 Butir Terarah
                 </span>
               </div>
 
-              {/* Daftar Butir Misi (dengan Staggered Delay Scroll) */}
-              {organization.missions && organization.missions.length > 0 ? (
-                <div className="space-y-3 sm:space-y-3.5">
-                  {organization.missions.map((m, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        opacity: mission.visible ? 1 : 0,
-                        transform: mission.visible ? 'translateX(0px)' : 'translateX(24px)',
-                        transition: `all 650ms cubic-bezier(0.16, 1, 0.3, 1) ${460 + idx * 80}ms`,
-                      }}
-                      className="flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-slate-50/90 border border-slate-100 hover:bg-blue-50/50 hover:border-blue-200 hover:shadow-xs transition-all duration-200 group/item"
-                    >
-                      <span className="w-7 h-7 rounded-xl bg-[#1E3A8A] group-hover/item:bg-[#2563EB] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-2xs transition-colors">
-                        {idx + 1}
-                      </span>
-                      <p className="text-xs sm:text-sm text-[#334155] group-hover/item:text-[#0F172A] leading-relaxed font-medium transition-colors">
+              {/* Kutipan / Pengantar Misi */}
+              <div className="p-4 sm:p-4.5 rounded-2xl bg-slate-50/90 border border-slate-100/90 mb-5">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                  Komitmen Pelaksanaan:
+                </p>
+                <p className="text-sm sm:text-[15px] text-[#1E3A8A] font-semibold leading-relaxed italic">
+                  "Menerjemahkan visi ke dalam program kerja nyata yang transparan, akuntabel, dan berdampak bagi seluruh siswa."
+                </p>
+              </div>
+
+              {/* 3 Butir Misi Strategis */}
+              <div className="space-y-3 sm:space-y-3.5">
+                {missionItems.map((m, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      opacity: mission.visible ? 1 : 0,
+                      transform: mission.visible ? 'translateX(0px)' : 'translateX(20px)',
+                      transition: `all 650ms cubic-bezier(0.16, 1, 0.3, 1) ${450 + idx * 80}ms`,
+                    }}
+                    className="flex items-start gap-3.5 p-3.5 sm:p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-blue-50/50 hover:border-blue-200 hover:shadow-xs transition-all duration-200 group/item"
+                  >
+                    <span className="w-7 h-7 rounded-xl bg-[#1E3A8A] group-hover/item:bg-[#2563EB] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 shadow-2xs transition-colors">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1">
+                      <h4 className="text-xs sm:text-sm font-bold text-[#0F172A] mb-0.5">
+                        {idx === 0
+                          ? 'Integritas & Tata Kelola'
+                          : idx === 1
+                          ? 'Transparansi Informasi'
+                          : 'Inovasi Digital & Vokasi'}
+                      </h4>
+                      <p className="text-xs text-[#475569] leading-relaxed font-normal">
                         {m}
                       </p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-[#64748B] leading-relaxed">
-                  Mengembangkan potensi siswa melalui kegiatan yang positif, kreatif, inovatif, dan bermanfaat bagi seluruh civitas akademika.
-                </p>
-              )}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Note Tambahan di Bagian Bawah Misi */}
+            {/* Footer Kartu */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-[#64748B]">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1.5 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Dievaluasi berkala tiap semester
               </span>
