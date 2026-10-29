@@ -8,21 +8,24 @@ export const Toast: React.FC = () => {
   if (!toast) return null;
 
   const icons = {
-    success: <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />,
-    error: <AlertCircle className="w-5 h-5 text-rose-500 shrink-0" />,
-    info: <Info className="w-5 h-5 text-indigo-500 shrink-0" />,
+    success: <CheckCircle2 className="w-5 h-5 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />,
+    error: <AlertCircle className="w-5 h-5 text-[#F2B544] shrink-0" />,
+    info: <Info className="w-5 h-5 text-[#1F3A5F] dark:text-[#E4EAF2] shrink-0" />,
   };
 
-  const borderColors = {
-    success: 'border-emerald-200 bg-emerald-50/90 text-emerald-950',
-    error: 'border-rose-200 bg-rose-50/90 text-rose-950',
-    info: 'border-indigo-200 bg-indigo-50/90 text-indigo-950',
+  const toastStyles = {
+    success: 'border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE]',
+    error: 'border-[#F2B544] bg-[#FFFDF8] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE]',
+    info: 'border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE]',
   };
 
   return (
-    <div className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-300 animate-in slide-in-from-bottom-5 max-w-md ${borderColors[toast.type]}`}>
+    <div
+      role="status"
+      className={`fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-[14px] border transition-all duration-300 animate-in slide-in-from-bottom-5 max-w-md ${toastStyles[toast.type]}`}
+    >
       {icons[toast.type]}
-      <p className="text-xs font-semibold">{toast.message}</p>
+      <p className="text-[14px] font-bold">{toast.message}</p>
     </div>
   );
 };
