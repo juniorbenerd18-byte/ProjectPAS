@@ -53,42 +53,34 @@ export const RegistrationAdminWidget: React.FC = () => {
   return (
     <>
       <ScrollReveal distance={28} duration={650}>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-2xs space-y-4">
+        <div className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-6 shadow-none space-y-4">
           {/* Header Widget */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
             <div className="flex items-start gap-3">
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
-                  isRegistrationOpen
-                    ? 'bg-gradient-to-br from-emerald-500 to-teal-700 text-white'
-                    : 'bg-gradient-to-br from-rose-500 to-red-700 text-white'
-                }`}
-              >
-                <FileText className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-[12px] bg-[#1F3A5F] text-[#FAF6EE] flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5" strokeWidth={2} />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  <h3 className="text-base sm:text-lg font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
                     Pendaftaran Anggota (Google Form)
                   </h3>
                   <span
-                    className={`inline-flex items-center gap-1.5 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border ${
+                    className={`inline-flex items-center gap-1.5 text-[13px] font-bold px-2.5 py-0.5 rounded-full border ${
                       isRegistrationOpen
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300'
-                        : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/70 dark:text-rose-300'
+                        ? 'bg-[#E4EAF2] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#213B5C] dark:text-[#FAF6EE]'
+                        : 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544] dark:bg-[#3D2E14] dark:text-[#FFD584]'
                     }`}
                   >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        isRegistrationOpen
-                          ? 'bg-emerald-500 animate-pulse'
-                          : 'bg-rose-500'
-                      }`}
-                    />
-                    {isRegistrationOpen ? 'AKSES DIBUKA' : 'AKSES DITUTUP'}
+                    {isRegistrationOpen ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#1F3A5F] dark:text-[#F2B544]" strokeWidth={2} />
+                    ) : (
+                      <Lock className="w-3.5 h-3.5 text-[#F2B544]" strokeWidth={2} />
+                    )}
+                    <span>{isRegistrationOpen ? 'Akses Terbuka' : 'Akses Ditutup'}</span>
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
                   Atur buka/tutup pendaftaran siswa baru secara online via Google Form di portal publik.
                 </p>
               </div>
@@ -100,10 +92,10 @@ export const RegistrationAdminWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={handleToggleStatus}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+                className={`min-h-[44px] px-3.5 py-2 rounded-[12px] text-[14px] font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none border ${
                   isRegistrationOpen
-                    ? 'bg-rose-50 hover:bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-900'
-                    : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900'
+                    ? 'bg-transparent hover:bg-[#FBEBC8] text-[#1F3A5F] dark:text-[#FAF6EE] border-[#E6DFD0] dark:border-[#283D56]'
+                    : 'bg-[#F2B544] hover:bg-[#E0A12F] text-[#1F3A5F] border-[#F2B544]'
                 }`}
                 title={
                   isRegistrationOpen
@@ -113,12 +105,12 @@ export const RegistrationAdminWidget: React.FC = () => {
               >
                 {isRegistrationOpen ? (
                   <>
-                    <Lock className="w-3.5 h-3.5" />
+                    <Lock className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
                     <span>Tutup Pendaftaran</span>
                   </>
                 ) : (
                   <>
-                    <Unlock className="w-3.5 h-3.5" />
+                    <Unlock className="w-4 h-4 text-[#1F3A5F]" strokeWidth={2} />
                     <span>Buka Pendaftaran</span>
                   </>
                 )}
@@ -128,9 +120,9 @@ export const RegistrationAdminWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="px-3.5 py-2 bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[14px] font-bold rounded-[12px] transition-all shadow-none flex items-center gap-2 cursor-pointer"
               >
-                <Edit3 className="w-3.5 h-3.5" />
+                <Edit3 className="w-4 h-4" strokeWidth={2} />
                 <span>Pengaturan GForm</span>
               </button>
             </div>
@@ -139,69 +131,69 @@ export const RegistrationAdminWidget: React.FC = () => {
           {/* Grid Informasi Detail */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Card 1: Link GForm */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-[#2563EB]" />
+            <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] flex flex-col justify-between space-y-2">
+              <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" strokeWidth={2} />
                 Tautan Google Form
               </span>
-              <p className="text-xs text-slate-800 dark:text-slate-200 font-mono truncate" title={gformUrl}>
+              <p className="text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE] font-mono truncate" title={gformUrl}>
                 {gformUrl}
               </p>
-              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80 text-[11px]">
+              <div className="flex items-center gap-3 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56] text-[13px]">
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="font-semibold text-[#2563EB] dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                  className="font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <Copy className="w-3 h-3" />
+                  <Copy className="w-3.5 h-3.5" strokeWidth={2} />
                   <span>{copied ? 'Tersalin!' : 'Salin Link'}</span>
                 </button>
-                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="text-[#5A6472]">•</span>
                 <a
                   href={gformUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-semibold text-slate-600 dark:text-slate-400 hover:text-[#2563EB] flex items-center gap-1"
+                  className="font-bold text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE] flex items-center gap-1"
                 >
                   <span>Uji Buka</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5" strokeWidth={2} />
                 </a>
               </div>
             </div>
 
             {/* Card 2: Periode Jadwal */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] flex flex-col justify-between space-y-2">
+              <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" strokeWidth={2} />
                 Periode Pendaftaran
               </span>
               <div>
-                <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
                   {openDate} s.d {closeDate}
                 </p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
                   Ditampilkan kepada pengunjung portal publik
                 </p>
               </div>
-              <div className="text-[11px] text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+              <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
                 <span>Status: </span>
-                <span className={isRegistrationOpen ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}>
-                  {isRegistrationOpen ? 'Aktif Menerima Formulir' : 'Ditutup Sementara'}
+                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  {isRegistrationOpen ? 'Aktif Menerima Siswa' : 'Ditutup Sementara'}
                 </span>
               </div>
             </div>
 
             {/* Card 3: Pesan Keterangan Kapan Dibuka */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between space-y-2">
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5 text-amber-500" />
-                Keterangan Kapan Dibuka
+            <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] flex flex-col justify-between space-y-2">
+              <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
+                Keterangan Pendaftaran
               </span>
-              <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-2 italic leading-relaxed">
+              <p className="text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE] line-clamp-2 italic leading-relaxed">
                 "{noticeMessage}"
               </p>
-              <div className="text-[10px] text-amber-700 dark:text-amber-400 pt-1 border-t border-slate-100 dark:border-slate-800/80 font-medium">
-                Tampil otomatis saat pendaftaran ditutup
+              <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] pt-2 border-t border-[#E6DFD0] dark:border-[#283D56] font-medium">
+                Tampil otomatis di portal publik saat ditutup
               </div>
             </div>
           </div>
