@@ -40,48 +40,46 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
   const unreadCount = announcements.length;
 
   return (
-    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors">
-
-      {/* Kiri: hamburger + judul halaman */}
+    <header className="h-16 bg-[#FFFDF8] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors shadow-none">
+      {/* Kiri: hamburger + judul organisasi di mobile */}
       <div className="flex items-center gap-3">
         <button
           onClick={onOpenSidebar}
-          className="p-2 text-[#64748B] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg lg:hidden cursor-pointer transition-colors"
-          aria-label="Buka menu"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] rounded-[12px] lg:hidden cursor-pointer transition-colors"
+          aria-label="Buka navigasi menu"
         >
-          <Menu className="w-4 h-4" />
+          <Menu className="w-5 h-5" strokeWidth={2} />
         </button>
 
         {/* Nama organisasi di mobile */}
-        <span className="text-sm font-bold text-[#0F172A] dark:text-white lg:hidden">
-          SI<span className="text-[#2563EB]">MO</span>
+        <span className="text-base font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] lg:hidden">
+          SIMO
         </span>
       </div>
 
       {/* Kanan: actions */}
-      <div className="flex items-center gap-1.5 sm:gap-2">
-
-        {/* Portal Publik */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Portal Publik Shortcut */}
         <button
           onClick={() => setActivePage('portal-publik')}
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-[#EFF6FF] dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-[#2563EB] text-xs font-semibold transition-colors cursor-pointer"
+          className="hidden sm:inline-flex items-center gap-2 px-3.5 min-h-[44px] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-bold transition-colors cursor-pointer"
           title="Buka Portal Publik"
         >
-          <Globe className="w-3.5 h-3.5" />
+          <Globe className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" strokeWidth={2} />
           <span>Portal Publik</span>
         </button>
 
         {/* Dark / Light Mode Toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 text-[#64748B] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg cursor-pointer transition-colors"
+          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] rounded-[12px] cursor-pointer transition-colors"
           title={theme === 'dark' ? 'Mode Terang' : 'Mode Gelap'}
-          aria-label="Ganti tema"
+          aria-label="Ganti tema mode terang/gelap"
         >
           {theme === 'dark' ? (
-            <Sun className="w-4 h-4 text-amber-400" />
+            <Sun className="w-5 h-5 text-[#F2B544]" strokeWidth={2} />
           ) : (
-            <Moon className="w-4 h-4" />
+            <Moon className="w-5 h-5 text-[#1F3A5F]" strokeWidth={2} />
           )}
         </button>
 
@@ -92,27 +90,28 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
               setShowNotificationMenu(!showNotificationMenu);
               setShowRoleMenu(false);
             }}
-            className="p-2 text-[#64748B] hover:text-[#0F172A] dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative cursor-pointer transition-colors"
-            title="Pengumuman"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] rounded-[12px] relative cursor-pointer transition-colors"
+            title="Pengumuman Organisasi"
+            aria-label="Buka notifikasi pengumuman"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-5 h-5" strokeWidth={2} />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#2563EB]" />
+              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-[#F2B544] ring-2 ring-[#FFFDF8] dark:ring-[#17293E]" />
             )}
           </button>
 
           {showNotificationMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowNotificationMenu(false)} />
-              <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg z-50">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                  <span className="text-xs font-bold text-[#0F172A] dark:text-white">Pengumuman</span>
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
+                <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
+                  <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Warta &amp; Pengumuman</span>
                   <button
                     onClick={() => {
                       setActivePage('pengumuman');
                       setShowNotificationMenu(false);
                     }}
-                    className="text-[11px] text-[#2563EB] hover:underline font-semibold cursor-pointer"
+                    className="text-[14px] text-[#1F3A5F] dark:text-[#F2B544] hover:underline font-bold cursor-pointer"
                   >
                     Lihat Semua
                   </button>
@@ -121,24 +120,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
                   {announcements.slice(0, 4).map((ann) => (
                     <div
                       key={ann.id}
-                      className="px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                      className="px-3.5 py-3 rounded-[12px] hover:bg-[#FAF6EE] dark:hover:bg-[#213B5C] transition-colors cursor-pointer"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                        <span className={`text-[12px] font-extrabold px-2 py-0.5 rounded-full border ${
                           ann.priority === 'penting'
-                            ? 'bg-[#FEF2F2] text-[#DC2626]'
-                            : 'bg-[#EFF6FF] text-[#2563EB]'
+                            ? 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544]'
+                            : 'bg-[#E4EAF2] text-[#1F3A5F] border-[#E6DFD0]'
                         }`}>
                           {ann.priority}
                         </span>
-                        <span className="text-[10px] text-[#64748B]">{ann.date}</span>
+                        <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-medium">{ann.date}</span>
                       </div>
-                      <p className="text-xs font-semibold text-[#0F172A] dark:text-white line-clamp-1">{ann.title}</p>
-                      <p className="text-[11px] text-[#64748B] line-clamp-1 mt-0.5">{ann.content}</p>
+                      <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] line-clamp-1">{ann.title}</p>
+                      <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] line-clamp-1 mt-0.5">{ann.content}</p>
                     </div>
                   ))}
                   {announcements.length === 0 && (
-                    <p className="text-center text-xs text-[#64748B] py-6">Belum ada pengumuman</p>
+                    <p className="text-center text-[14px] text-[#5A6472] py-6">Belum ada pengumuman</p>
                   )}
                 </div>
               </div>
@@ -153,55 +152,56 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
               setShowRoleMenu(!showRoleMenu);
               setShowNotificationMenu(false);
             }}
-            className="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] hover:bg-[#FAF6EE] dark:hover:bg-[#213B5C] transition-colors cursor-pointer"
+            aria-label="Pilih peran simulator penguji"
           >
             <img
               src={currentUser.avatarUrl}
               alt={currentUser.fullName}
-              className="w-6 h-6 rounded-md object-cover"
+              className="w-7 h-7 rounded-[8px] object-cover border border-[#E6DFD0]"
             />
             <div className="hidden sm:block text-left">
-              <p className="text-[11px] font-bold text-[#0F172A] dark:text-white leading-none truncate max-w-[110px]">
+              <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-none truncate max-w-[120px]">
                 {currentUser.fullName}
               </p>
-              <p className="text-[10px] text-[#2563EB] font-semibold mt-0.5 capitalize">
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-semibold mt-0.5 capitalize">
                 {currentRole.replace('_', ' ')}
               </p>
             </div>
-            <ChevronDown className="w-3 h-3 text-[#64748B] shrink-0" />
+            <ChevronDown className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] shrink-0" strokeWidth={2} />
           </button>
 
           {showRoleMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowRoleMenu(false)} />
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-lg z-50">
-                <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-1.5 text-[#2563EB]">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">Simulator Penguji UKK</span>
+              <div className="absolute right-0 mt-2 w-72 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
+                <div className="px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
+                  <div className="flex items-center gap-1.5 text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    <Sparkles className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
+                    <span className="text-[14px] font-extrabold">Simulator Penguji UKK</span>
                   </div>
-                  <p className="text-[10px] text-[#64748B] mt-0.5">
-                    Simulasi peran dan hak akses pengguna
+                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                    Ganti peran untuk memvalidasi hak akses
                   </p>
                 </div>
-                <div className="p-1.5 space-y-0.5 max-h-64 overflow-y-auto">
+                <div className="p-2 space-y-1 max-h-64 overflow-y-auto">
                   {availableRoles.map((r) => {
                     const isSelected = currentRole === r.role;
                     return (
                       <button
                         key={r.role}
                         onClick={() => handleRoleSelect(r.role)}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors cursor-pointer ${
+                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[10px] text-left transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-[#EFF6FF] dark:bg-blue-950/60 text-[#1E3A8A] dark:text-blue-200'
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-[#0F172A] dark:text-slate-300'
+                            ? 'bg-[#E4EAF2] dark:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE]'
+                            : 'hover:bg-[#FAF6EE] dark:hover:bg-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE]'
                         }`}
                       >
                         <div>
-                          <p className="text-xs font-semibold">{r.label}</p>
-                          <p className="text-[10px] text-[#64748B] font-normal mt-0.5">{r.desc}</p>
+                          <p className="text-[14px] font-bold">{r.label}</p>
+                          <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-normal mt-0.5">{r.desc}</p>
                         </div>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />}
+                        {isSelected && <Check className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" strokeWidth={2} />}
                       </button>
                     );
                   })}
