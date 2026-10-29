@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import {
   Settings,
   Database,
-  RefreshCw,
   Cloud,
   CheckCircle2,
   Building2,
-  Wallet,
   Palette,
   Download,
   Upload,
@@ -16,15 +14,12 @@ import {
   MapPin,
   ShieldCheck,
   UserCheck,
-  CreditCard,
-  Calendar,
-  AlertTriangle,
+  AlertCircle,
   Save,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { isSupabaseConfigured } from '../../lib/supabase';
-import { formatRupiah, parseFormattedNumber } from '../../lib/utils';
-import { ImagePicker } from '../../components/common/ImagePicker';
+import { Modal } from '../../components/common/Modal';
 
 export const PengaturanPage: React.FC = () => {
   const {
@@ -50,7 +45,8 @@ export const PengaturanPage: React.FC = () => {
     showToast,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'profil' | 'keuangan' | 'tampilan' | 'data'>('profil');
+  const [activeTab, setActiveTab] = useState<'profil' | 'tampilan' | 'data'>('profil');
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const isCloud = isSupabaseConfigured();
 
   // Form states for Profil Organisasi (Identitas & Legalitas Dokumen Resmi)
@@ -68,15 +64,6 @@ export const PengaturanPage: React.FC = () => {
     ketuaName: orgProfile.ketuaName,
     nisnKetua: orgProfile.nisnKetua || '0081234501',
     logoUrl: orgProfile.logoUrl,
-  });
-
-  // Form states for Keuangan Organisasi
-  const [financeForm, setFinanceForm] = useState({
-    monthlyDueAmountRaw: String(orgProfile.monthlyDueAmount || 15000),
-    dueDueDay: orgProfile.dueDueDay || 10,
-    bankName: orgProfile.bankName || 'Bank BCA / Seabank / DANA',
-    bankAccountNumber: orgProfile.bankAccountNumber || '8271-9920-1123',
-    bankAccountHolder: orgProfile.bankAccountHolder || 'KAS OSIS SMKN 1 CERDAS (Bendahara)',
   });
 
   // Save Profil Organisasi
@@ -98,19 +85,6 @@ export const PengaturanPage: React.FC = () => {
       logoUrl: profileForm.logoUrl,
     });
     showToast('Identitas & legalitas dokumen organisasi berhasil disimpan!', 'success');
-  };
-
-  // Save Keuangan
-  const handleSaveFinance = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateOrgProfile({
-      monthlyDueAmount: parseFormattedNumber(financeForm.monthlyDueAmountRaw),
-      dueDueDay: Number(financeForm.dueDueDay),
-      bankName: financeForm.bankName,
-      bankAccountNumber: financeForm.bankAccountNumber,
-      bankAccountHolder: financeForm.bankAccountHolder,
-    });
-    showToast('Kebijakan iuran kas & rekening resmi berhasil diperbarui!', 'success');
   };
 
   // Export Backup JSON
@@ -158,37 +132,42 @@ export const PengaturanPage: React.FC = () => {
     e.target.value = '';
   };
 
+  const handleConfirmReset = () => {
+    resetAllData();
+    setIsResetModalOpen(false);
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Header */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors">
+      <div className="simo-card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="w-8 h-8 rounded-[10px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center justify-center">
               <Settings className="w-4 h-4" />
             </div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              Pusat Pengaturan Organisasi & Sistem
+            <h2 className="text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+              Pusat Pengaturan Organisasi &amp; Sistem
             </h2>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8]">
             Konfigurasi identitas legalitas sekolah, kebijakan kas, mode tema tampilan, dan cadangan data
           </p>
         </div>
 
-        {/* Quick Theme Badge */}
+        {/* Quick Theme Toggle */}
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 cursor-pointer transition-colors shrink-0"
+          className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
         >
           {theme === 'dark' ? (
             <>
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-4 h-4 text-[#F2B544]" />
               <span>Mode Gelap (Aktif)</span>
             </>
           ) : (
             <>
-              <Moon className="w-4 h-4 text-indigo-600" />
+              <Moon className="w-4 h-4 text-[#1F3A5F]" />
               <span>Mode Terang (Aktif)</span>
             </>
           )}
@@ -196,50 +175,39 @@ export const PengaturanPage: React.FC = () => {
       </div>
 
       {/* Settings Navigation Tabs */}
-      <div className="flex p-1 bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-x-auto text-xs font-bold border border-slate-200/80 dark:border-slate-800">
+      <div className="flex p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] overflow-x-auto text-[14px] font-bold gap-1">
         <button
           onClick={() => setActiveTab('profil')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-[10px] whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'profil'
-              ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+              : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
           }`}
         >
           <Building2 className="w-4 h-4" />
-          <span>Identitas & Legalitas OSIS</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('keuangan')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-            activeTab === 'keuangan'
-              ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-          }`}
-        >
-          <Wallet className="w-4 h-4" />
-          <span>Kebijakan Iuran & Kas</span>
+          <span>Identitas &amp; Legalitas OSIS</span>
         </button>
         <button
           onClick={() => setActiveTab('tampilan')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-[10px] whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'tampilan'
-              ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+              : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
           }`}
         >
           <Palette className="w-4 h-4" />
-          <span>Preferensi Tampilan & Mode</span>
+          <span>Preferensi Tampilan &amp; Mode</span>
         </button>
         <button
           onClick={() => setActiveTab('data')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl whitespace-nowrap transition-all cursor-pointer ${
+          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-[10px] whitespace-nowrap transition-all cursor-pointer ${
             activeTab === 'data'
-              ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-300 shadow-xs'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+              ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+              : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
           }`}
         >
           <Database className="w-4 h-4" />
-          <span>Cadangan & Pemeliharaan</span>
+          <span>Cadangan &amp; Pemeliharaan</span>
         </button>
       </div>
 
@@ -247,31 +215,31 @@ export const PengaturanPage: React.FC = () => {
       {/* TAB 1: IDENTITAS & PROFIL LEGALITAS ORGANISASI           */}
       {/* ======================================================== */}
       {activeTab === 'profil' && (
-        <form onSubmit={handleSaveProfile} className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-5 transition-colors">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+        <form onSubmit={handleSaveProfile} className="space-y-6">
+          <div className="simo-card p-6 space-y-5">
+            <div className="flex items-center justify-between border-b border-[#E6DFD0] dark:border-[#283D56] pb-3.5">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  Profil Resmi Lembaga Sekolah & Organisasi
+                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-[#1F3A5F] dark:text-[#F2B544]" />
+                  <span>Profil Resmi Lembaga Sekolah &amp; Organisasi</span>
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
                   Data ini dicantumkan pada kop surat resmi, dokumen proposal, kartu tanda anggota (KTA), dan LPJ
                 </p>
               </div>
               <button
                 type="submit"
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
+                className="simo-btn-primary min-h-[44px] px-5 py-2 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
               >
-                <Save className="w-3.5 h-3.5" />
+                <Save className="w-4 h-4" />
                 <span>Simpan Perubahan</span>
               </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Nama Organisasi <span className="text-rose-500">*</span>
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                  Nama Organisasi <span className="text-[#F2B544]">*</span>
                 </label>
                 <input
                   type="text"
@@ -279,13 +247,13 @@ export const PengaturanPage: React.FC = () => {
                   value={profileForm.name}
                   onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
                   placeholder="OSIS SMK Negeri 1 Cerdas Bangsa"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+                  className="simo-input min-h-[44px] text-[15px] w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Nama Sekolah / Instansi Induk <span className="text-rose-500">*</span>
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                  Nama Sekolah / Instansi Induk <span className="text-[#F2B544]">*</span>
                 </label>
                 <input
                   type="text"
@@ -293,13 +261,13 @@ export const PengaturanPage: React.FC = () => {
                   value={profileForm.schoolName}
                   onChange={(e) => setProfileForm({ ...profileForm, schoolName: e.target.value })}
                   placeholder="SMK Negeri 1 Cerdas Bangsa"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+                  className="simo-input min-h-[44px] text-[15px] w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Masa Bakti / Tahun Ajaran Aktif <span className="text-rose-500">*</span>
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                  Masa Bakti / Tahun Ajaran Aktif <span className="text-[#F2B544]">*</span>
                 </label>
                 <input
                   type="text"
@@ -307,12 +275,12 @@ export const PengaturanPage: React.FC = () => {
                   value={profileForm.academicYear}
                   onChange={(e) => setProfileForm({ ...profileForm, academicYear: e.target.value })}
                   placeholder="2025/2026"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+                  className="simo-input min-h-[44px] text-[15px] w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                   Motto / Slogan Organisasi
                 </label>
                 <input
@@ -320,38 +288,38 @@ export const PengaturanPage: React.FC = () => {
                   value={profileForm.motto}
                   onChange={(e) => setProfileForm({ ...profileForm, motto: e.target.value })}
                   placeholder="Kreatif, Kolaboratif, Berkarakter & Berprestasi"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+                  className="simo-input min-h-[44px] text-[15px] w-full"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                   Alamat Sekretariat / Kampus Sekolah
                 </label>
                 <div className="relative">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                  <MapPin className="w-4 h-4 text-[#5A6472] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={profileForm.address}
                     onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
                     placeholder="Jl. Merdeka Belajar No. 45, Kompleks Pendidikan, Jakarta"
-                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+                    className="simo-input pl-10 pr-3 min-h-[44px] text-[15px] w-full"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                   Email Resmi OSIS (Untuk Kop Surat)
                 </label>
                 <div className="relative">
-                  <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                  <Mail className="w-4 h-4 text-[#5A6472] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
                     placeholder="osis@smkn1cerdas.sch.id"
-                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-indigo-500"
+                    className="simo-input pl-10 pr-3 min-h-[44px] text-[15px] w-full"
                   />
                 </div>
               </div>
@@ -359,100 +327,98 @@ export const PengaturanPage: React.FC = () => {
           </div>
 
           {/* Pejabat Penandatangan Resmi (Legalitas Dokumen) */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4 transition-colors">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  Pejabat Penandatangan Resmi (Kop Surat & Lembar Pengesahan)
-                </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Nama dan NIP/NISN ini otomatis mengisi kolom tanda tangan laporan, proposal kegiatan, dan lembar LPJ
-                </p>
-              </div>
+          <div className="simo-card p-6 space-y-4">
+            <div className="border-b border-[#E6DFD0] dark:border-[#283D56] pb-3.5">
+              <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-[#1F3A5F] dark:text-[#F2B544]" />
+                <span>Pejabat Penandatangan Resmi (Kop Surat &amp; Lembar Pengesahan)</span>
+              </h3>
+              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                Nama dan NIP/NISN ini otomatis mengisi kolom tanda tangan laporan, proposal kegiatan, dan lembar LPJ
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Kepala Sekolah */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-3">
-                <span className="font-bold text-slate-800 dark:text-slate-200 block border-b border-slate-200 dark:border-slate-700 pb-1.5">
+              <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-3">
+                <span className="font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] block border-b border-[#E6DFD0] dark:border-[#283D56] pb-2">
                   1. Kepala Sekolah
                 </span>
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Nama Lengkap & Gelar</label>
+                  <label className="block text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">Nama Lengkap &amp; Gelar</label>
                   <input
                     type="text"
                     value={profileForm.headmasterName}
                     onChange={(e) => setProfileForm({ ...profileForm, headmasterName: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                    className="simo-input min-h-[40px] text-[14px] w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">NIP Kepala Sekolah</label>
+                  <label className="block text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">NIP Kepala Sekolah</label>
                   <input
                     type="text"
                     value={profileForm.nipHeadmaster}
                     onChange={(e) => setProfileForm({ ...profileForm, nipHeadmaster: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                    className="simo-input min-h-[40px] text-[14px] w-full font-mono"
                   />
                 </div>
               </div>
 
               {/* Pembina OSIS */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-3">
-                <span className="font-bold text-slate-800 dark:text-slate-200 block border-b border-slate-200 dark:border-slate-700 pb-1.5">
+              <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-3">
+                <span className="font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] block border-b border-[#E6DFD0] dark:border-[#283D56] pb-2">
                   2. Pembina OSIS (Guru)
                 </span>
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Nama Lengkap & Gelar</label>
+                  <label className="block text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">Nama Lengkap &amp; Gelar</label>
                   <input
                     type="text"
                     value={profileForm.pembinaName}
                     onChange={(e) => setProfileForm({ ...profileForm, pembinaName: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                    className="simo-input min-h-[40px] text-[14px] w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">NIP Pembina</label>
+                  <label className="block text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">NIP Pembina</label>
                   <input
                     type="text"
                     value={profileForm.nipPembina}
                     onChange={(e) => setProfileForm({ ...profileForm, nipPembina: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                    className="simo-input min-h-[40px] text-[14px] w-full font-mono"
                   />
                 </div>
               </div>
 
               {/* Ketua OSIS */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 space-y-3">
-                <span className="font-bold text-slate-800 dark:text-slate-200 block border-b border-slate-200 dark:border-slate-700 pb-1.5">
+              <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-3">
+                <span className="font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] block border-b border-[#E6DFD0] dark:border-[#283D56] pb-2">
                   3. Ketua Umum OSIS
                 </span>
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Nama Ketua OSIS</label>
+                  <label className="block text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">Nama Ketua OSIS</label>
                   <input
                     type="text"
                     value={profileForm.ketuaName}
                     onChange={(e) => setProfileForm({ ...profileForm, ketuaName: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                    className="simo-input min-h-[40px] text-[14px] w-full"
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">NISN Ketua OSIS</label>
+                  <label className="block text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">NISN Ketua OSIS</label>
                   <input
                     type="text"
                     value={profileForm.nisnKetua}
                     onChange={(e) => setProfileForm({ ...profileForm, nisnKetua: e.target.value })}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
+                    className="simo-input min-h-[40px] text-[14px] w-full font-mono"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 flex justify-end">
+            <div className="pt-3 flex justify-end border-t border-[#E6DFD0] dark:border-[#283D56]">
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-2 cursor-pointer transition-colors"
+                className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer"
               >
                 <Save className="w-4 h-4" />
                 <span>Simpan Perubahan Legalitas</span>
@@ -463,130 +429,19 @@ export const PengaturanPage: React.FC = () => {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: KEBIJAKAN KEUANGAN & KAS ORGANISASI               */}
-      {/* ======================================================== */}
-      {activeTab === 'keuangan' && (
-        <form onSubmit={handleSaveFinance} className="space-y-6 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-5 transition-colors">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  Ketentuan Iuran Kas Anggota & Rekening Penampung
-                </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Besaran tarif iuran bulanan dan rekening resmi yang ditampilkan ke siswa saat pembayaran kas
-                </p>
-              </div>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <Save className="w-3.5 h-3.5" />
-                <span>Simpan Kebijakan Kas</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Nominal Iuran Wajib Kas Per Bulan (Rp)
-                </label>
-                <div className="relative">
-                  <span className="text-xs font-bold text-slate-400 absolute left-3 top-2.5">Rp</span>
-                  <input
-                    type="number"
-                    value={financeForm.monthlyDueAmountRaw}
-                    onChange={(e) => setFinanceForm({ ...financeForm, monthlyDueAmountRaw: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-emerald-500 font-bold"
-                  />
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Tertulis: {formatRupiah(Number(financeForm.monthlyDueAmountRaw) || 0)} per anggota
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
-                  Tanggal Jatuh Tempo Tiap Bulan
-                </label>
-                <div className="relative">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="number"
-                    min="1"
-                    max="28"
-                    value={financeForm.dueDueDay}
-                    onChange={(e) => setFinanceForm({ ...financeForm, dueDueDay: Number(e.target.value) })}
-                    className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:outline-emerald-500"
-                  />
-                </div>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Pembayaran lewat tanggal {financeForm.dueDueDay} berstatus tagihan berjalan
-                </p>
-              </div>
-            </div>
-
-            {/* Rekening Resmi */}
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                Informasi Rekening / E-Wallet Resmi Bendahara OSIS
-              </span>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Nama Bank / Platform</label>
-                  <input
-                    type="text"
-                    value={financeForm.bankName}
-                    onChange={(e) => setFinanceForm({ ...financeForm, bankName: e.target.value })}
-                    placeholder="BCA / Seabank / DANA"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Nomor Rekening / No. HP</label>
-                  <input
-                    type="text"
-                    value={financeForm.bankAccountNumber}
-                    onChange={(e) => setFinanceForm({ ...financeForm, bankAccountNumber: e.target.value })}
-                    placeholder="8271-9920-1123"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 mb-1">Atas Nama Rekening</label>
-                  <input
-                    type="text"
-                    value={financeForm.bankAccountHolder}
-                    onChange={(e) => setFinanceForm({ ...financeForm, bankAccountHolder: e.target.value })}
-                    placeholder="KAS OSIS SMKN 1 (Rizky A)"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-      )}
-
-      {/* ======================================================== */}
-      {/* TAB 3: PREFERENSI TAMPILAN & MODE SISTEM                */}
+      {/* TAB 2: PREFERENSI TAMPILAN & MODE SISTEM                */}
       {/* ======================================================== */}
       {activeTab === 'tampilan' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           {/* Theme Selector */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4 transition-colors">
+          <div className="simo-card p-6 space-y-5">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Palette className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                Mode Tampilan Aplikasi (Theme Appearance)
+              <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                <Palette className="w-5 h-5 text-[#1F3A5F] dark:text-[#F2B544]" />
+                <span>Mode Tampilan Aplikasi (Theme Appearance)</span>
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Pilih antara mode terang yang bersih atau mode gelap yang nyaman di mata untuk presentasi UKK
+              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                Pilih antara mode terang yang hangat atau mode gelap bernuansa biru tua
               </p>
             </div>
 
@@ -595,23 +450,23 @@ export const PengaturanPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTheme('light')}
-                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer relative ${
+                className={`p-5 rounded-[16px] border text-left transition-all cursor-pointer relative ${
                   theme === 'light'
-                    ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-600'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800'
+                    ? 'border-[#1F3A5F] bg-[#E4EAF2]/50 ring-2 ring-[#1F3A5F]'
+                    : 'border-[#E6DFD0] dark:border-[#283D56] hover:bg-[#FAF6EE] bg-[#FFFDF8] dark:bg-[#17293E]'
                 }`}
               >
                 {theme === 'light' && (
-                  <span className="absolute top-3 right-3 text-indigo-600">
-                    <CheckCircle2 className="w-5 h-5 fill-indigo-600 text-white" />
+                  <span className="absolute top-4 right-4 text-[#1F3A5F]">
+                    <CheckCircle2 className="w-5 h-5 fill-[#1F3A5F] text-white" />
                   </span>
                 )}
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center mb-3">
-                  <Sun className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-[12px] bg-[#FAF6EE] text-[#1F3A5F] flex items-center justify-center mb-3 border border-[#E6DFD0]">
+                  <Sun className="w-5 h-5 text-[#F2B544]" />
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Mode Terang (Light Mode)</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Tampilan putih bersih, kontras tinggi, sangat cocok untuk pencetakan laporan dan penggunaan siang hari.
+                <h4 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mode Terang (Light Mode)</h4>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
+                  Tampilan krem hangat (#FAF6EE), kontras tinggi, sangat cocok untuk pencetakan laporan dan penggunaan siang hari.
                 </p>
               </button>
 
@@ -619,56 +474,56 @@ export const PengaturanPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setTheme('dark')}
-                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer relative ${
+                className={`p-5 rounded-[16px] border text-left transition-all cursor-pointer relative ${
                   theme === 'dark'
-                    ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/30 ring-2 ring-indigo-600'
-                    : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-white dark:bg-slate-800'
+                    ? 'border-[#F2B544] bg-[#1F3A5F]/40 ring-2 ring-[#F2B544]'
+                    : 'border-[#E6DFD0] dark:border-[#283D56] hover:bg-[#FAF6EE] bg-[#FFFDF8] dark:bg-[#17293E]'
                 }`}
               >
                 {theme === 'dark' && (
-                  <span className="absolute top-3 right-3 text-indigo-600 dark:text-indigo-400">
-                    <CheckCircle2 className="w-5 h-5 fill-indigo-600 text-white" />
+                  <span className="absolute top-4 right-4 text-[#F2B544]">
+                    <CheckCircle2 className="w-5 h-5 fill-[#F2B544] text-[#1F3A5F]" />
                   </span>
                 )}
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-indigo-400 flex items-center justify-center mb-3 border border-slate-700">
-                  <Moon className="w-5 h-5" />
+                <div className="w-10 h-10 rounded-[12px] bg-[#0E1B2C] text-[#FAF6EE] flex items-center justify-center mb-3 border border-[#283D56]">
+                  <Moon className="w-5 h-5 text-[#F2B544]" />
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Mode Gelap (Dark Mode)</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Tampilan modern bernuansa gelap elegan, mengurangi silau mata saat presentasi UKK di proyektor.
+                <h4 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mode Gelap (Dark Mode)</h4>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
+                  Tampilan bernuansa biru tua sangat gelap (#0E1B2C), mengurangi silau mata saat presentasi UKK di proyektor.
                 </p>
               </button>
             </div>
           </div>
 
           {/* Cloudflare Pages Deployment Guide */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3 transition-colors">
+          <div className="simo-card p-6 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/70 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-[10px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] flex items-center justify-center">
                 <Cloud className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Panduan Deployment ke Cloudflare Pages</h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">Hosting gratis, kilat, dan aman untuk pengujian UKK</p>
+                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Panduan Deployment ke Cloudflare Pages</h3>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Hosting gratis, kilat, dan aman untuk pengujian UKK</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                <p className="font-bold text-slate-800 dark:text-slate-200">1. Build Command</p>
-                <code className="text-[11px] font-mono bg-white dark:bg-slate-900 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 block mt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[14px]">
+              <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56]">
+                <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">1. Build Command</p>
+                <code className="text-[13px] font-mono bg-[#FFFDF8] dark:bg-[#17293E] px-2.5 py-1.5 rounded-[8px] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#F2B544] block mt-1.5 font-bold">
                   npm run build
                 </code>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                <p className="font-bold text-slate-800 dark:text-slate-200">2. Output Directory</p>
-                <code className="text-[11px] font-mono bg-white dark:bg-slate-900 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 block mt-1">
+              <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56]">
+                <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">2. Output Directory</p>
+                <code className="text-[13px] font-mono bg-[#FFFDF8] dark:bg-[#17293E] px-2.5 py-1.5 rounded-[8px] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#F2B544] block mt-1.5 font-bold">
                   dist
                 </code>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                <p className="font-bold text-slate-800 dark:text-slate-200">3. Node Version</p>
-                <code className="text-[11px] font-mono bg-white dark:bg-slate-900 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 block mt-1">
+              <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56]">
+                <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">3. Node Version</p>
+                <code className="text-[13px] font-mono bg-[#FFFDF8] dark:bg-[#17293E] px-2.5 py-1.5 rounded-[8px] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#F2B544] block mt-1.5 font-bold">
                   NODE_VERSION: 20+
                 </code>
               </div>
@@ -678,46 +533,46 @@ export const PengaturanPage: React.FC = () => {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 4: CADANGAN & PEMELIHARAAN BASIS DATA               */}
+      {/* TAB 3: CADANGAN & PEMELIHARAAN BASIS DATA               */}
       {/* ======================================================== */}
       {activeTab === 'data' && (
-        <div className="space-y-6 animate-in fade-in duration-200">
+        <div className="space-y-6">
           {/* Dual-Mode Architecture Status */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-4 transition-colors">
+          <div className="simo-card p-6 space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-[10px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] flex items-center justify-center">
                 <Database className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">Status Penyimpanan Data UKK</h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">Arsitektur Dual-Mode Resilient</p>
+                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Status Penyimpanan Data UKK</h3>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Arsitektur Dual-Mode Resilient</p>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 space-y-2 text-xs">
+            <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-2 text-[14px]">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-slate-700 dark:text-slate-300">Mode Penyimpanan Aktif:</span>
-                <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full text-[10px]">
+                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mode Penyimpanan Aktif:</span>
+                <span className="simo-badge-blue">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   {isCloud ? 'Supabase Cloud Database Terkoneksi' : 'Dual-Mode (Local Persisted)'}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed">
                 Semua data keanggotaan, iuran kas, jobdesk tugas panitia, dan presensi biometrik tersimpan otomatis di penyimpanan lokal browser Anda. Bebas risiko offline saat presentasi UKK di hadapan dewan penguji.
               </p>
             </div>
           </div>
 
           {/* Backup & Restore Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Download Backup */}
-            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3 transition-colors flex flex-col justify-between">
+            <div className="simo-card p-6 space-y-3 flex flex-col justify-between">
               <div>
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-2">
-                  <Download className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-[12px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] flex items-center justify-center mb-2.5">
+                  <Download className="w-5 h-5" />
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Ekspor Cadangan Lengkap (.JSON)</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                <h4 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Ekspor Cadangan Lengkap (.JSON)</h4>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
                   Unduh seluruh database (anggota, kas, proker, rapat, surat, arsip) ke dalam satu file JSON untuk dipindahkan ke komputer lain.
                 </p>
               </div>
@@ -725,27 +580,27 @@ export const PengaturanPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleExportBackup}
-                className="w-full mt-3 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
+                className="simo-btn-primary w-full mt-4 min-h-[44px] rounded-[12px] text-[14px] font-bold flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-4 h-4" />
                 <span>Unduh Cadangan JSON</span>
               </button>
             </div>
 
             {/* Restore from File */}
-            <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs space-y-3 transition-colors flex flex-col justify-between">
+            <div className="simo-card p-6 space-y-3 flex flex-col justify-between">
               <div>
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/70 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-2">
-                  <Upload className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-[12px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] flex items-center justify-center mb-2.5">
+                  <Upload className="w-5 h-5" />
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Pulihkan Data dari Cadangan</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                <h4 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Pulihkan Data dari Cadangan</h4>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
                   Unggah file cadangan JSON yang pernah Anda unduh sebelumnya untuk mengembalikan seluruh kondisi aplikasi.
                 </p>
               </div>
 
-              <label className="w-full mt-3 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition-colors">
-                <Upload className="w-3.5 h-3.5" />
+              <label className="simo-btn-outline w-full mt-4 min-h-[44px] rounded-[12px] text-[14px] font-bold flex items-center justify-center gap-2 cursor-pointer">
+                <Upload className="w-4 h-4" />
                 <span>Pilih File JSON</span>
                 <input
                   type="file"
@@ -758,15 +613,15 @@ export const PengaturanPage: React.FC = () => {
           </div>
 
           {/* Factory Reset Data */}
-          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-rose-200 dark:border-rose-900/60 shadow-2xs space-y-3 transition-colors">
+          <div className="simo-card p-6 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-rose-50 dark:bg-rose-950/70 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 mt-0.5">
-                  <AlertTriangle className="w-4 h-4" />
+                <div className="w-10 h-10 rounded-[12px] bg-[#FAF6EE] dark:bg-[#0E1B2C] text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center justify-center shrink-0 mt-0.5 border border-[#E6DFD0] dark:border-[#283D56]">
+                  <AlertCircle className="w-5 h-5 text-[#F2B544]" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">Reset Seluruh Data ke Nilai Default UKK</h3>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+                  <h3 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Reset Seluruh Data ke Nilai Default UKK</h3>
+                  <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5 leading-relaxed">
                     Menghapus data ubahan lokal dan mengembalikan data anggota demo, jadwal rapat, proker, dan transaksi kas awal.
                   </p>
                 </div>
@@ -774,12 +629,8 @@ export const PengaturanPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => {
-                  if (confirm('Apakah Anda yakin ingin me-reset seluruh data ke nilai awal default UKK? Data yang belum dicadangkan akan hilang.')) {
-                    resetAllData();
-                  }
-                }}
-                className="px-4 py-2 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0"
+                onClick={() => setIsResetModalOpen(true)}
+                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer shrink-0"
               >
                 Reset ke Default
               </button>
@@ -787,6 +638,42 @@ export const PengaturanPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal for Reset */}
+      <Modal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        title="Konfirmasi Reset Data Aplikasi"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+            <AlertCircle className="w-5 h-5 text-[#F2B544] shrink-0 mt-0.5" />
+            <div className="text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+              <p className="font-bold">Apakah Anda yakin ingin me-reset seluruh data ke nilai awal default UKK?</p>
+              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                Data anggota baru, perubahan kas, dan presensi yang belum dicadangkan ke file JSON akan dihapus dari penyimpanan browser.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsResetModalOpen(false)}
+              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmReset}
+              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+            >
+              Ya, Reset Data
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

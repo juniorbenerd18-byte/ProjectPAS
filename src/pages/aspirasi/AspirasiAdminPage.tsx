@@ -3,21 +3,18 @@ import {
   Lightbulb,
   Mail,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
-  ThumbsUp,
-  User,
   ArrowLeft,
-  ExternalLink,
-  MessageSquare,
+  Globe,
+  Filter,
+  X,
+  Inbox,
   AlertCircle,
-  Sparkles,
-  Send,
-  Trash2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StudentAspiration } from '../../types';
+import { Modal } from '../../components/common/Modal';
 
 export const AspirasiAdminPage: React.FC = () => {
   const {
@@ -34,6 +31,12 @@ export const AspirasiAdminPage: React.FC = () => {
   const [selectedAsp, setSelectedAsp] = useState<StudentAspiration | null>(null);
   const [responseText, setResponseText] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<StudentAspiration['status']>('diproses');
+
+  // Metrics
+  const totalCount = aspirations.length;
+  const pendingCount = aspirations.filter((a) => a.status === 'diterima').length;
+  const inProgressCount = aspirations.filter((a) => a.status === 'diproses').length;
+  const completedCount = aspirations.filter((a) => a.status === 'terealisasi').length;
 
   // Filtered Aspirations
   const filteredAspirations = useMemo(() => {
@@ -105,103 +108,173 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
     setResponseText('');
   };
 
+  const getStatusBadge = (status: StudentAspiration['status']) => {
+    switch (status) {
+      case 'terealisasi':
+        return (
+          <span className="simo-badge-blue">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Terealisasi
+          </span>
+        );
+      case 'diproses':
+        return (
+          <span className="simo-badge-amber">
+            <Clock className="w-3.5 h-3.5" />
+            Diproses
+          </span>
+        );
+      case 'diterima':
+        return (
+          <span className="simo-badge-neutral">
+            <Inbox className="w-3.5 h-3.5" />
+            Diterima
+          </span>
+        );
+      case 'ditolak':
+        return (
+          <span className="simo-badge-neutral">
+            <X className="w-3.5 h-3.5" />
+            Ditolak
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
+      {/* 1. Header */}
+      <div className="simo-card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
         <div>
           <button
             onClick={() => setActivePage('dashboard')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#2563EB] mb-2 cursor-pointer transition-colors"
+            className="inline-flex items-center gap-2 text-[14px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline mb-2 cursor-pointer transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
+            <ArrowLeft className="w-4 h-4" />
             <span>Kembali ke Dashboard</span>
           </button>
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-200 dark:border-amber-900 shadow-2xs">
-              <Lightbulb className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Kotak Ide, Saran &amp; Aspirasi Publik
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Tinjau masukan dari siswa, orang tua, alumni, dan masyarakat luas serta balas langsung lewat Gmail.
-              </p>
-            </div>
+          <h1 className="text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2.5">
+            <span>Daftar Kotak Ide &amp; Aspirasi Siswa/Publik</span>
+            <span className="text-[13px] font-bold px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
+              {totalCount} Data
+            </span>
+          </h1>
+          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+            Kelola arsip masukan, tindak lanjut status kegiatan, dan kirim balasan resmi via email.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setActivePage('portal-publik')}
+          className="simo-btn-outline min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
+        >
+          <Globe className="w-4 h-4" />
+          <span>Buka Portal Publik</span>
+        </button>
+      </div>
+
+      {/* 2. Ringkasan Status (Merged into Single Continuous Card with Dividers) */}
+      <div className="simo-card p-0 grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#E6DFD0] dark:divide-[#283D56] overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setStatusFilter('all')}
+          className={`p-5 sm:p-6 text-left transition-colors cursor-pointer ${
+            statusFilter === 'all'
+              ? 'bg-[#E4EAF2] dark:bg-[#1F3A5F]/40'
+              : 'hover:bg-[#FAF6EE] dark:hover:bg-[#17293E]'
+          }`}
+        >
+          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] font-bold">Semua Masukan</p>
+          <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{totalCount}</p>
+          <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">Semua kategori ide</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter('diterima')}
+          className={`p-5 sm:p-6 text-left transition-colors cursor-pointer ${
+            statusFilter === 'diterima'
+              ? 'bg-[#E4EAF2] dark:bg-[#1F3A5F]/40'
+              : 'hover:bg-[#FAF6EE] dark:hover:bg-[#17293E]'
+          }`}
+        >
+          <p className="text-[14px] text-[#1F3A5F] dark:text-[#E4EAF2] font-bold">Menunggu / Baru</p>
+          <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{pendingCount}</p>
+          <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">Perlu ditindaklanjuti</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter('diproses')}
+          className={`p-5 sm:p-6 text-left transition-colors cursor-pointer ${
+            statusFilter === 'diproses'
+              ? 'bg-[#FBEBC8] dark:bg-[#F2B544]/20'
+              : 'hover:bg-[#FAF6EE] dark:hover:bg-[#17293E]'
+          }`}
+        >
+          <p className="text-[14px] text-[#1F3A5F] dark:text-[#F2B544] font-bold">Sedang Diproses</p>
+          <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{inProgressCount}</p>
+          <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">Koordinasi sekbid</p>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setStatusFilter('terealisasi')}
+          className={`p-5 sm:p-6 text-left transition-colors cursor-pointer ${
+            statusFilter === 'terealisasi'
+              ? 'bg-[#E4EAF2] dark:bg-[#1F3A5F]/40'
+              : 'hover:bg-[#FAF6EE] dark:hover:bg-[#17293E]'
+          }`}
+        >
+          <p className="text-[14px] text-[#1F3A5F] dark:text-[#E4EAF2] font-bold">Terealisasi</p>
+          <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{completedCount}</p>
+          <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">Selesai dieksekusi</p>
+        </button>
+      </div>
+
+      {/* 3. Baris Pencarian & Filter */}
+      <div className="simo-card p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3 flex-1">
+          {/* Kolom Pencarian */}
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama, email, judul..."
+              className="simo-input pl-10 pr-9 min-h-[44px] text-[14px] w-full"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A6472] hover:text-[#1F3A5F] cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
-        </div>
 
-        {/* Action Button */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setActivePage('portal-publik')}
-            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
-            <span>Tinjau Form Publik</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Metrics Banner */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <p className="text-xs font-semibold text-slate-500">Total Masukan</p>
-          <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">{aspirations.length}</p>
-        </div>
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <p className="text-xs font-semibold text-blue-600">Diterima (Baru)</p>
-          <p className="text-2xl font-black text-blue-600 mt-1">
-            {aspirations.filter((a) => a.status === 'diterima').length}
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <p className="text-xs font-semibold text-amber-600">Sedang Diproses</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">
-            {aspirations.filter((a) => a.status === 'diproses').length}
-          </p>
-        </div>
-        <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs">
-          <p className="text-xs font-semibold text-emerald-600">Terealisasi</p>
-          <p className="text-2xl font-black text-emerald-600 mt-1">
-            {aspirations.filter((a) => a.status === 'terealisasi').length}
-          </p>
-        </div>
-      </div>
-
-      {/* Search & Filter Bar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari ide, nama pengirim, email, atau isi masukan..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Status Filter */}
+          {/* Filter Status */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
-            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+            className="simo-input min-h-[44px] text-[14px] px-3 font-semibold"
           >
             <option value="all">Semua Status</option>
-            <option value="diterima">Diterima</option>
-            <option value="diproses">Diproses</option>
+            <option value="diterima">Diterima (Baru)</option>
+            <option value="diproses">Sedang Diproses</option>
             <option value="terealisasi">Terealisasi</option>
             <option value="ditolak">Ditolak</option>
           </select>
 
-          {/* Category Filter */}
+          {/* Filter Kategori */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-white focus:outline-none cursor-pointer"
+            className="simo-input min-h-[44px] text-[14px] px-3 font-semibold"
           >
             <option value="all">Semua Kategori</option>
             <option value="inovasi">Inovasi</option>
@@ -212,117 +285,208 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
             <option value="akademik">Akademik</option>
             <option value="lainnya">Lainnya</option>
           </select>
+
+          {(searchQuery || statusFilter !== 'all' || categoryFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setCategoryFilter('all');
+              }}
+              className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline px-2 py-1 cursor-pointer"
+            >
+              Reset Filter
+            </button>
+          )}
+        </div>
+
+        <div className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">
+          Menampilkan <b className="text-[#1F3A5F] dark:text-[#FAF6EE]">{filteredAspirations.length}</b> data
         </div>
       </div>
 
-      {/* Main Table / Cards */}
-      <div className="space-y-3">
+      {/* 4. Tabel Desktop */}
+      <div className="simo-card p-0 overflow-hidden hidden md:block">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-[15px]">
+            <thead>
+              <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[14px]">
+                <th className="py-4 px-4 text-center w-12">No</th>
+                <th className="py-4 px-4 w-28">Tanggal</th>
+                <th className="py-4 px-4 w-44">Pengirim</th>
+                <th className="py-4 px-4 w-28">Kategori</th>
+                <th className="py-4 px-5 min-w-[260px]">Judul &amp; Isi Masukan</th>
+                <th className="py-4 px-4 w-44">Kontak / Email</th>
+                <th className="py-4 px-4 w-28 text-center">Status</th>
+                <th className="py-4 px-4 w-36 text-right">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
+              {filteredAspirations.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[15px]">
+                    Tidak ada data masukan yang sesuai dengan kriteria filter.
+                  </td>
+                </tr>
+              ) : (
+                filteredAspirations.map((asp, idx) => (
+                  <tr
+                    key={asp.id}
+                    className="hover:bg-[#FAF6EE]/50 dark:hover:bg-[#17293E]/50 transition-colors"
+                  >
+                    {/* No */}
+                    <td className="py-4 px-4 text-center font-medium text-[#5A6472] dark:text-[#9AA8B8]">
+                      {idx + 1}
+                    </td>
+
+                    {/* Tanggal */}
+                    <td className="py-4 px-4 whitespace-nowrap text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[14px]">
+                      {asp.date}
+                    </td>
+
+                    {/* Pengirim */}
+                    <td className="py-4 px-4">
+                      <div className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                        {asp.studentName}
+                      </div>
+                      <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                        {asp.classRoom || 'Publik'} {asp.senderRole ? `• ${asp.senderRole.replace('_', ' ')}` : ''}
+                      </div>
+                    </td>
+
+                    {/* Kategori */}
+                    <td className="py-4 px-4">
+                      <span className="inline-block px-2.5 py-1 rounded-[8px] text-[13px] font-bold uppercase bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
+                        {asp.category}
+                      </span>
+                    </td>
+
+                    {/* Judul & Isi Masukan */}
+                    <td className="py-4 px-5">
+                      <div className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                        {asp.title}
+                      </div>
+                      <div className="text-[#5A6472] dark:text-[#9AA8B8] line-clamp-2 leading-relaxed text-[14px]">
+                        "{asp.content}"
+                      </div>
+                      {asp.response && (
+                        <div className="mt-2 p-2.5 rounded-[10px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/30 border border-[#E6DFD0] dark:border-[#283D56] text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                          <span className="font-bold">Tanggapan OSIS:</span> {asp.response}
+                        </div>
+                      )}
+                    </td>
+
+                    {/* Kontak / Email */}
+                    <td className="py-4 px-4 font-mono text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                      {asp.email ? (
+                        <span className="break-all">{asp.email}</span>
+                      ) : (
+                        <span className="text-[#5A6472] dark:text-[#9AA8B8] italic">Tanpa Email</span>
+                      )}
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
+                      {getStatusBadge(asp.status)}
+                    </td>
+
+                    {/* Aksi */}
+                    <td className="py-4 px-4 text-right whitespace-nowrap">
+                      <div className="inline-flex items-center gap-2">
+                        {asp.email && (
+                          <button
+                            onClick={() => handleOpenGmail(asp)}
+                            title="Balas ke pengirim via Gmail"
+                            className="simo-btn-outline min-h-[38px] px-3 py-1 rounded-[10px] text-[13px] flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            <span>Gmail</span>
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setSelectedAsp(asp);
+                            setResponseText(asp.response || '');
+                            setSelectedStatus(asp.status);
+                          }}
+                          className="simo-btn-primary min-h-[38px] px-3.5 py-1 rounded-[10px] text-[13px] cursor-pointer"
+                        >
+                          Tanggapi
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer info tabel */}
+        <div className="p-4 bg-[#FAF6EE] dark:bg-[#17293E] border-t border-[#E6DFD0] dark:border-[#283D56] text-[14px] text-[#5A6472] dark:text-[#9AA8B8] flex items-center justify-between">
+          <span>Menampilkan {filteredAspirations.length} dari {aspirations.length} total masukan</span>
+          <span>Data tersinkronisasi dengan formulir publik</span>
+        </div>
+      </div>
+
+      {/* Mobile Card List */}
+      <div className="space-y-3.5 md:hidden">
         {filteredAspirations.length === 0 ? (
-          <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-8">
-            <Lightbulb className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-            <h3 className="text-sm font-bold text-slate-800 dark:text-white">Tidak Ada Ide yang Sesuai</h3>
-            <p className="text-xs text-slate-500 mt-1">Coba ubah kata kunci pencarian atau filter status Anda.</p>
+          <div className="simo-card p-8 text-center text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[15px]">
+            Tidak ada data masukan yang sesuai dengan kriteria filter.
           </div>
         ) : (
           filteredAspirations.map((asp) => (
-            <div
-              key={asp.id}
-              className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-2xs hover:border-blue-300 transition-colors flex flex-col md:flex-row md:items-start justify-between gap-4"
-            >
-              <div className="flex-1 space-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded ${
-                      asp.status === 'terealisasi'
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                        : asp.status === 'diproses'
-                        ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                        : asp.status === 'ditolak'
-                        ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                        : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                    }`}
-                  >
-                    {asp.status}
-                  </span>
+            <div key={asp.id} className="simo-card p-5 space-y-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="px-2.5 py-1 rounded-[8px] text-[12px] font-bold uppercase bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
+                  {asp.category}
+                </span>
+                {getStatusBadge(asp.status)}
+              </div>
 
-                  <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                    {asp.category}
-                  </span>
-
-                  {asp.senderRole && (
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300">
-                      Peran: {asp.senderRole.replace('_', ' ')}
-                    </span>
-                  )}
-
-                  <span className="text-[11px] text-slate-400 flex items-center gap-1 ml-auto">
-                    <Clock className="w-3.5 h-3.5" />
-                    {asp.date}
-                  </span>
-                </div>
-
-                <h3 className="text-base font-bold text-slate-900 dark:text-white leading-snug">
+              <div>
+                <h4 className="font-bold text-[16px] text-[#1F3A5F] dark:text-[#FAF6EE]">
                   {asp.title}
-                </h3>
-
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                </h4>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
                   "{asp.content}"
                 </p>
+              </div>
 
-                {/* Sender Details */}
-                <div className="pt-2 flex flex-wrap items-center gap-4 text-xs text-slate-500 border-t border-slate-100 dark:border-slate-800">
-                  <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
-                    <User className="w-3.5 h-3.5 text-blue-500" />
-                    {asp.studentName} ({asp.classRoom || 'Publik'})
-                  </span>
-
-                  {asp.email && (
-                    <span className="flex items-center gap-1 text-slate-600 dark:text-slate-400 font-mono text-[11px]">
-                      <Mail className="w-3.5 h-3.5 text-rose-500" />
-                      {asp.email}
-                    </span>
-                  )}
-
-                  <span className="flex items-center gap-1 text-slate-400 text-[11px]">
-                    <ThumbsUp className="w-3 h-3 text-blue-500" />
-                    {asp.likes || 0} Dukungan
-                  </span>
-                </div>
-
-                {/* Tanggapan Pengurus Jika Ada */}
-                {asp.response && (
-                  <div className="mt-2 p-3 rounded-xl bg-emerald-50/70 border border-emerald-100 dark:bg-emerald-950/30 dark:border-emerald-900 text-xs text-emerald-800 dark:text-emerald-300">
-                    <p className="font-bold flex items-center gap-1 mb-0.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      Tanggapan Resmi Pengurus ({asp.respondedBy || 'OSIS'}):
-                    </p>
-                    <p className="italic leading-relaxed">{asp.response}</p>
-                  </div>
+              <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] space-y-1 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+                <p><span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">Pengirim:</span> {asp.studentName} ({asp.classRoom || 'Publik'})</p>
+                <p><span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">Tanggal:</span> {asp.date}</p>
+                {asp.email && (
+                  <p className="font-mono text-[12px]"><span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">Email:</span> {asp.email}</p>
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex md:flex-col items-center gap-2 shrink-0 pt-2 md:pt-0">
+              {asp.response && (
+                <div className="p-3 rounded-[10px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/30 border border-[#E6DFD0] dark:border-[#283D56] text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  <span className="font-bold">Tanggapan OSIS:</span> {asp.response}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
                 {asp.email && (
                   <button
                     onClick={() => handleOpenGmail(asp)}
-                    className="w-full px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                    className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Balas via Gmail</span>
+                    <Mail className="w-4 h-4" />
+                    <span>Gmail</span>
                   </button>
                 )}
-
                 <button
                   onClick={() => {
                     setSelectedAsp(asp);
                     setResponseText(asp.response || '');
                     setSelectedStatus(asp.status);
                   }}
-                  className="w-full px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                  className="simo-btn-primary min-h-[44px] px-4 rounded-[12px] text-[14px] cursor-pointer"
                 >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Tanggapi &amp; Status</span>
+                  Tanggapi
                 </button>
               </div>
             </div>
@@ -330,108 +494,102 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
         )}
       </div>
 
-      {/* MODAL EDIT STATUS & TANGGAPAN */}
-      {selectedAsp && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                  <Lightbulb className="w-5 h-5" />
-                </div>
+      {/* 5. Modal Tindak Lanjut Ide / Aspirasi */}
+      <Modal
+        isOpen={Boolean(selectedAsp)}
+        onClose={() => setSelectedAsp(null)}
+        title="Tindak Lanjut Ide / Aspirasi"
+      >
+        {selectedAsp && (
+          <div className="space-y-4 text-[14px]">
+            {/* Info Pengirim */}
+            <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] space-y-1">
+              <div className="flex items-center justify-between text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  {selectedAsp.title}
+                </span>
+                <span>{selectedAsp.date}</span>
+              </div>
+              <p className="text-[#5A6472] dark:text-[#9AA8B8] italic pt-1">
+                "{selectedAsp.content}"
+              </p>
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] pt-1">
+                Dari: <b>{selectedAsp.studentName}</b> ({selectedAsp.email || 'Tanpa Email'})
+              </p>
+            </div>
+
+            {selectedAsp.email && (
+              <div className="p-4 bg-[#FBEBC8] dark:bg-[#F2B544]/20 rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Tanggapi Ide &amp; Masukan
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Dari: {selectedAsp.studentName} ({selectedAsp.email || 'Tanpa Email'})
+                  <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    Diskusi Langsung via Gmail
+                  </p>
+                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-mono">
+                    {selectedAsp.email}
                   </p>
                 </div>
-              </div>
-              <button
-                onClick={() => setSelectedAsp(null)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold p-1 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 space-y-1">
-                <h4 className="text-xs font-bold text-slate-800 dark:text-white">{selectedAsp.title}</h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 italic">"{selectedAsp.content}"</p>
-              </div>
-
-              {selectedAsp.email && (
-                <div className="p-3.5 rounded-2xl bg-rose-50/60 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-bold text-rose-800 dark:text-rose-300">
-                      Buka Gmail untuk Diskusi Lanjutan
-                    </p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Penerima: {selectedAsp.email}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleOpenGmail(selectedAsp)}
-                    className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 shadow-xs transition-colors cursor-pointer"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    <span>Buka Gmail</span>
-                  </button>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Ubah Status
-                </label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value as any)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+                <button
+                  type="button"
+                  onClick={() => handleOpenGmail(selectedAsp)}
+                  className="simo-btn-amber min-h-[40px] px-4 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
                 >
-                  <option value="diterima">Diterima (Menunggu Peninjauan)</option>
-                  <option value="diproses">Diproses (Sedang Ditindaklanjuti)</option>
-                  <option value="terealisasi">Terealisasi (Selesai Dijalankan)</option>
-                  <option value="ditolak">Ditolak / Belum Dapat Dilaksanakan</option>
-                </select>
+                  <Mail className="w-4 h-4" />
+                  <span>Buka Gmail</span>
+                </button>
               </div>
+            )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Tanggapan Resmi (Ditampilkan pada Portal Publik)
-                </label>
-                <textarea
-                  rows={3}
-                  value={responseText}
-                  onChange={(e) => setResponseText(e.target.value)}
-                  placeholder="Tuliskan tanggapan atau ucapan apresiasi pengurus OSIS..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 leading-relaxed"
-                />
-              </div>
+            {/* Status Pilihan */}
+            <div>
+              <label className="block font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Status Penanganan
+              </label>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value as any)}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+              >
+                <option value="diterima">Diterima (Menunggu Peninjauan)</option>
+                <option value="diproses">Diproses (Sedang Ditindaklanjuti)</option>
+                <option value="terealisasi">Terealisasi (Selesai Dijalankan)</option>
+                <option value="ditolak">Ditolak / Belum Dapat Dilaksanakan</option>
+              </select>
             </div>
 
-            <div className="p-4 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5">
+            {/* Tanggapan Resmi */}
+            <div>
+              <label className="block font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Tanggapan Resmi Pengurus (Tampil di Portal Publik)
+              </label>
+              <textarea
+                rows={4}
+                value={responseText}
+                onChange={(e) => setResponseText(e.target.value)}
+                placeholder="Tuliskan tanggapan atau evaluasi pengurus OSIS terhadap ide ini..."
+                className="simo-input text-[14px] w-full p-3 leading-relaxed"
+              />
+            </div>
+
+            {/* Modal Actions */}
+            <div className="pt-3 flex justify-end gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
               <button
                 type="button"
                 onClick={() => setSelectedAsp(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 transition-colors cursor-pointer"
+                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={handleSaveResponse}
-                className="px-5 py-2 rounded-xl bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
               >
-                Simpan Perubahan
+                Simpan Status
               </button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 };

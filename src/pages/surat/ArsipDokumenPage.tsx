@@ -11,12 +11,10 @@ import {
   Eye,
   Trash2,
   Calendar,
-  Sparkles,
   Building2,
   CheckCircle2,
   Clock,
-  Download,
-  Share2,
+  AlertCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { DocumentItem } from '../../types';
@@ -46,6 +44,9 @@ export const ArsipDokumenPage: React.FC = () => {
   // Modal Disposisi / Preview
   const [previewDoc, setPreviewDoc] = useState<DocumentItem | null>(null);
   const [isDisposisiModalOpen, setIsDisposisiModalOpen] = useState(false);
+
+  // Modal Delete Confirm
+  const [docToDelete, setDocToDelete] = useState<DocumentItem | null>(null);
 
   // Auto-generate document number helper
   const generateDocNumber = (type: DocumentItem['type']) => {
@@ -114,6 +115,13 @@ export const ArsipDokumenPage: React.FC = () => {
     setIsAddModalOpen(false);
   };
 
+  const handleConfirmDelete = () => {
+    if (docToDelete) {
+      deleteDocument(docToDelete.id);
+      setDocToDelete(null);
+    }
+  };
+
   // Calculations
   const stats = {
     total: documents.length,
@@ -137,29 +145,29 @@ export const ArsipDokumenPage: React.FC = () => {
     switch (type) {
       case 'surat_masuk':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-            <Inbox className="w-3 h-3" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[13px] font-semibold bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#E4EAF2]">
+            <Inbox className="w-3.5 h-3.5" />
             Surat Masuk
           </span>
         );
       case 'surat_keluar':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-            <Send className="w-3 h-3" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[13px] font-semibold bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#E4EAF2]">
+            <Send className="w-3.5 h-3.5" />
             Surat Keluar
           </span>
         );
       case 'proposal':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            <FileText className="w-3 h-3" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[13px] font-semibold bg-[#FAF6EE] text-[#1F3A5F] border border-[#E6DFD0] dark:bg-[#17293E] dark:text-[#FAF6EE] dark:border-[#283D56]">
+            <FileText className="w-3.5 h-3.5" />
             Proposal
           </span>
         );
       case 'lpj':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <FileCheck className="w-3 h-3" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[13px] font-semibold bg-[#FAF6EE] text-[#1F3A5F] border border-[#E6DFD0] dark:bg-[#17293E] dark:text-[#FAF6EE] dark:border-[#283D56]">
+            <FileCheck className="w-3.5 h-3.5" />
             LPJ
           </span>
         );
@@ -172,22 +180,22 @@ export const ArsipDokumenPage: React.FC = () => {
     switch (status) {
       case 'arsip':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
-            <CheckCircle2 className="w-3 h-3 text-slate-500" />
+          <span className="simo-badge-neutral">
+            <CheckCircle2 className="w-3.5 h-3.5" />
             Arsip Baku
           </span>
         );
       case 'terkirim':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">
-            <Send className="w-3 h-3 text-emerald-600" />
+          <span className="simo-badge-blue">
+            <CheckCircle2 className="w-3.5 h-3.5" />
             Terkirim
           </span>
         );
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700">
-            <Clock className="w-3 h-3 text-amber-500" />
+          <span className="simo-badge-amber">
+            <Clock className="w-3.5 h-3.5" />
             Pending Review
           </span>
         );
@@ -199,59 +207,61 @@ export const ArsipDokumenPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
+      <div className="simo-card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-xs font-semibold mb-1">
-            <Building2 className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[14px] font-bold mb-2">
+            <Building2 className="w-4 h-4" />
             <span>Administrasi & Kesekretariatan • {orgProfile.name}</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 tracking-tight">Arsip Dokumen & Persuratan</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h2 className="text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+            Arsip Dokumen & Persuratan
+          </h2>
+          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
             Manajemen terpusat surat masuk, surat keluar bernomor otomatis, proposal, serta LPJ kegiatan.
           </p>
         </div>
 
         <button
           onClick={handleOpenAdd}
-          className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+          className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center justify-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
         >
           <Plus className="w-4 h-4" />
-          Catat / Buat Dokumen
+          <span>Catat / Buat Dokumen</span>
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Dokumen</span>
-          <div className="mt-1 text-2xl font-black text-slate-900">{stats.total}</div>
-          <p className="text-[10px] text-slate-400 mt-0.5">Semua berkas aktif</p>
+      {/* 4 Stats Cards -> Single Continuous Card with Dividers */}
+      <div className="simo-card p-0 grid grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-[#E6DFD0] dark:divide-[#283D56] overflow-hidden">
+        <div className="p-5 sm:p-6 flex flex-col justify-between">
+          <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Total Dokumen</span>
+          <div className="my-2 text-3xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">{stats.total}</div>
+          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Semua berkas aktif</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">Surat Masuk</span>
-          <div className="mt-1 text-2xl font-black text-slate-900">{stats.masuk}</div>
-          <p className="text-[10px] text-slate-400 mt-0.5">Dari dinas / instansi luar</p>
+        <div className="p-5 sm:p-6 flex flex-col justify-between">
+          <span className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#E4EAF2]">Surat Masuk</span>
+          <div className="my-2 text-3xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">{stats.masuk}</div>
+          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Dari dinas & instansi luar</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">Surat Keluar</span>
-          <div className="mt-1 text-2xl font-black text-slate-900">{stats.keluar}</div>
-          <p className="text-[10px] text-slate-400 mt-0.5">Dispensasi & undangan resmi</p>
+        <div className="p-5 sm:p-6 flex flex-col justify-between">
+          <span className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#E4EAF2]">Surat Keluar</span>
+          <div className="my-2 text-3xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">{stats.keluar}</div>
+          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Dispensasi & undangan resmi</p>
         </div>
 
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-          <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Proposal & LPJ</span>
-          <div className="mt-1 text-2xl font-black text-slate-900">{stats.proposal + stats.lpj}</div>
-          <p className="text-[10px] text-slate-400 mt-0.5">{stats.proposal} Proposal • {stats.lpj} LPJ</p>
+        <div className="p-5 sm:p-6 flex flex-col justify-between">
+          <span className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#E4EAF2]">Proposal & LPJ</span>
+          <div className="my-2 text-3xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">{stats.proposal + stats.lpj}</div>
+          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">{stats.proposal} Proposal • {stats.lpj} LPJ</p>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="simo-card p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-bold text-slate-500 mr-1 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" />
+          <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mr-1 flex items-center gap-1.5">
+            <Filter className="w-4 h-4" />
             Kategori:
           </span>
           {[
@@ -264,22 +274,22 @@ export const ArsipDokumenPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setFilterType(tab.id as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              className={`min-h-[40px] px-3.5 py-1.5 rounded-[10px] text-[14px] font-bold transition-all cursor-pointer ${
                 filterType === tab.id
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  ? 'simo-chip-active'
+                  : 'simo-chip'
               }`}
             >
               {tab.label}
             </button>
           ))}
 
-          <div className="h-4 w-[1px] bg-slate-200 mx-1 hidden sm:block" />
+          <div className="h-5 w-[1px] bg-[#E6DFD0] dark:bg-[#283D56] mx-1 hidden sm:block" />
 
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="simo-input min-h-[40px] py-1.5 px-3 text-[14px] font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]"
           >
             <option value="all">Semua Status</option>
             <option value="arsip">Arsip</option>
@@ -288,90 +298,89 @@ export const ArsipDokumenPage: React.FC = () => {
           </select>
         </div>
 
-        <div className="relative w-full md:w-64">
-          <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="relative w-full md:w-72">
+          <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari no surat, perihal, pihak..."
-            className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900"
+            className="simo-input pl-10 pr-3 min-h-[40px] text-[14px] w-full"
           />
         </div>
       </div>
 
-      {/* Document Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+      {/* Desktop Document Table */}
+      <div className="simo-card p-0 overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-[15px]">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200/80 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3.5 px-4">Tipe & No. Dokumen</th>
-                <th className="py-3.5 px-4">Perihal / Judul Dokumen</th>
-                <th className="py-3.5 px-4">Pengirim / Penerima</th>
-                <th className="py-3.5 px-4">Tanggal</th>
-                <th className="py-3.5 px-4 text-center">Status</th>
-                <th className="py-3.5 px-4 text-right">Aksi</th>
+              <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[14px]">
+                <th className="py-4 px-5">Tipe & No. Dokumen</th>
+                <th className="py-4 px-5">Perihal / Judul Dokumen</th>
+                <th className="py-4 px-5">Pengirim / Penerima</th>
+                <th className="py-4 px-5">Tanggal</th>
+                <th className="py-4 px-5 text-center">Status</th>
+                <th className="py-4 px-5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
               {filteredDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 font-medium">
+                  <td colSpan={6} className="py-12 text-center text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[15px]">
                     Tidak ada dokumen yang sesuai kriteria filter.
                   </td>
                 </tr>
               ) : (
                 filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-1">
-                        <div>{getTypeBadge(doc.type)}</div>
-                        <span className="font-mono font-bold text-slate-700 text-[11px]">
+                  <tr key={doc.id} className="hover:bg-[#FAF6EE]/50 dark:hover:bg-[#17293E]/50 transition-colors">
+                    <td className="py-4 px-5 whitespace-nowrap">
+                      <div className="flex flex-col gap-1.5 items-start">
+                        {getTypeBadge(doc.type)}
+                        <span className="font-mono font-bold text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px]">
                           {doc.documentNumber}
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-900 block">{doc.title}</span>
+                    <td className="py-4 px-5">
+                      <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] block text-[15px] leading-snug">
+                        {doc.title}
+                      </span>
                       {doc.fileUrl && (
-                        <span className="inline-flex items-center gap-1 text-[10px] text-indigo-600 font-semibold mt-0.5">
-                          <Eye className="w-3 h-3" /> Berkas Terlampir
+                        <span className="inline-flex items-center gap-1.5 text-[13px] text-[#1F3A5F] dark:text-[#F2B544] font-semibold mt-1">
+                          <Eye className="w-3.5 h-3.5" /> Berkas Terlampir
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 font-medium whitespace-nowrap">
+                    <td className="py-4 px-5 text-[#5A6472] dark:text-[#9AA8B8] font-medium whitespace-nowrap text-[14px]">
                       {doc.senderOrReceiver}
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-500 font-medium">
+                    <td className="py-4 px-5 whitespace-nowrap text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[14px]">
                       {formatDateIndo(doc.documentDate)}
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap text-center">
+                    <td className="py-4 px-5 whitespace-nowrap text-center">
                       {getStatusBadge(doc.status)}
                     </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="py-4 px-5 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => {
                             setPreviewDoc(doc);
                             setIsDisposisiModalOpen(true);
                           }}
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold transition-colors flex items-center gap-1 cursor-pointer"
+                          className="simo-btn-outline min-h-[38px] px-3.5 py-1.5 rounded-[10px] text-[13px] flex items-center gap-1.5 cursor-pointer"
                           title="Cetak Lembar Disposisi Resmi"
                         >
                           <Printer className="w-3.5 h-3.5" />
-                          Disposisi
+                          <span>Disposisi</span>
                         </button>
 
                         {(currentRole === 'sekretaris' || currentRole === 'admin' || currentRole === 'ketua') && (
                           <button
-                            onClick={() => {
-                              if (confirm(`Hapus arsip dokumen "${doc.title}"?`)) {
-                                deleteDocument(doc.id);
-                              }
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                            onClick={() => setDocToDelete(doc)}
+                            className="min-h-[38px] min-w-[38px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[10px] border border-transparent hover:border-[#E6DFD0] dark:hover:border-[#283D56] transition-colors cursor-pointer"
                             title="Hapus Dokumen"
+                            aria-label={`Hapus ${doc.title}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -386,6 +395,67 @@ export const ArsipDokumenPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Mobile Card List (Responsive display below md) */}
+      <div className="space-y-3.5 md:hidden">
+        {filteredDocuments.length === 0 ? (
+          <div className="simo-card p-8 text-center text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[15px]">
+            Tidak ada dokumen yang sesuai kriteria filter.
+          </div>
+        ) : (
+          filteredDocuments.map((doc) => (
+            <div key={doc.id} className="simo-card p-5 space-y-3.5">
+              <div className="flex items-center justify-between gap-2">
+                {getTypeBadge(doc.type)}
+                {getStatusBadge(doc.status)}
+              </div>
+
+              <div>
+                <span className="font-mono text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] block mb-1">
+                  {doc.documentNumber}
+                </span>
+                <h4 className="font-bold text-[16px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  {doc.title}
+                </h4>
+              </div>
+
+              <div className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] space-y-1 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+                <p><span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">Pihak:</span> {doc.senderOrReceiver}</p>
+                <p><span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">Tanggal:</span> {formatDateIndo(doc.documentDate)}</p>
+                {doc.fileUrl && (
+                  <p className="inline-flex items-center gap-1.5 text-[13px] text-[#1F3A5F] dark:text-[#F2B544] font-semibold pt-1">
+                    <Eye className="w-3.5 h-3.5" /> Berkas Terlampir
+                  </p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+                <button
+                  onClick={() => {
+                    setPreviewDoc(doc);
+                    setIsDisposisiModalOpen(true);
+                  }}
+                  className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] flex items-center gap-2 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Disposisi</span>
+                </button>
+
+                {(currentRole === 'sekretaris' || currentRole === 'admin' || currentRole === 'ketua') && (
+                  <button
+                    onClick={() => setDocToDelete(doc)}
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] transition-colors cursor-pointer"
+                    title="Hapus Dokumen"
+                    aria-label={`Hapus ${doc.title}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {/* ---------------------------------------------------- */}
       {/* MODAL 1: CATAT DOKUMEN BARU                          */}
       {/* ---------------------------------------------------- */}
@@ -396,10 +466,10 @@ export const ArsipDokumenPage: React.FC = () => {
       >
         <form onSubmit={handleSaveDoc} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase mb-1.5">
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-2">
               Jenis Dokumen
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {[
                 { id: 'surat_keluar', label: 'Surat Keluar' },
                 { id: 'surat_masuk', label: 'Surat Masuk' },
@@ -410,10 +480,10 @@ export const ArsipDokumenPage: React.FC = () => {
                   key={opt.id}
                   type="button"
                   onClick={() => handleTypeChange(opt.id as any)}
-                  className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  className={`min-h-[44px] px-3 py-2 rounded-[12px] text-[14px] font-bold transition-all cursor-pointer border ${
                     docForm.type === opt.id
-                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                      : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-[#1F3A5F] text-[#FAF6EE] border-[#1F3A5F]'
+                      : 'bg-[#FFFDF8] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border-[#E6DFD0] dark:border-[#283D56] hover:bg-[#FAF6EE]'
                   }`}
                 >
                   {opt.label}
@@ -422,10 +492,10 @@ export const ArsipDokumenPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-slate-700 uppercase">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
                   Nomor Dokumen
                 </label>
                 <button
@@ -436,7 +506,7 @@ export const ArsipDokumenPage: React.FC = () => {
                       documentNumber: generateDocNumber(prev.type),
                     }))
                   }
-                  className="text-[10px] text-indigo-600 font-bold hover:underline cursor-pointer"
+                  className="text-[13px] text-[#1F3A5F] dark:text-[#F2B544] font-bold hover:underline cursor-pointer"
                 >
                   Auto-Gen
                 </button>
@@ -446,12 +516,12 @@ export const ArsipDokumenPage: React.FC = () => {
                 required
                 value={docForm.documentNumber}
                 onChange={(e) => setDocForm((prev) => ({ ...prev, documentNumber: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="simo-input min-h-[44px] font-mono font-bold text-[14px] w-full"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                 Tanggal Dokumen
               </label>
               <input
@@ -459,13 +529,13 @@ export const ArsipDokumenPage: React.FC = () => {
                 required
                 value={docForm.documentDate}
                 onChange={(e) => setDocForm((prev) => ({ ...prev, documentDate: e.target.value }))}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
               Perihal / Judul Dokumen
             </label>
             <input
@@ -474,13 +544,13 @@ export const ArsipDokumenPage: React.FC = () => {
               value={docForm.title}
               onChange={(e) => setDocForm((prev) => ({ ...prev, title: e.target.value }))}
               placeholder="Contoh: Undangan Narasumber Seminar AI Vokasi"
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="simo-input min-h-[44px] text-[15px] w-full"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                 {docForm.type === 'surat_masuk' ? 'Pengirim (Instansi Asal)' : 'Tujuan (Penerima Surat)'}
               </label>
               <input
@@ -489,18 +559,18 @@ export const ArsipDokumenPage: React.FC = () => {
                 value={docForm.senderOrReceiver}
                 onChange={(e) => setDocForm((prev) => ({ ...prev, senderOrReceiver: e.target.value }))}
                 placeholder={docForm.type === 'surat_masuk' ? 'Dari: Dinas Pendidikan' : 'Kepada: Kepala Sekolah'}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                 Status Dokumen
               </label>
               <select
                 value={docForm.status}
                 onChange={(e) => setDocForm((prev) => ({ ...prev, status: e.target.value as any }))}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               >
                 <option value="arsip">Arsip Baku</option>
                 <option value="terkirim">Terkirim</option>
@@ -510,7 +580,7 @@ export const ArsipDokumenPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
               Lampiran Berkas / Scan Surat (Dari Komputer)
             </label>
             <ImagePicker
@@ -520,17 +590,17 @@ export const ArsipDokumenPage: React.FC = () => {
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+          <div className="pt-3 flex justify-end gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
             <button
               type="button"
               onClick={() => setIsAddModalOpen(false)}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
             >
               Simpan Dokumen
             </button>
@@ -547,98 +617,141 @@ export const ArsipDokumenPage: React.FC = () => {
         title="Lembar Disposisi & Rincian Surat Resmi"
       >
         {previewDoc && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Sheet Preview */}
-            <div className="border border-slate-300 p-5 rounded-xl bg-white text-xs text-slate-800 space-y-4">
+            <div className="border border-[#E6DFD0] dark:border-[#283D56] p-6 rounded-[16px] bg-[#FFFDF8] dark:bg-[#17293E] text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE] space-y-4">
               {/* Kop Mini */}
-              <div className="text-center border-b border-slate-900 pb-3">
-                <h4 className="font-extrabold uppercase text-[10px] text-slate-600">
+              <div className="text-center border-b border-[#1F3A5F] dark:border-[#E6DFD0] pb-3">
+                <h4 className="font-extrabold uppercase text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
                   {orgProfile.schoolName}
                 </h4>
-                <h3 className="font-black uppercase text-sm text-slate-900">
+                <h3 className="font-extrabold uppercase text-[17px] text-[#1F3A5F] dark:text-[#FAF6EE]">
                   LEMBAR DISPOSISI RESMI OSIS
                 </h3>
-                <p className="text-[9px] text-slate-500">
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
                   Tahun Ajaran {orgProfile.academicYear} • Sekretariat OSIS
                 </p>
               </div>
 
               {/* Data Surat */}
-              <div className="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200 text-[11px]">
+              <div className="grid grid-cols-2 gap-3 bg-[#FAF6EE] dark:bg-[#0E1B2C] p-4 rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] text-[14px]">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Nomor Surat</span>
-                  <span className="font-mono font-bold text-slate-900">{previewDoc.documentNumber}</span>
+                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Nomor Surat</span>
+                  <span className="font-mono font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{previewDoc.documentNumber}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Tanggal Surat</span>
-                  <span className="font-bold text-slate-900">{formatDateIndo(previewDoc.documentDate)}</span>
+                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Tanggal Surat</span>
+                  <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{formatDateIndo(previewDoc.documentDate)}</span>
                 </div>
                 <div className="col-span-2 mt-1">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Perihal / Isi Ringkas</span>
-                  <span className="font-bold text-slate-900">{previewDoc.title}</span>
+                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Perihal / Isi Ringkas</span>
+                  <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{previewDoc.title}</span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Asal / Tujuan</span>
-                  <span className="font-semibold text-slate-800">{previewDoc.senderOrReceiver}</span>
+                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Asal / Tujuan</span>
+                  <span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">{previewDoc.senderOrReceiver}</span>
                 </div>
               </div>
 
               {/* Instruksi Disposisi Checklist */}
               <div>
-                <span className="font-bold text-slate-700 text-[10px] uppercase block mb-1.5">
+                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] block mb-2">
                   Instruksi / Catatan Disposisi Pembina / Kepala Sekolah:
                 </span>
-                <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                  <label className="flex items-center gap-1.5">
-                    <input type="checkbox" defaultChecked className="rounded text-indigo-600" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[14px]">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
                     <span>Tindak lanjuti segera</span>
                   </label>
-                  <label className="flex items-center gap-1.5">
-                    <input type="checkbox" className="rounded text-indigo-600" />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
                     <span>Hadiri / Wakili</span>
                   </label>
-                  <label className="flex items-center gap-1.5">
-                    <input type="checkbox" className="rounded text-indigo-600" />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
                     <span>Koordinasikan dengan Sekbid</span>
                   </label>
-                  <label className="flex items-center gap-1.5">
-                    <input type="checkbox" defaultChecked className="rounded text-indigo-600" />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" defaultChecked className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
                     <span>Arsipkan dokumen baku</span>
                   </label>
                 </div>
               </div>
 
               {/* Paraf Box */}
-              <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-200 text-center">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#E6DFD0] dark:border-[#283D56] text-center">
                 <div>
-                  <p className="text-[10px] text-slate-500 mb-10">Sekretaris Pengarsip,</p>
-                  <p className="font-bold underline text-[11px]">Anisa Rahmawati</p>
-                  <p className="text-[9px] text-slate-400">NISN. 0071234502</p>
+                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mb-12">Sekretaris Pengarsip,</p>
+                  <p className="font-bold underline text-[14px]">Anisa Rahmawati</p>
+                  <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">NISN. 0071234502</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-500 mb-10">Pembina OSIS,</p>
-                  <p className="font-bold underline text-[11px]">{orgProfile.pembinaName}</p>
-                  <p className="text-[9px] text-slate-400">NIP. 19780512 200501 1 004</p>
+                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mb-12">Pembina OSIS,</p>
+                  <p className="font-bold underline text-[14px]">{orgProfile.pembinaName}</p>
+                  <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">NIP. 19780512 200501 1 004</p>
                 </div>
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-3">
               <button
                 type="button"
                 onClick={() => setIsDisposisiModalOpen(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
               >
                 Tutup
               </button>
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" />
-                Cetak Lembar Disposisi
+                <Printer className="w-4 h-4" />
+                <span>Cetak Lembar Disposisi</span>
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* ---------------------------------------------------- */}
+      {/* MODAL 3: KONFIRMASI HAPUS DOKUMEN                    */}
+      {/* ---------------------------------------------------- */}
+      <Modal
+        isOpen={Boolean(docToDelete)}
+        onClose={() => setDocToDelete(null)}
+        title="Konfirmasi Hapus Dokumen"
+      >
+        {docToDelete && (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <AlertCircle className="w-5 h-5 text-[#F2B544] shrink-0 mt-0.5" />
+              <div className="text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                <p className="font-bold">Apakah Anda yakin ingin menghapus arsip dokumen ini?</p>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                  "{docToDelete.title}" ({docToDelete.documentNumber})
+                </p>
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-2">
+                  Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDocToDelete(null)}
+                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+              >
+                Ya, Hapus Dokumen
               </button>
             </div>
           </div>
