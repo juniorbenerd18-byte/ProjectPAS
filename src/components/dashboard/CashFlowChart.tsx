@@ -49,29 +49,31 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
   const netSurplus = totalIncome - totalExpense;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 h-full flex flex-col gap-4">
+    <div className="simo-card p-6 h-full flex flex-col gap-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
         <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <div className="w-6 h-6 rounded-md bg-[#EFF6FF] flex items-center justify-center">
-              <TrendingUp className="w-3.5 h-3.5 text-[#2563EB]" />
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-8 h-8 rounded-[10px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" />
             </div>
-            <h3 className="text-sm font-bold text-[#0F172A] dark:text-white">Arus Kas Bulanan</h3>
+            <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
+              Arus Kas Bulanan
+            </h3>
           </div>
-          <p className="text-[11px] text-[#64748B] pl-8">
+          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] pl-10">
             Pemasukan vs pengeluaran kas OSIS · Semester Gasal 2026
           </p>
         </div>
         {/* Legenda */}
-        <div className="flex items-center gap-4 text-[11px] shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#2563EB]" />
-            <span className="text-[#64748B] font-medium">Pemasukan</span>
+        <div className="flex items-center gap-4 text-[14px] shrink-0 pt-1">
+          <div className="flex items-center gap-2">
+            <span className="w-3.5 h-3.5 rounded-[4px] bg-[#1F3A5F] dark:bg-[#E4EAF2]" />
+            <span className="text-[#5A6472] dark:text-[#9AA8B8] font-semibold">Pemasukan</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm bg-[#E2E8F0]" />
-            <span className="text-[#64748B] font-medium">Pengeluaran</span>
+          <div className="flex items-center gap-2">
+            <span className="w-3.5 h-3.5 rounded-[4px] bg-[#F2B544]" />
+            <span className="text-[#5A6472] dark:text-[#9AA8B8] font-semibold">Pengeluaran</span>
           </div>
         </div>
       </div>
@@ -80,23 +82,23 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
       <div className="relative flex-1">
         {/* Tooltip */}
         {hoveredMonth && (
-          <div className="absolute top-0 right-0 z-10 bg-[#1E3A8A] text-white p-3 rounded-xl text-xs shadow-lg pointer-events-none min-w-[180px]">
-            <p className="font-bold border-b border-blue-700 pb-1.5 mb-1.5">
-              {hoveredMonth.label} 2026
-              <span className="ml-2 text-[10px] font-normal text-blue-300">{hoveredMonth.count} transaksi</span>
+          <div className="absolute top-0 right-0 z-10 bg-[#1F3A5F] text-[#FAF6EE] p-4 rounded-[14px] text-[14px] border border-[#283D56] pointer-events-none min-w-[200px]">
+            <p className="font-extrabold border-b border-[#283D56] pb-2 mb-2 flex items-center justify-between">
+              <span>{hoveredMonth.label} 2026</span>
+              <span className="text-[12px] font-normal text-[#E4EAF2]">{hoveredMonth.count} transaksi</span>
             </p>
-            <div className="space-y-1 text-[11px]">
+            <div className="space-y-1.5 text-[13px]">
               <div className="flex justify-between gap-4">
-                <span className="text-blue-300">Pemasukan</span>
+                <span className="text-[#E4EAF2]">Pemasukan</span>
                 <span className="font-bold">{formatRupiah(hoveredMonth.income)}</span>
               </div>
               <div className="flex justify-between gap-4">
-                <span className="text-slate-400">Pengeluaran</span>
+                <span className="text-[#F2B544]">Pengeluaran</span>
                 <span className="font-bold">{formatRupiah(hoveredMonth.expense)}</span>
               </div>
-              <div className="flex justify-between gap-4 pt-1 border-t border-blue-700">
-                <span className="text-blue-200">Net</span>
-                <span className={`font-bold ${hoveredMonth.income >= hoveredMonth.expense ? 'text-green-300' : 'text-red-300'}`}>
+              <div className="flex justify-between gap-4 pt-1.5 border-t border-[#283D56]">
+                <span className="text-[#FAF6EE]">Net</span>
+                <span className="font-bold text-[#F2B544]">
                   {hoveredMonth.income >= hoveredMonth.expense ? '+' : ''}
                   {formatRupiah(hoveredMonth.income - hoveredMonth.expense)}
                 </span>
@@ -106,10 +108,10 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
         )}
 
         {/* Bar chart */}
-        <div className="h-48 flex items-end gap-2 sm:gap-3 border-b border-slate-200 dark:border-slate-700">
+        <div className="h-52 flex items-end gap-3 sm:gap-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
           {monthlyAggregates.map((data) => {
-            const incomeH = Math.max((data.income / maxVal) * 100, data.income > 0 ? 5 : 2);
-            const expenseH = Math.max((data.expense / maxVal) * 100, data.expense > 0 ? 5 : 2);
+            const incomeH = Math.max((data.income / maxVal) * 100, data.income > 0 ? 6 : 2);
+            const expenseH = Math.max((data.expense / maxVal) * 100, data.expense > 0 ? 6 : 2);
             const isHovered = hoveredMonth?.key === data.key;
 
             return (
@@ -119,32 +121,32 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
                 onMouseLeave={() => setHoveredMonth(null)}
                 className="flex-1 flex flex-col items-center h-full justify-end cursor-pointer group"
               >
-                <div className="w-full flex items-end justify-center gap-1 h-full pb-0.5">
-                  {/* Income bar – biru */}
+                <div className="w-full flex items-end justify-center gap-1.5 h-full pb-1">
+                  {/* Income bar – Deep Blue */}
                   <div
                     style={{ height: `${incomeH}%` }}
-                    className={`w-[40%] max-w-[16px] rounded-t-md transition-all duration-200 ${
+                    className={`w-[45%] max-w-[20px] rounded-t-[6px] transition-all duration-200 ${
                       data.income > 0
                         ? isHovered
-                          ? 'bg-[#1d4ed8]'
-                          : 'bg-[#2563EB] group-hover:bg-[#1d4ed8]'
-                        : 'bg-[#EFF6FF] dark:bg-slate-800'
+                          ? 'bg-[#152741]'
+                          : 'bg-[#1F3A5F] group-hover:bg-[#152741] dark:bg-[#E4EAF2] dark:group-hover:bg-white'
+                        : 'bg-[#E4EAF2]/50 dark:bg-[#283D56]'
                     }`}
                   />
-                  {/* Expense bar – abu muda (track) */}
+                  {/* Expense bar – Amber */}
                   <div
                     style={{ height: `${expenseH}%` }}
-                    className={`w-[40%] max-w-[16px] rounded-t-md transition-all duration-200 ${
+                    className={`w-[45%] max-w-[20px] rounded-t-[6px] transition-all duration-200 ${
                       data.expense > 0
                         ? isHovered
-                          ? 'bg-[#94a3b8]'
-                          : 'bg-[#CBD5E1] group-hover:bg-[#94a3b8] dark:bg-slate-600'
-                        : 'bg-[#F8FAFC] dark:bg-slate-800'
+                          ? 'bg-[#d89f36]'
+                          : 'bg-[#F2B544] group-hover:bg-[#d89f36]'
+                        : 'bg-[#FBEBC8]/50 dark:bg-[#283D56]'
                     }`}
                   />
                 </div>
-                <span className={`text-[11px] font-semibold mt-1.5 ${
-                  isHovered ? 'text-[#2563EB]' : 'text-[#64748B]'
+                <span className={`text-[13px] font-bold mt-2 ${
+                  isHovered ? 'text-[#1F3A5F] dark:text-[#F2B544]' : 'text-[#5A6472] dark:text-[#9AA8B8]'
                 }`}>
                   {data.label}
                 </span>
@@ -155,24 +157,33 @@ export const CashFlowChart: React.FC<CashFlowChartProps> = ({ transactions }) =>
       </div>
 
       {/* Summary pills */}
-      <div className="grid grid-cols-3 gap-2.5">
-        <div className="p-2.5 rounded-xl bg-[#EFF6FF] border border-blue-100">
-          <div className="flex items-center gap-1 mb-1">
-            <ArrowDownLeft className="w-3 h-3 text-[#2563EB]" />
-            <span className="text-[9px] font-bold text-[#2563EB] uppercase tracking-wide">Pemasukan</span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="p-3.5 rounded-[14px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/30 border border-[#E6DFD0] dark:border-[#283D56]">
+          <div className="flex items-center gap-1.5 mb-1">
+            <ArrowDownLeft className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" />
+            <span className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Total Pemasukan</span>
           </div>
-          <span className="text-xs font-extrabold text-[#1E3A8A] block">{formatRupiah(totalIncome)}</span>
+          <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] block">
+            {formatRupiah(totalIncome)}
+          </span>
         </div>
-        <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-slate-200">
-          <div className="flex items-center gap-1 mb-1">
-            <ArrowUpRight className="w-3 h-3 text-[#64748B]" />
-            <span className="text-[9px] font-bold text-[#64748B] uppercase tracking-wide">Pengeluaran</span>
+
+        <div className="p-3.5 rounded-[14px] bg-[#FBEBC8] dark:bg-[#F2B544]/20 border border-[#E6DFD0] dark:border-[#283D56]">
+          <div className="flex items-center gap-1.5 mb-1">
+            <ArrowUpRight className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" />
+            <span className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Total Pengeluaran</span>
           </div>
-          <span className="text-xs font-extrabold text-[#0F172A] dark:text-white block">{formatRupiah(totalExpense)}</span>
+          <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] block">
+            {formatRupiah(totalExpense)}
+          </span>
         </div>
-        <div className="p-2.5 rounded-xl bg-[#EFF6FF] border border-blue-100">
-          <span className="text-[9px] font-bold text-[#2563EB] uppercase tracking-wide block mb-1">Surplus Bersih</span>
-          <span className={`text-xs font-extrabold block ${netSurplus >= 0 ? 'text-[#16A34A]' : 'text-[#DC2626]'}`}>
+
+        <div className="p-3.5 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+          <div className="flex items-center gap-1.5 mb-1">
+            <TrendingUp className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544]" />
+            <span className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Surplus Bersih</span>
+          </div>
+          <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] block">
             {netSurplus >= 0 ? '+' : ''}{formatRupiah(netSurplus)}
           </span>
         </div>
