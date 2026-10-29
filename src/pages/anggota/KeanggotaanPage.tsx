@@ -5,16 +5,13 @@ import {
   CreditCard,
   Plus,
   Search,
-  Filter,
   Trash2,
   Edit,
   GraduationCap,
   UserCheck,
   Building2,
-  Printer,
-  Download,
   Camera,
-  ShieldCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Member, UserRole } from '../../types';
@@ -36,6 +33,9 @@ export const KeanggotaanPage: React.FC = () => {
   // Modal Add / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+
+  // Delete Confirm Modal
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
 
   const initialForm = {
     nisn: '',
@@ -101,6 +101,13 @@ export const KeanggotaanPage: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleConfirmDelete = () => {
+    if (memberToDelete) {
+      deleteMember(memberToDelete.id);
+      setMemberToDelete(null);
+    }
+  };
+
   const filteredMembers = members.filter((m) => {
     const matchSearch =
       m.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,47 +126,53 @@ export const KeanggotaanPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header & Internal Tab Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs">
+      <div className="simo-card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
         <div>
-          <h2 className="text-base font-bold text-slate-900">Manajemen Keanggotaan & KTA</h2>
-          <p className="text-xs text-slate-500">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[14px] font-bold mb-2">
+            <Building2 className="w-4 h-4" />
+            <span>Kaderisasi &amp; Kesiswaan • {orgProfile.name}</span>
+          </div>
+          <h2 className="text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+            Manajemen Keanggotaan &amp; KTA
+          </h2>
+          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
             Tata kelola data siswa, hierarki struktur organisasi, dan kartu identitas digital
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex p-1 bg-slate-100 rounded-xl">
+        <div className="flex p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] gap-1 self-start sm:self-auto shrink-0 flex-wrap">
           <button
             onClick={() => setActiveTab('direktori')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'direktori'
-                ? 'bg-white text-indigo-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Users className="w-3.5 h-3.5" />
+            <Users className="w-4 h-4" />
             <span>Direktori ({members.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('struktur')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'struktur'
-                ? 'bg-white text-indigo-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers className="w-4 h-4" />
             <span>Bagan Struktur</span>
           </button>
           <button
             onClick={() => setActiveTab('kta')}
-            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'kta'
-                ? 'bg-white text-indigo-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <CreditCard className="w-3.5 h-3.5" />
+            <CreditCard className="w-4 h-4" />
             <span>Cetak KTA (QR)</span>
           </button>
         </div>
@@ -167,49 +180,54 @@ export const KeanggotaanPage: React.FC = () => {
 
       {/* TAB 1: DIREKTORI ANGGOTA */}
       {activeTab === 'direktori' && (
-        <div className="space-y-4">
-          {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+        <div className="space-y-6">
+          {/* Quick Metrics Bar -> Single Continuous Card with Dividers */}
+          <div className="simo-card p-0 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E6DFD0] dark:divide-[#283D56] overflow-hidden">
+            <div className="p-6 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Total Terdaftar</span>
-                <p className="text-lg font-black text-slate-900">{members.length} Siswa</p>
+                <span className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] font-bold">Total Terdaftar</span>
+                <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{members.length} Siswa</p>
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">Database pengurus aktif & alumni</p>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                <Users className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-[12px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] flex items-center justify-center">
+                <Users className="w-5 h-5" />
               </div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+
+            <div className="p-6 bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/30 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Anggota Aktif</span>
-                <p className="text-lg font-black text-emerald-600">{activeCount} Siswa</p>
+                <span className="text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold">Anggota Aktif</span>
+                <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{activeCount} Siswa</p>
+                <p className="text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">Menjalankan program kerja</p>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <UserCheck className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-[12px] bg-[#1F3A5F] text-[#FAF6EE] dark:bg-[#E4EAF2] dark:text-[#1F3A5F] flex items-center justify-center">
+                <UserCheck className="w-5 h-5 text-[#F2B544]" />
               </div>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-between">
+
+            <div className="p-6 flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Demisioner / Alumni</span>
-                <p className="text-lg font-black text-amber-600">{alumniCount} Siswa</p>
+                <span className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] font-bold">Demisioner / Alumni</span>
+                <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{alumniCount} Siswa</p>
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">Masa bakti sebelumnya</p>
               </div>
-              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                <GraduationCap className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-[12px] bg-[#FAF6EE] text-[#1F3A5F] dark:bg-[#17293E] dark:text-[#FAF6EE] flex items-center justify-center border border-[#E6DFD0] dark:border-[#283D56]">
+                <GraduationCap className="w-5 h-5" />
               </div>
             </div>
           </div>
 
           {/* Filter Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2 flex-1">
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200/80 text-xs min-w-[200px] flex-1 sm:flex-none">
-                <Search className="w-4 h-4 text-slate-400" />
+          <div className="simo-card p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3 flex-1">
+              <div className="relative w-full sm:w-72">
+                <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Cari nama, NISN, atau kelas..."
-                  className="w-full bg-transparent outline-none text-slate-700"
+                  className="simo-input pl-10 pr-3 min-h-[44px] text-[14px] w-full"
                 />
               </div>
 
@@ -217,7 +235,7 @@ export const KeanggotaanPage: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-700 outline-none"
+                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold"
               >
                 <option value="all">Semua Status</option>
                 <option value="aktif">Anggota Aktif</option>
@@ -228,7 +246,7 @@ export const KeanggotaanPage: React.FC = () => {
               <select
                 value={gradeFilter}
                 onChange={(e) => setGradeFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-700 outline-none"
+                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold"
               >
                 <option value="all">Semua Kelas</option>
                 <option value="X">Kelas X</option>
@@ -240,7 +258,7 @@ export const KeanggotaanPage: React.FC = () => {
               <select
                 value={majorFilter}
                 onChange={(e) => setMajorFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200/80 rounded-xl text-xs text-slate-700 outline-none"
+                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold"
               >
                 <option value="all">Semua Jurusan</option>
                 {majors.map((mj) => (
@@ -253,97 +271,92 @@ export const KeanggotaanPage: React.FC = () => {
 
             <button
               onClick={handleOpenAdd}
-              className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5 cursor-pointer"
+              className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Siswa</span>
             </button>
           </div>
 
-          {/* Members Table */}
-          <div className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden">
+          {/* Members Table Desktop */}
+          <div className="simo-card p-0 overflow-hidden hidden md:block">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+              <table className="w-full text-left border-collapse text-[15px]">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200/80 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
-                    <th className="py-3 px-4">Siswa</th>
-                    <th className="py-3 px-4">Kelas & NISN</th>
-                    <th className="py-3 px-4">Divisi / Sekbid</th>
-                    <th className="py-3 px-4">Status & Biometrik</th>
-                    <th className="py-3 px-4 text-right">Aksi</th>
+                  <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[14px]">
+                    <th className="py-4 px-5">Siswa</th>
+                    <th className="py-4 px-5">Kelas &amp; NISN</th>
+                    <th className="py-4 px-5">Divisi / Sekbid</th>
+                    <th className="py-4 px-5">Jabatan</th>
+                    <th className="py-4 px-5">Status &amp; Biometrik</th>
+                    <th className="py-4 px-5 text-right">Aksi</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
                   {filteredMembers.map((m) => (
-                    <tr key={m.id} className="hover:bg-slate-50/70">
-                      <td className="py-3 px-4">
+                    <tr key={m.id} className="hover:bg-[#FAF6EE]/50 dark:hover:bg-[#17293E]/50 transition-colors">
+                      <td className="py-4 px-5">
                         <div className="flex items-center gap-3">
                           <img
                             src={m.avatarUrl}
                             alt={m.fullName}
-                            className="w-9 h-9 rounded-xl object-cover border border-slate-200 shadow-2xs"
+                            className="w-10 h-10 rounded-[12px] object-cover border border-[#E6DFD0] dark:border-[#283D56]"
                           />
                           <div>
-                            <p className="font-bold text-slate-900 leading-tight">{m.fullName}</p>
-                            <p className="text-[10px] text-slate-400 mt-0.5">{m.email}</p>
+                            <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-tight text-[15px]">{m.fullName}</p>
+                            <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">{m.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="py-3 px-4">
-                        <p className="font-semibold text-slate-800">{m.classRoom}</p>
-                        <p className="text-[10px] text-slate-400 font-mono">NISN: {m.nisn}</p>
-                        <p className="text-[10px] text-slate-500">{m.major}</p>
+                      <td className="py-4 px-5">
+                        <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px]">{m.classRoom}</p>
+                        <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-mono">NISN: {m.nisn}</p>
+                        <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">{m.major}</p>
                       </td>
-                      <td className="py-3 px-4 font-medium text-slate-700">
+                      <td className="py-4 px-5 font-semibold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px]">
                         {m.divisionName || 'BPH'}
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                      <td className="py-4 px-5">
+                        <span className="inline-block px-2.5 py-1 rounded-[8px] text-[13px] font-bold bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE]">
                           {m.position}
                         </span>
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="flex flex-col gap-1 items-start">
+                      <td className="py-4 px-5">
+                        <div className="flex flex-col gap-1.5 items-start">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                              m.status === 'aktif'
-                                ? 'bg-emerald-50 text-emerald-700'
-                                : 'bg-amber-50 text-amber-700'
-                            }`}
+                            className={m.status === 'aktif' ? 'simo-badge-blue' : 'simo-badge-neutral'}
                           >
                             {m.status}
                           </span>
                           {m.avatarUrl ? (
-                            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
-                              <Camera className="w-2.5 h-2.5" />
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] bg-[#FAF6EE] dark:bg-[#17293E] px-2 py-0.5 rounded-[6px] border border-[#E6DFD0] dark:border-[#283D56]">
+                              <Camera className="w-3 h-3 text-[#F2B544]" />
                               Wajah Terdaftar
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] bg-[#FAF6EE] px-2 py-0.5 rounded-[6px]">
                               Belum Rekam
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-4 px-5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenEdit(m)}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg cursor-pointer"
+                            className="simo-btn-outline min-h-[36px] px-3 py-1 rounded-[10px] text-[13px] flex items-center gap-1 cursor-pointer"
                             title="Edit Data Siswa"
                           >
                             <Edit className="w-3.5 h-3.5" />
+                            <span>Edit</span>
                           </button>
                           <button
-                            onClick={() => {
-                              if (confirm(`Yakin ingin menghapus ${m.fullName}?`)) {
-                                deleteMember(m.id);
-                              }
-                            }}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg cursor-pointer"
+                            onClick={() => setMemberToDelete(m)}
+                            className="min-h-[36px] min-w-[36px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[10px] border border-transparent hover:border-[#E6DFD0] dark:hover:border-[#283D56] transition-colors cursor-pointer"
                             title="Hapus"
+                            aria-label={`Hapus ${m.fullName}`}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -352,6 +365,65 @@ export const KeanggotaanPage: React.FC = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+
+          {/* Mobile Card List for Members */}
+          <div className="space-y-3.5 md:hidden">
+            {filteredMembers.map((m) => (
+              <div key={m.id} className="simo-card p-5 space-y-3.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className={m.status === 'aktif' ? 'simo-badge-blue' : 'simo-badge-neutral'}>
+                    {m.status}
+                  </span>
+                  <span className="text-[13px] font-bold px-2.5 py-0.5 rounded-[8px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE]">
+                    {m.position}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <img
+                    src={m.avatarUrl}
+                    alt={m.fullName}
+                    className="w-12 h-12 rounded-[14px] object-cover border border-[#E6DFD0] dark:border-[#283D56]"
+                  />
+                  <div>
+                    <h4 className="font-bold text-[16px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                      {m.fullName}
+                    </h4>
+                    <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                      {m.classRoom} • {m.major}
+                    </p>
+                    <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-mono">
+                      NISN: {m.nisn}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+                  <span className="text-[13px] font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    {m.divisionName || 'BPH'}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenEdit(m)}
+                      className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Edit className="w-4 h-4" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => setMemberToDelete(m)}
+                      className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] cursor-pointer"
+                      title="Hapus"
+                      aria-label={`Hapus ${m.fullName}`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -378,38 +450,38 @@ export const KeanggotaanPage: React.FC = () => {
             aspectRatio="square"
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Nama Siswa</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Nama Siswa</label>
               <input
                 type="text"
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                 placeholder="Nama lengkap"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[15px] w-full"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">NISN (10 Digit)</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">NISN (10 Digit)</label>
               <input
                 type="text"
                 value={formData.nisn}
                 onChange={(e) => setFormData({ ...formData, nisn: e.target.value })}
                 placeholder="0071234501"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] font-mono font-bold text-[14px] w-full"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Kelas</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Kelas</label>
               <select
                 value={formData.grade}
                 onChange={(e) => setFormData({ ...formData, grade: e.target.value as any })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               >
                 <option value="X">Kelas X</option>
                 <option value="XI">Kelas XI</option>
@@ -417,36 +489,36 @@ export const KeanggotaanPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Ruang Kelas</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Ruang Kelas</label>
               <input
                 type="text"
                 value={formData.classRoom}
                 onChange={(e) => setFormData({ ...formData, classRoom: e.target.value })}
                 placeholder="RPL 1"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
                 required
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Jurusan</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Jurusan</label>
               <input
                 type="text"
                 value={formData.major}
                 onChange={(e) => setFormData({ ...formData, major: e.target.value })}
                 placeholder="RPL / TKJ / DKV"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Divisi / Sekbid</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Divisi / Sekbid</label>
               <select
                 value={formData.divisionId}
                 onChange={(e) => setFormData({ ...formData, divisionId: e.target.value })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               >
                 {divisions.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -456,36 +528,36 @@ export const KeanggotaanPage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Jabatan</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Jabatan</label>
               <input
                 type="text"
                 value={formData.position}
                 onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                 placeholder="Anggota Sekbid"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
                 required
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Status Keanggotaan</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Status Keanggotaan</label>
               <select
                 value={formData.status}
                 onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               >
                 <option value="aktif">Anggota Aktif</option>
                 <option value="alumni">Demisioner / Alumni</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Peran Akses</label>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Peran Akses</label>
               <select
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-indigo-500"
+                className="simo-input min-h-[44px] text-[14px] w-full"
               >
                 <option value="anggota">Anggota</option>
                 <option value="koordinator_sekbid">Koordinator Sekbid</option>
@@ -497,22 +569,63 @@ export const KeanggotaanPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+          <div className="pt-3 flex justify-end gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
             <button
               type="button"
               onClick={() => setIsModalOpen(false)}
-              className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-semibold rounded-xl cursor-pointer"
+              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
             >
               Batal
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
             >
               {editingMember ? 'Simpan Perubahan' : 'Daftarkan Anggota'}
             </button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Member Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(memberToDelete)}
+        onClose={() => setMemberToDelete(null)}
+        title="Konfirmasi Hapus Anggota Siswa"
+      >
+        {memberToDelete && (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <AlertCircle className="w-5 h-5 text-[#F2B544] shrink-0 mt-0.5" />
+              <div className="text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                <p className="font-bold">Apakah Anda yakin ingin menghapus data anggota ini?</p>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                  "{memberToDelete.fullName}" — NISN: {memberToDelete.nisn} ({memberToDelete.classRoom})
+                </p>
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-2">
+                  Data kartu anggota dan rekaman biometrik akan dihapus.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setMemberToDelete(null)}
+                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+              >
+                Ya, Hapus Siswa
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );
