@@ -2,49 +2,76 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================
-   SIMO – Design Token System
-   Palet: Biru + Putih + Abu Netral
-   Font: Plus Jakarta Sans (satu font untuk semua)
+   SIMO – Warm & Relaxed 2-Color Design Token System
+   Palet Utama:
+     - Biru Tua (#1F3A5F)  : Teks utama, tombol utama, menu aktif, kartu fokus
+     - Amber (#F2B544)     : Aksen perhatian, badge, tombol aksi hero, kartu saldo
+   Netral:
+     - Latar Halaman (#FAF6EE)
+     - Permukaan Kartu (#FFFDF8)
+     - Garis Batas (#E6DFD0)
+     - Teks Sekunder (#5A6472)
+   Tint Pendukung:
+     - Biru Muda (#E4EAF2) : Menu aktif, latar ikon netral
+     - Amber Muda (#FBEBC8): Latar status tertunda/pending
+   Font: Nunito (fallback system-ui). Judul 800, label 700, isi 400-600.
    ============================================================ */
 
 :root {
-  /* --- Warna Inti --- */
-  --color-blue-primary:   #2563EB; /* tombol utama, link, menu aktif */
-  --color-blue-dark:      #1E3A8A; /* judul penting, tooltip, footer */
-  --color-blue-light:     #EFF6FF; /* latar ikon, badge, hover, track grafik */
-  --color-blue-mid:       #3B82F6; /* grafik sekunder */
-  --color-blue-pale:      #93C5FD; /* grafik tersier */
+  /* --- Warna Tema Terang --- */
+  --simo-blue-primary:    #1F3A5F;
+  --simo-blue-hover:      #162B46;
+  --simo-blue-tint:       #E4EAF2;
+  --simo-amber:           #F2B544;
+  --simo-amber-hover:     #E0A12F;
+  --simo-amber-tint:      #FBEBC8;
+  --simo-amber-text:      #7A4B00;
 
-  /* --- Netral --- */
-  --color-white:          #FFFFFF;
-  --color-bg-page:        #F8FAFC;
-  --color-border:         #E2E8F0;
-  --color-text-primary:   #0F172A;
-  --color-text-secondary: #64748B;
-  --color-highlight:      #DBEAFE; /* highlight stabilo judul */
+  /* --- Netral & Permukaan --- */
+  --simo-bg-page:         #FAF6EE;
+  --simo-surface-card:    #FFFDF8;
+  --simo-surface-muted:   #F3EEE3;
+  --simo-border:          #E6DFD0;
+  --simo-border-focus:    #1F3A5F;
+  --simo-text-primary:    #1F3A5F;
+  --simo-text-secondary:  #5A6472;
+  --simo-text-muted:      #7E8B9B;
 
-  /* --- Status (hanya di badge kecil) --- */
-  --color-success:        #16A34A;
-  --color-success-bg:     #F0FDF4;
-  --color-danger:         #DC2626;
-  --color-danger-bg:      #FEF2F2;
+  /* --- Typografi & Bentuk --- */
+  --font-nunito:          'Nunito', system-ui, -apple-system, sans-serif;
+  --radius-card-lg:       20px;
+  --radius-card-sm:       14px;
+  --radius-btn:           12px;
+  --radius-input:         12px;
+  --touch-target-min:     44px;
+}
 
-  /* --- Typografi --- */
-  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+/* --- Mode Gelap Turunan 2 Warna yang Sama --- */
+.dark {
+  --simo-blue-primary:    #2F588B;
+  --simo-blue-hover:      #3B6DAA;
+  --simo-blue-tint:       #1E334E;
+  --simo-amber:           #F2B544;
+  --simo-amber-hover:     #FFC65A;
+  --simo-amber-tint:      #3D2E14;
+  --simo-amber-text:      #FFD584;
 
-  /* --- Radius --- */
-  --radius-card: 0.75rem; /* rounded-xl */
-  --radius-btn:  0.5rem;  /* rounded-lg */
+  --simo-bg-page:         #0E1B2C;
+  --simo-surface-card:    #17293E;
+  --simo-surface-muted:   #1C3048;
+  --simo-border:          #283D56;
+  --simo-border-focus:    #F2B544;
+  --simo-text-primary:    #FAF6EE;
+  --simo-text-secondary:  #A4B2C3;
+  --simo-text-muted:      #7C8D9F;
 }
 
 /* ============================================================
-   Base / Reset
+   Base Reset & Typografi
    ============================================================ */
-/* scroll-behavior: smooth dihapus dari level html agar scroll pengguna tetap
-   responsif dan tidak terasa delay. Anchor navigation menggunakan JS smooth
-   scroll jika diperlukan. */
 html {
   scroll-behavior: auto;
+  font-family: var(--font-nunito);
 }
 
 *,
@@ -53,24 +80,24 @@ html {
   box-sizing: border-box;
 }
 
-body,
-html {
-  font-family: var(--font-sans);
-  color: var(--color-text-primary);
-  background-color: var(--color-bg-page);
+body {
+  font-family: var(--font-nunito);
+  color: var(--simo-text-primary);
+  background-color: var(--simo-bg-page);
+  font-size: 15px;
+  line-height: 1.6;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-sans);
-  font-weight: 700;
+  font-family: var(--font-nunito);
+  font-weight: 800;
+  color: inherit;
 }
 
-/* ============================================================
-   Custom Scrollbar
-   ============================================================ */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -78,149 +105,208 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
+  background: var(--simo-border);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #C4BAA7;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #283D56;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #3B5373;
 }
 
 /* ============================================================
-   Komponen Dasar (utility classes tambahan)
+   Utility Classes & Komponen Flat Konsisten
    ============================================================ */
 
-/* Kartu standar */
+/* Kartu Flat SIMO: Garis 1px tipis, TANPA bayangan */
 .simo-card {
-  background: var(--color-white);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  padding: 1.25rem;
+  background-color: var(--simo-surface-card);
+  border: 1px solid var(--simo-border);
+  border-radius: var(--radius-card-lg);
+  box-shadow: none !important;
 }
 
-/* Tombol utama biru solid */
+.simo-card-sm {
+  background-color: var(--simo-surface-card);
+  border: 1px solid var(--simo-border);
+  border-radius: var(--radius-card-sm);
+  box-shadow: none !important;
+}
+
+/* Tombol Utama Biru Tua */
 .simo-btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--color-blue-primary);
-  color: var(--color-white);
+  min-height: var(--touch-target-min);
+  padding: 0.625rem 1.25rem;
+  background-color: var(--simo-blue-primary);
+  color: #FFFFFF;
   border-radius: var(--radius-btn);
-  font-size: 0.75rem;
+  font-family: var(--font-nunito);
+  font-size: 15px;
   font-weight: 700;
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .simo-btn-primary:hover {
-  background-color: #1d4ed8;
+  background-color: var(--simo-blue-hover);
 }
 
 .simo-btn-primary:active {
-  transform: scale(0.97);
+  transform: scale(0.98);
 }
 
-/* Tombol outline */
+/* Tombol Aksi Amber */
+.simo-btn-amber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--touch-target-min);
+  padding: 0.625rem 1.25rem;
+  background-color: var(--simo-amber);
+  color: #1F3A5F;
+  border-radius: var(--radius-btn);
+  font-family: var(--font-nunito);
+  font-size: 15px;
+  font-weight: 800;
+  border: 1px solid transparent;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.simo-btn-amber:hover {
+  background-color: var(--simo-amber-hover);
+}
+
+.simo-btn-amber:active {
+  transform: scale(0.98);
+}
+
+/* Tombol Sekunder Outline */
 .simo-btn-outline {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.5rem 1rem;
+  min-height: var(--touch-target-min);
+  padding: 0.625rem 1.25rem;
   background-color: transparent;
-  color: var(--color-blue-primary);
-  border: 1px solid var(--color-blue-primary);
+  color: var(--simo-text-primary);
+  border: 1px solid var(--simo-border);
   border-radius: var(--radius-btn);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-family: var(--font-nunito);
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background-color 0.15s;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .simo-btn-outline:hover {
-  background-color: var(--color-blue-light);
+  background-color: var(--simo-blue-tint);
+  border-color: var(--simo-blue-primary);
 }
 
-/* Badge status */
-.simo-badge-success {
+/* Input & Dropdown */
+.simo-input {
+  min-height: var(--touch-target-min);
+  padding: 0.625rem 0.875rem;
+  background-color: var(--simo-surface-card);
+  border: 1px solid var(--simo-border);
+  border-radius: var(--radius-input);
+  font-family: var(--font-nunito);
+  font-size: 15px;
+  color: var(--simo-text-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.simo-input:focus {
+  border-color: var(--simo-blue-primary);
+}
+
+/* Badge Status Ramah (2 Warna Saja) */
+.simo-badge-blue {
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.5rem;
-  background-color: var(--color-success-bg);
-  color: var(--color-success);
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--simo-blue-tint);
+  color: var(--simo-blue-primary);
+  border: 1px solid var(--simo-border);
   border-radius: 9999px;
-  font-size: 0.6875rem;
+  font-size: 14px;
   font-weight: 700;
 }
 
-.simo-badge-danger {
+.simo-badge-amber {
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.5rem;
-  background-color: var(--color-danger-bg);
-  color: var(--color-danger);
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--simo-amber-tint);
+  color: var(--simo-amber-text);
+  border: 1px solid var(--simo-amber);
   border-radius: 9999px;
-  font-size: 0.6875rem;
+  font-size: 14px;
   font-weight: 700;
 }
 
-/* Highlight stabilo: background linear-gradient setengah tinggi teks, sedikit miring natural */
-.highlight-stabilo {
-  position: relative;
-  display: inline;
-  background-image: linear-gradient(179deg, transparent 48%, #DBEAFE 49%, #DBEAFE 90%, transparent 92%);
-  background-repeat: no-repeat;
-  padding: 0.05em 0.35em 0.15em 0.35em;
-  border-radius: 4px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+.simo-badge-neutral {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--simo-surface-muted);
+  color: var(--simo-text-secondary);
+  border: 1px solid var(--simo-border);
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-/* Section background alternates */
-.bg-section-white {
-  background-color: #FFFFFF;
+/* Chip Filter */
+.simo-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid var(--simo-border);
+  background-color: var(--simo-surface-card);
+  color: var(--simo-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.bg-section-gray {
-  background-color: #F8FAFC;
+.simo-chip:hover {
+  background-color: var(--simo-blue-tint);
+  color: var(--simo-blue-primary);
 }
 
-.bg-section-blue {
-  background-color: #EFF6FF;
+.simo-chip-active {
+  background-color: var(--simo-blue-primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--simo-blue-primary) !important;
 }
 
-.bg-section-navy {
-  background-color: #1E3A8A;
-}
-
-/* Simple fade-in utility */
-@keyframes simoFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: simoFadeIn 0.4s ease-out forwards;
-}
-
-/* ============================================================
-   Print
-   ============================================================ */
+/* Print utilities */
 @media print {
   .no-print {
     display: none !important;
