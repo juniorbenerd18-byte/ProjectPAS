@@ -42,25 +42,25 @@ export const VisiMisiAdminWidget: React.FC = () => {
   return (
     <>
       <ScrollReveal distance={28} duration={600}>
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-2xs space-y-5">
+        <div className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-6 shadow-none space-y-5">
           {/* Header Widget */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Compass className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-[12px] bg-[#1F3A5F] text-[#FAF6EE] flex items-center justify-center shrink-0">
+                <Compass className="w-5 h-5" strokeWidth={2} />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                    Visi, Misi &amp; Foto Organisasi
+                  <h3 className="text-base sm:text-lg font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    Visi &amp; Misi Organisasi
                   </h3>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Tampil di Portal Publik
+                  <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] bg-[#E4EAF2] dark:bg-[#213B5C] border border-[#E6DFD0] dark:border-[#283D56] px-2.5 py-0.5 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#1F3A5F] dark:text-[#F2B544]" strokeWidth={2} />
+                    <span>Tampil di Portal Publik</span>
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Rumusan visi, butir misi strategis, serta foto representasi sekolah yang dapat diubah kapan saja.
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                  Rumusan visi, butir misi strategis, serta foto representasi sekolah yang dapat disesuaikan.
                 </p>
               </div>
             </div>
@@ -70,129 +70,88 @@ export const VisiMisiAdminWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={() => openModalWithTab('all')}
-                className="px-3.5 py-2 bg-[#2563EB] hover:bg-blue-700 active:scale-95 text-white text-xs font-bold rounded-xl transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[14px] font-bold rounded-[12px] transition-all flex items-center gap-2 cursor-pointer shadow-none"
               >
-                <Edit3 className="w-3.5 h-3.5" />
+                <Edit3 className="w-4 h-4" strokeWidth={2} />
                 <span>Edit Visi, Misi &amp; Foto</span>
               </button>
               <button
                 type="button"
                 onClick={() => openModalWithTab('mission')}
-                className="px-3 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-bold rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] transition-colors flex items-center gap-2 cursor-pointer shadow-none"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" strokeWidth={2} />
                 <span>Tambah Misi</span>
               </button>
               <button
                 type="button"
                 onClick={() => setActivePage('portal-publik')}
-                className="p-2 text-slate-400 hover:text-[#2563EB] dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded-xl transition-colors cursor-pointer"
-                title="Lihat tampilan di Portal Publik"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] transition-colors cursor-pointer"
+                title="Buka tampilan di Portal Publik"
+                aria-label="Buka portal publik"
               >
-                <ExternalLink className="w-4 h-4" />
+                <ExternalLink className="w-4 h-4" strokeWidth={2} />
               </button>
             </div>
           </div>
 
-          {/* Grid Konten: Kiri (Foto) & Kanan (Visi + Misi) */}
+          {/* Konten: Visi & Misi dengan Thumbnail Foto Kompak */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            {/* Kolom Kiri: Foto Organisasi / Visi Misi */}
-            <div className="lg:col-span-4 flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-800/40 group relative">
-              <div className="relative aspect-4/3 sm:aspect-video lg:aspect-auto lg:h-full w-full overflow-hidden bg-slate-100 dark:bg-slate-800 min-h-[220px]">
-                <img
-                  src={visionPhoto}
-                  alt="Foto Utama Visi Misi Organisasi"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-
-                {/* Badge Melayang */}
-                <div className="absolute top-3 left-3">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md text-[#2563EB] dark:text-blue-300 text-[10px] font-bold shadow-xs">
-                    <Sparkles className="w-3 h-3" />
-                    <span>Foto Visi Misi</span>
-                  </span>
-                </div>
-
-                {/* Overlay Button "Ganti Foto" on hover */}
-                <div className="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
-                  <button
-                    type="button"
-                    onClick={() => openModalWithTab('photo')}
-                    className="px-4 py-2 rounded-xl bg-white text-slate-900 text-xs font-bold shadow-lg hover:bg-slate-100 transition-colors flex items-center gap-2 cursor-pointer"
-                  >
-                    <ImageIcon className="w-4 h-4 text-[#2563EB]" />
-                    <span>Ganti / Unggah Foto</span>
-                  </button>
-                </div>
-
-                {/* Caption di bagian bawah foto */}
-                <div className="absolute bottom-3 left-3 right-3 text-white">
-                  <p className="text-[11px] font-bold leading-tight drop-shadow-sm">
-                    {orgProfile.schoolName || 'SMK Negeri 1 Cerdas Bangsa'}
-                  </p>
-                  <p className="text-[10px] text-white/80 mt-0.5">
-                    Masa Bakti {orgProfile.academicYear || '2025/2026'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Kolom Kanan: Visi & Misi */}
+            {/* Kolom Utama: Visi & Misi */}
             <div className="lg:col-span-8 flex flex-col justify-between space-y-4">
               {/* Visi Box */}
-              <div className="p-4 rounded-xl bg-[#EFF6FF] dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/60 space-y-2">
+              <div className="p-4 sm:p-5 rounded-[14px] bg-[#E4EAF2] dark:bg-[#213B5C] border border-[#E6DFD0] dark:border-[#283D56] space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-[#2563EB] text-white flex items-center justify-center">
-                      <Quote className="w-3 h-3" />
+                    <div className="w-6 h-6 rounded-[8px] bg-[#1F3A5F] text-[#FAF6EE] flex items-center justify-center">
+                      <Quote className="w-3.5 h-3.5" strokeWidth={2} />
                     </div>
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#1E3A8A] dark:text-blue-300">
+                    <span className="text-[14px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
                       Visi Organisasi
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => openModalWithTab('vision')}
-                    className="text-[11px] font-bold text-[#2563EB] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <Edit3 className="w-3 h-3" />
+                    <Edit3 className="w-3.5 h-3.5" strokeWidth={2} />
                     <span>Edit Visi</span>
                   </button>
                 </div>
-                <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-100 font-medium leading-relaxed italic">
+                <p className="text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE] font-medium leading-relaxed italic">
                   "{orgProfile.vision || 'Belum ada visi yang ditetapkan.'}"
                 </p>
               </div>
 
               {/* Misi Box */}
-              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 space-y-3">
+              <div className="p-4 sm:p-5 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-md bg-emerald-600 text-white flex items-center justify-center">
-                      <Target className="w-3 h-3" />
+                    <div className="w-6 h-6 rounded-[8px] bg-[#1F3A5F] text-[#FAF6EE] flex items-center justify-center">
+                      <Target className="w-3.5 h-3.5" strokeWidth={2} />
                     </div>
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    <span className="text-[14px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
                       Misi Strategis ({missions.length} Butir)
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => openModalWithTab('mission')}
-                    className="text-[11px] font-bold text-[#2563EB] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-3.5 h-3.5" strokeWidth={2} />
                     <span>Kelola Misi</span>
                   </button>
                 </div>
 
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                <div className="space-y-2.5 max-h-[170px] overflow-y-auto pr-1">
                   {missions.map((m, idx) => (
                     <div
                       key={idx}
-                      className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200"
+                      className="flex items-start gap-3 text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE]"
                     >
-                      <span className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-950/90 text-[#2563EB] dark:text-blue-300 flex items-center justify-center text-[10px] font-black shrink-0 mt-0.5">
+                      <span className="w-5 h-5 rounded-full bg-[#E4EAF2] dark:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center justify-center text-[12px] font-black shrink-0 mt-0.5">
                         {idx + 1}
                       </span>
                       <p className="leading-snug">{m}</p>
@@ -201,15 +160,52 @@ export const VisiMisiAdminWidget: React.FC = () => {
                 </div>
               </div>
 
-              {/* Status sinkronisasi */}
-              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
-                <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+              {/* Status Sinkronisasi */}
+              <div className="flex items-center justify-between text-[14px] text-[#5A6472] dark:text-[#9AA8B8] pt-1">
+                <span className="flex items-center gap-1.5 font-semibold text-[#1F3A5F] dark:text-[#F2B544]">
+                  <CheckCircle2 className="w-4 h-4" strokeWidth={2} />
                   <span>Tersinkronisasi otomatis ke portal publik</span>
                 </span>
-                <span className="text-slate-400">
-                  Terakhir diperbarui: Realtime
-                </span>
+                <span>Terakhir diperbarui: Realtime</span>
+              </div>
+            </div>
+
+            {/* Kolom Thumbnail Foto Kompak (Tidak Mendominasi Halaman) */}
+            <div className="lg:col-span-4 flex flex-col justify-between rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] overflow-hidden bg-[#FAF6EE] dark:bg-[#1C3048] group p-3.5">
+              <div className="relative aspect-video sm:aspect-4/3 rounded-[12px] overflow-hidden bg-[#E6DFD0]">
+                <img
+                  src={visionPhoto}
+                  alt="Foto Utama Visi Misi Organisasi"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                <div className="absolute inset-0 bg-[#0E1B2C]/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2">
+                  <button
+                    type="button"
+                    onClick={() => openModalWithTab('photo')}
+                    className="min-h-[40px] px-3 py-1.5 rounded-[10px] bg-[#FFFDF8] text-[#1F3A5F] text-[13px] font-bold hover:bg-[#FAF6EE] transition-colors flex items-center gap-1.5 cursor-pointer shadow-none"
+                  >
+                    <ImageIcon className="w-4 h-4" strokeWidth={2} />
+                    <span>Ganti Foto</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between text-[13px]">
+                <div>
+                  <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] line-clamp-1">
+                    {orgProfile.schoolName || 'SMK Negeri 1 Cerdas Bangsa'}
+                  </p>
+                  <p className="text-[#5A6472] dark:text-[#9AA8B8]">
+                    Masa Bakti {orgProfile.academicYear || '2025/2026'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openModalWithTab('photo')}
+                  className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline cursor-pointer"
+                >
+                  Ubah
+                </button>
               </div>
             </div>
           </div>

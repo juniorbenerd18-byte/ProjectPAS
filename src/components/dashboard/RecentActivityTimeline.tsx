@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpRight, ArrowDownLeft, Clock, MoreHorizontal } from 'lucide-react';
+import { ArrowUpRight, Clock, MoreHorizontal } from 'lucide-react';
 import { CashTransaction } from '../../types';
 import { formatRupiah, formatDateIndo } from '../../lib/utils';
 
@@ -21,61 +21,62 @@ export const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 p-5 shadow-2xs h-full flex flex-col justify-between">
+    <div className="simo-card p-6 h-full flex flex-col justify-between">
       <div>
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Aktivitas Kas Terbaru</h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">Mutasi arus kas & bukti transaksi</p>
+            <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
+              Aktivitas Kas Terbaru
+            </h3>
+            <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Mutasi arus kas & bukti transaksi</p>
           </div>
           {onViewAll ? (
             <button
               onClick={onViewAll}
-              className="text-xs font-bold text-[#2563EB] hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 cursor-pointer transition-colors"
+              className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer transition-colors"
             >
               Lihat Semua
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              <ArrowUpRight className="w-4 h-4" />
             </button>
           ) : (
-            <div className="text-slate-400">
-              <MoreHorizontal className="w-4 h-4" />
+            <div className="text-[#5A6472] dark:text-[#9AA8B8]">
+              <MoreHorizontal className="w-5 h-5" />
             </div>
           )}
         </div>
 
         {/* Timeline Items */}
         {displayItems.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-400">
+          <div className="py-8 text-center text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">
             Belum ada aktivitas transaksi kas tercatat.
           </div>
         ) : (
-          <div className="relative pl-5 space-y-4 pt-1">
+          <div className="relative pl-6 space-y-4 pt-1">
             {/* Continuous Vertical Timeline Line */}
-            <div className="absolute left-[7px] top-2 bottom-3 w-0.5 bg-slate-200 dark:bg-slate-800" />
+            <div className="absolute left-[9px] top-2 bottom-3 w-[2px] bg-[#E6DFD0] dark:bg-[#283D56]" />
 
-            {displayItems.map((trx, idx) => {
+            {displayItems.map((trx) => {
               const isIncome = trx.type === 'pemasukan';
-              const isLast = idx === displayItems.length - 1;
 
               return (
                 <div key={trx.id} className="relative flex items-start justify-between gap-3 group">
                   {/* Timeline Dot Node */}
                   <div
-                    className={`absolute -left-5 top-1 w-3.5 h-3.5 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center transition-transform group-hover:scale-125 z-10 ${
+                    className={`absolute -left-6 top-1 w-4 h-4 rounded-full border-2 border-[#FFFDF8] dark:border-[#17293E] flex items-center justify-center transition-transform group-hover:scale-125 z-10 ${
                       isIncome
-                        ? 'bg-[#2563EB] ring-4 ring-blue-50 dark:ring-blue-950/80'
-                        : 'bg-slate-400 dark:bg-slate-500 ring-4 ring-slate-100 dark:ring-slate-800'
+                        ? 'bg-[#1F3A5F] ring-4 ring-[#E4EAF2] dark:ring-[#1F3A5F]/40'
+                        : 'bg-[#F2B544] ring-4 ring-[#FBEBC8] dark:ring-[#F2B544]/30'
                     }`}
                   />
 
                   {/* Transaction Details */}
                   <div className="min-w-0 pr-2">
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-[#2563EB] dark:group-hover:text-blue-400 transition-colors">
+                    <p className="text-[15px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] truncate group-hover:text-[#1F3A5F] dark:group-hover:text-[#F2B544] transition-colors">
                       {trx.description}
                     </p>
-                    <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-slate-400 dark:text-slate-500">
-                      <Clock className="w-3 h-3 shrink-0" />
+                    <div className="flex items-center gap-2 mt-1 text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                      <Clock className="w-3.5 h-3.5 shrink-0" />
                       <span>{formatDateIndo(trx.transactionDate)}</span>
                       <span>•</span>
                       <span className="truncate">{formatCategory(trx.category)}</span>
@@ -85,15 +86,15 @@ export const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
                   {/* Amount */}
                   <div className="text-right shrink-0">
                     <span
-                      className={`text-xs font-black ${
+                      className={`text-[15px] font-extrabold ${
                         isIncome
-                          ? 'text-[#2563EB] dark:text-blue-400'
-                          : 'text-slate-700 dark:text-slate-300'
+                          ? 'text-[#1F3A5F] dark:text-[#FAF6EE]'
+                          : 'text-[#5A6472] dark:text-[#F2B544]'
                       }`}
                     >
                       {isIncome ? '+' : '-'} {formatRupiah(trx.amount)}
                     </span>
-                    <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold">
+                    <span className="block text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-semibold">
                       {isIncome ? 'Pemasukan' : 'Pengeluaran'}
                     </span>
                   </div>
@@ -105,12 +106,12 @@ export const RecentActivityTimeline: React.FC<RecentActivityTimelineProps> = ({
       </div>
 
       {/* Footer Summary */}
-      <div className="pt-3 mt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-        <span className="text-[11px]">{transactions.length} mutasi tersimpan</span>
+      <div className="pt-3.5 mt-5 border-t border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">
+        <span>{transactions.length} mutasi tersimpan</span>
         {onViewAll && (
           <button
             onClick={onViewAll}
-            className="text-[11px] font-semibold text-[#2563EB] hover:underline cursor-pointer"
+            className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline cursor-pointer"
           >
             Buka Buku Kas &rarr;
           </button>
