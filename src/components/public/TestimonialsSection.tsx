@@ -76,19 +76,19 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
     : testimonials;
 
   return (
-    <section id="testimoni" className="bg-white py-16 sm:py-24 border-b border-[#E2E8F0]">
+    <section id="testimoni" className="bg-[#FFFDF8] py-16 sm:py-24 border-b border-[#E6DFD0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header dengan Tombol Geser Panah Bulat di Kanan */}
         <ScrollReveal distance={28} duration={650}>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1F3A5F]">
                 KATA ANGGOTA
               </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#1E3A8A] tracking-tight leading-tight mt-2">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#1F3A5F] tracking-tight leading-tight mt-2">
                 Cerita nyata dari <Highlight>anggota</Highlight> kami
               </h2>
-              <p className="text-sm sm:text-base text-[#64748B] mt-2 max-w-xl">
+              <p className="text-sm sm:text-base text-[#5A6472] mt-2 max-w-xl">
                 Pengalaman berharga, pembelajaran kepemimpinan, dan kesan mendalam selama berdinamika bersama organisasi.
               </p>
             </div>
@@ -98,7 +98,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
               <div className="flex items-center gap-2.5 shrink-0">
                 <button
                   onClick={handlePrev}
-                  className="w-10 h-10 rounded-full border border-[#2563EB] bg-white text-[#2563EB] hover:bg-[#2563EB] hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                  className="w-10 h-10 rounded-full border border-[#E6DFD0] bg-[#FFFDF8] text-[#1F3A5F] hover:bg-[#1F3A5F] hover:text-[#FAF6EE] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                   title="Sebelumnya"
                   aria-label="Sebelumnya"
                 >
@@ -106,7 +106,7 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-10 h-10 rounded-full border border-[#2563EB] bg-white text-[#2563EB] hover:bg-[#2563EB] hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                  className="w-10 h-10 rounded-full border border-[#E6DFD0] bg-[#FFFDF8] text-[#1F3A5F] hover:bg-[#1F3A5F] hover:text-[#FAF6EE] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                   title="Berikutnya"
                   aria-label="Berikutnya"
                 >
@@ -127,17 +127,17 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
               delay={idx * 110}
               className="flex flex-col h-full"
             >
-              <div className="bg-white border border-[#E2E8F0] rounded-xl p-6 sm:p-7 shadow-xs hover:border-[#2563EB]/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full">
+              <div className="bg-[#FFFDF8] border border-[#E6DFD0] rounded-xl p-6 sm:p-7 shadow-xs hover:border-[#1F3A5F]/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full">
                 <div className="space-y-4">
-                  <Quote className="w-8 h-8 text-[#DBEAFE]" />
-                  <p className="text-sm text-[#0F172A] leading-relaxed italic">
+                  <Quote className="w-8 h-8 text-[#F2B544]/60" />
+                  <p className="text-sm text-[#5A6472] leading-relaxed italic">
                     "{item.content}"
                   </p>
                 </div>
 
                 {/* Avatar, Nama, Angkatan/Divisi */}
-                <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#E2E8F0]">
-                  <div className="w-10 h-10 rounded-full overflow-hidden border border-[#E2E8F0] bg-slate-100 shrink-0">
+                <div className="flex items-center gap-3 pt-6 mt-6 border-t border-[#E6DFD0]">
+                  <div className="w-10 h-10 rounded-full overflow-hidden border border-[#E6DFD0] bg-[#FAF6EE] shrink-0">
                     <img
                       src={
                         item.avatarUrl ||
@@ -148,10 +148,10 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
                     />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-[#0F172A] truncate">
+                    <h4 className="text-sm font-bold text-[#1F3A5F] truncate">
                       {item.name}
                     </h4>
-                    <p className="text-xs text-[#64748B] truncate">
+                    <p className="text-xs text-[#5A6472] truncate">
                       {item.roleOrClass}
                     </p>
                   </div>

@@ -24,15 +24,15 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       } ${className}`}
     >
       {badge && (
-        <span className="inline-block text-xs font-bold tracking-wider uppercase text-[#2563EB] mb-2 sm:mb-3">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase bg-[#E4EAF2] border border-[#E6DFD0] text-[#1F3A5F] mb-3">
           {badge}
         </span>
       )}
-      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E3A8A] tracking-tight leading-tight mb-3 sm:mb-4">
+      <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#1F3A5F] tracking-tight leading-tight mb-3 sm:mb-4">
         {title}
       </h2>
       {description && (
-        <p className="text-sm sm:text-base text-[#64748B] font-normal leading-relaxed max-w-2xl mx-auto">
+        <p className="text-sm sm:text-base text-[#5A6472] font-normal leading-relaxed max-w-2xl mx-auto">
           {description}
         </p>
       )}

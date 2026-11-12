@@ -13,6 +13,11 @@ export interface PortalOrganization {
   missions: string[];
   visionPhotoUrl?: string;
   logoUrl?: string;
+  ketuaPhotoUrl?: string;
+  ketuaName?: string;
+  ketuaPeriod?: string;
+  ketuaWelcomeTitle?: string;
+  ketuaSpeech?: string;
   isRegistrationOpen?: boolean;
   registrationGFormUrl?: string;
   registrationOpenDate?: string;

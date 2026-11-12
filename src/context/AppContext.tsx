@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   UserRole,
   OrgProfile,
+  GalleryItem,
   Division,
   Position,
   Member,
@@ -19,6 +20,7 @@ import {
   RecruitmentApplication,
   EventRegistration,
 } from '../types';
+import { DEFAULT_GALLERY_PHOTOS } from '../components/public/GallerySection';
 import {
   initialOrgProfile,
   initialDivisions,
@@ -126,6 +128,13 @@ interface AppContextType {
   eventRegistrations: EventRegistration[];
   registerForEvent: (reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>) => EventRegistration;
 
+  // Galeri Dokumentasi Portal Publik
+  galleryPhotos: GalleryItem[];
+  addGalleryPhoto: (photo: Omit<GalleryItem, 'id'>) => void;
+  updateGalleryPhoto: (id: string, photo: Partial<GalleryItem>) => void;
+  deleteGalleryPhoto: (id: string) => void;
+  resetGalleryPhotos: () => void;
+
   // Theme & Appearance
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
@@ -173,6 +182,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [aspirations, setAspirations] = useState<StudentAspiration[]>(() => loadStored('aspirations', initialAspirations));
   const [recruitments, setRecruitments] = useState<RecruitmentApplication[]>(() => loadStored('recruitments', initialRecruitments));
   const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>(() => loadStored('eventRegistrations', initialEventRegistrations));
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>(() => loadStored('galleryPhotos', DEFAULT_GALLERY_PHOTOS));
 
   // Determine current user based on active role
   const currentUser = members.find((m) => m.role === currentRole) || members[0];
@@ -199,10 +209,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem('schoolorg_aspirations', JSON.stringify(aspirations));
     localStorage.setItem('schoolorg_recruitments', JSON.stringify(recruitments));
     localStorage.setItem('schoolorg_eventRegistrations', JSON.stringify(eventRegistrations));
+    localStorage.setItem('schoolorg_galleryPhotos', JSON.stringify(galleryPhotos));
   }, [
     activePage, orgProfile, divisions, positions, members, workPrograms, events,
     meetings, attendances, cashTransactions, memberDues, budgets,
-    documents, announcements, aspirations, recruitments, eventRegistrations
+    documents, announcements, aspirations, recruitments, eventRegistrations, galleryPhotos
   ]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
@@ -632,6 +643,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newReg;
   };
 
+  // Galeri Dokumentasi Portal Publik CRUD
+  const addGalleryPhoto = (photo: Omit<GalleryItem, 'id'>) => {
+    const newPhoto: GalleryItem = {
+      ...photo,
+      id: `g-${Date.now()}`,
+    };
+    setGalleryPhotos((prev) => [newPhoto, ...prev]);
+    showToast('Foto dokumentasi baru berhasil ditambahkan!');
+  };
+
+  const updateGalleryPhoto = (id: string, photo: Partial<GalleryItem>) => {
+    setGalleryPhotos((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, ...photo } : p))
+    );
+    showToast('Foto dokumentasi berhasil diperbarui!');
+  };
+
+  const deleteGalleryPhoto = (id: string) => {
+    setGalleryPhotos((prev) => prev.filter((p) => p.id !== id));
+    showToast('Foto dokumentasi telah dihapus.', 'info');
+  };
+
+  const resetGalleryPhotos = () => {
+    setGalleryPhotos(DEFAULT_GALLERY_PHOTOS);
+    showToast('Galeri foto telah direset ke dokumentasi bawaan.');
+  };
+
   // Reset Data to Factory Initial
   const resetAllData = () => {
     localStorage.clear();
@@ -651,6 +689,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAspirations(initialAspirations);
     setRecruitments(initialRecruitments);
     setEventRegistrations(initialEventRegistrations);
+    setGalleryPhotos(DEFAULT_GALLERY_PHOTOS);
     showToast('Data berhasil di-reset ke nilai default UKK!', 'info');
   };
 
@@ -674,6 +713,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (parsed.aspirations) setAspirations(parsed.aspirations);
       if (parsed.recruitments) setRecruitments(parsed.recruitments);
       if (parsed.eventRegistrations) setEventRegistrations(parsed.eventRegistrations);
+      if (parsed.galleryPhotos) setGalleryPhotos(parsed.galleryPhotos);
       showToast('Seluruh data berhasil dipulihkan dari cadangan!', 'success');
       return true;
     } catch (e) {
@@ -749,6 +789,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateRecruitment,
         eventRegistrations,
         registerForEvent,
+        galleryPhotos,
+        addGalleryPhoto,
+        updateGalleryPhoto,
+        deleteGalleryPhoto,
+        resetGalleryPhotos,
         theme,
         setTheme,
         toggleTheme,

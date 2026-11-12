@@ -194,6 +194,10 @@ export interface OrgProfile {
   nipHeadmaster?: string;
   ketuaName: string;
   nisnKetua?: string;
+  ketuaPhotoUrl?: string;
+  ketuaPeriod?: string;
+  ketuaWelcomeTitle?: string;
+  ketuaSpeech?: string;
   motto?: string;
   address: string;
   phone: string;
@@ -259,5 +263,13 @@ export interface EventRegistration {
   classRoom: string;
   phone: string;
   registeredAt: string;
+}
+
+export interface GalleryItem {
+  id: string;
+  title: string;
+  caption: string;
+  imageUrl: string;
+  date: string;
 }
 

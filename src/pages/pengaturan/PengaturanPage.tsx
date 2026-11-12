@@ -16,10 +16,18 @@ import {
   UserCheck,
   AlertCircle,
   Save,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Edit2,
+  Sparkles,
+  RotateCcw,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { isSupabaseConfigured } from '../../lib/supabase';
 import { Modal } from '../../components/common/Modal';
+import { ImagePicker } from '../../components/common/ImagePicker';
+import { GalleryItem } from '../../types';
 
 export const PengaturanPage: React.FC = () => {
   const {
@@ -42,12 +50,99 @@ export const PengaturanPage: React.FC = () => {
     budgets,
     documents,
     announcements,
+    galleryPhotos,
+    addGalleryPhoto,
+    updateGalleryPhoto,
+    deleteGalleryPhoto,
+    resetGalleryPhotos,
     showToast,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'profil' | 'tampilan' | 'data'>('profil');
+  const [activeTab, setActiveTab] = useState<'profil' | 'portal' | 'tampilan' | 'data'>('profil');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const isCloud = isSupabaseConfigured();
+
+  // Form states for Foto & Profil Ketua OSIS
+  const [ketuaForm, setKetuaForm] = useState({
+    name: orgProfile.ketuaName || 'Agustin Rahmadani',
+    photoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
+    period: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
+    welcomeTitle: orgProfile.ketuaWelcomeTitle || `Menjadi Wadah Inovasi Untuk ${orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa'} Unggul.`,
+    speech: orgProfile.ketuaSpeech || `Assalamu'alaikum Warahmatullahi Wabarakatuh, Salam Sejahtera untuk kita semua.\n\nTeman-teman yang saya banggakan, OSIS bukan sekadar label organisasi, melainkan ruang kolaborasi. Kami hadir bukan untuk memberi perintah, tetapi untuk mengajak seluruh siswa bergerak melampaui kebiasaan.\n\nMari kita ciptakan sekolah yang tidak hanya unggul dalam angka, tapi juga kaya dalam inovasi dan karakter. SIMO hadir sebagai jembatan yang inklusif bagi setiap aspirasi.\n\nMari bersinergi, karena perubahan besar dimulai dari langkah kecil yang dilakukan bersama.`,
+  });
+
+  const handleSaveKetua = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    updateOrgProfile({
+      ketuaName: ketuaForm.name,
+      ketuaPhotoUrl: ketuaForm.photoUrl,
+      ketuaPeriod: ketuaForm.period,
+      ketuaWelcomeTitle: ketuaForm.welcomeTitle,
+      ketuaSpeech: ketuaForm.speech,
+    });
+    showToast('Foto & data Ketua OSIS berhasil diperbarui!', 'success');
+  };
+
+  // State Modal Tambah / Edit Foto Galeri Dokumentasi
+  const [isGalleryModalOpen, setIsGalleryModalOpen] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<GalleryItem | null>(null);
+  const [photoForm, setPhotoForm] = useState({
+    title: '',
+    caption: '',
+    imageUrl: '',
+    date: 'Oktober 2026',
+  });
+
+  const handleOpenAddPhoto = () => {
+    setEditingPhoto(null);
+    setPhotoForm({
+      title: '',
+      caption: '',
+      imageUrl: '',
+      date: new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }),
+    });
+    setIsGalleryModalOpen(true);
+  };
+
+  const handleOpenEditPhoto = (item: GalleryItem) => {
+    setEditingPhoto(item);
+    setPhotoForm({
+      title: item.title,
+      caption: item.caption,
+      imageUrl: item.imageUrl,
+      date: item.date,
+    });
+    setIsGalleryModalOpen(true);
+  };
+
+  const handleSaveGalleryPhoto = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!photoForm.title.trim()) {
+      showToast('Harap isi judul kegiatan.', 'error');
+      return;
+    }
+    if (!photoForm.imageUrl) {
+      showToast('Harap pilih foto dari komputer atau masukkan link URL.', 'error');
+      return;
+    }
+
+    if (editingPhoto) {
+      updateGalleryPhoto(editingPhoto.id, {
+        title: photoForm.title,
+        caption: photoForm.caption,
+        imageUrl: photoForm.imageUrl,
+        date: photoForm.date,
+      });
+    } else {
+      addGalleryPhoto({
+        title: photoForm.title,
+        caption: photoForm.caption,
+        imageUrl: photoForm.imageUrl,
+        date: photoForm.date,
+      });
+    }
+    setIsGalleryModalOpen(false);
+  };
 
   // Form states for Profil Organisasi (Identitas & Legalitas Dokumen Resmi)
   const [profileForm, setProfileForm] = useState({
@@ -186,6 +281,17 @@ export const PengaturanPage: React.FC = () => {
         >
           <Building2 className="w-4 h-4" />
           <span>Identitas &amp; Legalitas OSIS</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('portal')}
+          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-[10px] whitespace-nowrap transition-all cursor-pointer ${
+            activeTab === 'portal'
+              ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+              : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
+          }`}
+        >
+          <ImageIcon className="w-4 h-4" />
+          <span>Foto &amp; Konten Portal</span>
         </button>
         <button
           onClick={() => setActiveTab('tampilan')}
@@ -429,7 +535,248 @@ export const PengaturanPage: React.FC = () => {
       )}
 
       {/* ======================================================== */}
-      {/* TAB 2: PREFERENSI TAMPILAN & MODE SISTEM                */}
+      {/* TAB 2: FOTO & KONTEN PORTAL PUBLIK                      */}
+      {/* ======================================================== */}
+      {activeTab === 'portal' && (
+        <div className="space-y-8">
+          {/* SECTION 1: FOTO & SAMBUTAN KETUA OSIS */}
+          <div className="simo-card p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6DFD0] dark:border-[#283D56] gap-3">
+              <div>
+                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-[#F2B544]" />
+                  <span>Foto &amp; Profil Sambutan Ketua OSIS</span>
+                </h3>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                  Foto dan sambutan ini tampil pada bagian "Tentang / Sambutan Ketua OSIS" di portal publik
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSaveKetua()}
+                className="simo-btn-primary min-h-[44px] px-5 py-2 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan Profil Ketua OSIS</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Kolom Preview Kartu Foto (Aspect 3:4) */}
+              <div className="lg:col-span-4 flex flex-col items-center">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#5A6472] dark:text-[#9AA8B8] mb-2 self-start">
+                  Live Preview Kartu di Portal
+                </p>
+                <div className="relative w-full max-w-[260px] rounded-2xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] shadow-md bg-[#FAF6EE] dark:bg-[#17293E] group">
+                  <div className="aspect-[3/4] w-full overflow-hidden bg-[#E4EAF2] dark:bg-[#213B5C]">
+                    <img
+                      src={ketuaForm.photoUrl || '/ketua-osis.png'}
+                      alt="Ketua OSIS Preview"
+                      className="w-full h-full object-cover object-top"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80';
+                      }}
+                    />
+                  </div>
+                  {/* Badge Nama Melayang */}
+                  <div className="absolute bottom-3 inset-x-3 bg-[#FFFDF8]/95 dark:bg-[#17293E]/95 backdrop-blur-md border border-[#E6DFD0] dark:border-[#283D56] rounded-xl p-2.5 text-center shadow-sm">
+                    <div className="inline-flex items-center justify-center gap-1 text-[#F2B544] mb-0.5">
+                      <Sparkles className="w-3 h-3" />
+                      <span className="font-extrabold text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] truncate">
+                        {ketuaForm.name || 'Agustin Rahmadani'}
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold tracking-wider text-[#5A6472] dark:text-[#9AA8B8] uppercase truncate">
+                      {ketuaForm.period || 'KETUA OSIS PERIODE 2025/2026'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Input Data Ketua */}
+              <div className="lg:col-span-8 space-y-4">
+                <div>
+                  <ImagePicker
+                    label="Unggah Foto Ketua OSIS (Dari Komputer)"
+                    value={ketuaForm.photoUrl}
+                    onChange={(url) => setKetuaForm({ ...ketuaForm, photoUrl: url })}
+                    helperText="Pilih foto portrait resmi Ketua OSIS dari komputer (JPG/PNG). Rekomendasi rasio 3:4 atau tegak."
+                    aspectRatio="card"
+                  />
+                  <div className="mt-2">
+                    <label className="block text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                      Atau Masukkan URL Link Foto (Opsional)
+                    </label>
+                    <input
+                      type="text"
+                      value={ketuaForm.photoUrl}
+                      onChange={(e) => setKetuaForm({ ...ketuaForm, photoUrl: e.target.value })}
+                      placeholder="/ketua-osis.png atau https://..."
+                      className="simo-input min-h-[40px] text-[13px] w-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                      Nama Lengkap Ketua OSIS
+                    </label>
+                    <input
+                      type="text"
+                      value={ketuaForm.name}
+                      onChange={(e) => setKetuaForm({ ...ketuaForm, name: e.target.value })}
+                      placeholder="Agustin Rahmadani"
+                      className="simo-input min-h-[44px] text-[14px] w-full"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                      Jabatan &amp; Periode
+                    </label>
+                    <input
+                      type="text"
+                      value={ketuaForm.period}
+                      onChange={(e) => setKetuaForm({ ...ketuaForm, period: e.target.value })}
+                      placeholder="KETUA OSIS PERIODE 2025/2026"
+                      className="simo-input min-h-[44px] text-[14px] w-full"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                    Judul / Kutipan Sambutan Utama
+                  </label>
+                  <input
+                    type="text"
+                    value={ketuaForm.welcomeTitle}
+                    onChange={(e) => setKetuaForm({ ...ketuaForm, welcomeTitle: e.target.value })}
+                    placeholder={`"Menjadi Wadah Inovasi Untuk ${orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa'} Unggul."`}
+                    className="simo-input min-h-[44px] text-[14px] w-full"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                    Isi Teks Sambutan (Pisahkan paragraf dengan baris baru)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={ketuaForm.speech}
+                    onChange={(e) => setKetuaForm({ ...ketuaForm, speech: e.target.value })}
+                    placeholder="Tuliskan kata sambutan Ketua OSIS untuk portal publik..."
+                    className="simo-input p-3 text-[14px] w-full resize-y"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2: GALERI DOKUMENTASI KEGIATAN ("Rekam jejak karya dan momen berharga") */}
+          <div className="simo-card p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6DFD0] dark:border-[#283D56] gap-3">
+              <div>
+                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-[#1F3A5F] dark:text-[#F2B544]" />
+                  <span>Galeri Dokumentasi Portal ("Rekam Jejak Karya &amp; Momen")</span>
+                </h3>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                  Kelola foto, judul kegiatan, dan periode yang tampil pada galeri dokumentasi publik ({galleryPhotos.length} Foto Aktif)
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={resetGalleryPhotos}
+                  className="simo-btn-outline min-h-[44px] px-3.5 py-2 rounded-[12px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer text-[#5A6472]"
+                  title="Kembalikan foto galeri ke foto default"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Reset Default</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenAddPhoto}
+                  className="simo-btn-primary min-h-[44px] px-4 py-2 rounded-[12px] text-[13px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Tambah Foto Dokumentasi</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Grid Kartu Foto Dokumentasi */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {galleryPhotos.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="bg-[#FFFDF8] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] rounded-2xl overflow-hidden shadow-xs hover:border-[#1F3A5F] transition-all flex flex-col group"
+                >
+                  <div className="relative aspect-4/3 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src =
+                          'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=80';
+                      }}
+                    />
+                    <span className="absolute bottom-2.5 right-2.5 px-2.5 py-0.5 bg-black/70 backdrop-blur-xs text-white text-[11px] font-bold rounded-md">
+                      {item.date}
+                    </span>
+                    <span className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-[#1F3A5F]/80 backdrop-blur-xs text-white text-[10px] font-extrabold rounded-md">
+                      #{index + 1}
+                    </span>
+                  </div>
+
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-extrabold text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE] leading-snug line-clamp-1">
+                        {item.title}
+                      </h4>
+                      <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 line-clamp-2 leading-relaxed">
+                        {item.caption}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-2 mt-4 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditPhoto(item)}
+                        className="px-3 py-1.5 bg-[#E4EAF2] hover:bg-[#d8e2ed] dark:bg-[#213B5C] dark:hover:bg-[#284870] text-[#1F3A5F] dark:text-[#FAF6EE] rounded-[10px] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm(`Yakin ingin menghapus foto kegiatan "${item.title}"?`)) {
+                            deleteGalleryPhoto(item.id);
+                          }
+                        }}
+                        className="px-3 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-600 dark:text-red-400 rounded-[10px] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB 3: PREFERENSI TAMPILAN & MODE SISTEM                */}
       {/* ======================================================== */}
       {activeTab === 'tampilan' && (
         <div className="space-y-6">

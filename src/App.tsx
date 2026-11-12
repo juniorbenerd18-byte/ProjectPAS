@@ -14,6 +14,7 @@ import { ArsipDokumenPage } from './pages/surat/ArsipDokumenPage';
 import { PengaturanPage } from './pages/pengaturan/PengaturanPage';
 import { PublicPortalPage } from './pages/public/PublicPortalPage';
 import { AspirasiAdminPage } from './pages/aspirasi/AspirasiAdminPage';
+import { LoginPage } from './pages/auth/LoginPage';
 
 // ===== Legacy Pages (backward-compat for old routes) =====
 import { ProfilOrganisasi } from './pages/organisasi/ProfilOrganisasi';
@@ -35,10 +36,6 @@ import { DokumentasiKegiatan } from './pages/kegiatan/DokumentasiKegiatan';
 import { JadwalRapat } from './pages/rapat/JadwalRapat';
 import { AbsensiPage } from './pages/rapat/AbsensiPage';
 import { NotulenPage } from './pages/rapat/NotulenPage';
-import { PemasukanPage } from './pages/keuangan/PemasukanPage';
-import { PengeluaranPage } from './pages/keuangan/PengeluaranPage';
-import { AnggaranPage } from './pages/keuangan/AnggaranPage';
-import { LaporanKeuanganPage } from './pages/keuangan/LaporanKeuanganPage';
 import { SuratMasuk } from './pages/surat/SuratMasuk';
 import { SuratKeluar } from './pages/surat/SuratKeluar';
 import { ProposalPage } from './pages/surat/ProposalPage';
@@ -47,7 +44,7 @@ import { PengumumanPage } from './pages/pengumuman/PengumumanPage';
 import { LaporanPusatPage } from './pages/laporan/LaporanPusatPage';
 
 const MainLayout: React.FC = () => {
-  const { activePage } = useApp();
+  const { activePage, setActivePage } = useApp();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Inisialisasi smooth inertia momentum scroll (sensasi scroll licin & halus)
@@ -119,15 +116,7 @@ const MainLayout: React.FC = () => {
         return <AbsensiPage />;
       case 'rapat-notulen':
         return <NotulenPage />;
-      // Keuangan (legacy individual pages)
-      case 'keuangan-pemasukan':
-        return <PemasukanPage />;
-      case 'keuangan-pengeluaran':
-        return <PengeluaranPage />;
-      case 'keuangan-anggaran':
-        return <AnggaranPage />;
-      case 'keuangan-laporan':
-        return <LaporanKeuanganPage />;
+
       // Surat & Dokumen (legacy)
       case 'surat-masuk':
         return <SuratMasuk />;
@@ -147,9 +136,18 @@ const MainLayout: React.FC = () => {
     }
   };
 
+  if (activePage === 'login') {
+    return (
+      <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0E1B2C] text-[#1F3A5F] dark:text-[#FAF6EE] flex flex-col transition-colors duration-200">
+        <LoginPage onBackToPublic={() => setActivePage('portal-publik')} />
+        <Toast />
+      </div>
+    );
+  }
+
   if (activePage === 'portal-publik' || activePage === 'public') {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-200">
+      <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0E1B2C] text-[#1F3A5F] dark:text-[#FAF6EE] flex flex-col transition-colors duration-200">
         <PublicPortalPage />
         <Toast />
       </div>
@@ -157,14 +155,14 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/80 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
+    <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0E1B2C] text-[#1F3A5F] dark:text-[#FAF6EE] flex transition-colors duration-200">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main Content Container */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-w-0">
+      {/* Main Content Container (280px sidebar offset, max-w-[1200px], 36-40px padding) */}
+      <div className="flex-1 lg:pl-[280px] flex flex-col min-w-0">
         <Navbar onOpenSidebar={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-10 max-w-[1200px] mx-auto w-full">
           {renderCurrentPage()}
         </main>
       </div>

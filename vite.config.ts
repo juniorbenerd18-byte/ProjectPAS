@@ -10,7 +10,7 @@ export default defineConfig({
   ],
   server: {
     port: 5173,
-    strictPort: true, // error kalau port sudah dipakai, tidak auto-naik
+    strictPort: true, 
   },
 })
 

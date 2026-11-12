@@ -28,39 +28,36 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
   };
 
   return (
-    <footer className="bg-[#1E3A8A] text-white pt-16 pb-10 border-t border-blue-900">
+    <footer className="bg-[#1F3A5F] text-[#FAF6EE] pt-16 pb-10 border-t border-[#162B46]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 pb-12 border-b border-blue-800/80">
           {/* Kolom 1: Logo & Deskripsi */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white text-[#1E3A8A] font-bold text-lg flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-[#FAF6EE] text-[#1F3A5F] font-bold text-lg flex items-center justify-center shadow-sm">
                 S
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">
+              <span className="text-xl font-bold tracking-tight text-[#FAF6EE]">
                 SIMO
               </span>
             </div>
-            <p className="text-sm text-blue-100/80 leading-relaxed">
+            <p className="text-sm text-[#FAF6EE]/75 leading-relaxed">
               {organization.tagline ||
                 'Sistem Informasi Manajemen Organisasi untuk keterbukaan, kolaborasi, dan akuntabilitas kegiatan seluruh anggota.'}
             </p>
             <div className="pt-1">
-              <button
-                onClick={onAdminLogin}
-                className="text-xs text-blue-200 hover:text-white underline underline-offset-4 cursor-pointer transition-colors"
-              >
-                Akses Dashboard Pengurus &rarr;
-              </button>
+              <span className="text-xs text-[#FAF6EE]/60 font-medium">
+                Portal Informasi &amp; Administrasi Resmi Organisasi Siswa Intra Sekolah
+              </span>
             </div>
           </div>
 
           {/* Kolom 2: Organisasi */}
           <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-blue-200">
+            <h4 className="text-sm font-bold uppercase tracking-wider !text-[#F2B544]">
               Organisasi
             </h4>
-            <ul className="space-y-2 text-sm text-blue-100/80">
+            <ul className="space-y-2 text-sm text-[#FAF6EE]/75">
               <li>
                 <a
                   href="#tentang"
@@ -93,10 +90,10 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
 
           {/* Kolom 3: Kegiatan & Informasi */}
           <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-blue-200">
+            <h4 className="text-sm font-bold uppercase tracking-wider !text-[#F2B544]">
               Kegiatan
             </h4>
-            <ul className="space-y-2 text-sm text-blue-100/80">
+            <ul className="space-y-2 text-sm text-[#FAF6EE]/75">
               <li>
                 <a
                   href="#kegiatan"
@@ -138,16 +135,16 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
 
           {/* Kolom 4: Kontak & Sosial Media */}
           <div className="space-y-3">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-blue-200">
+            <h4 className="text-sm font-bold uppercase tracking-wider !text-[#F2B544]">
               Kontak
             </h4>
-            <div className="space-y-2.5 text-xs sm:text-sm text-blue-100/80">
+            <div className="space-y-2.5 text-xs sm:text-sm text-[#FAF6EE]/75">
               <div className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-blue-300 shrink-0 mt-0.5" />
+                <MapPin className="w-4 h-4 text-[#F2B544] shrink-0 mt-0.5" />
                 <span>{organization.contact.address}</span>
               </div>
               <div className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-blue-300 shrink-0" />
+                <Mail className="w-4 h-4 text-[#F2B544] shrink-0" />
                 <a
                   href={`mailto:${organization.contact.email}`}
                   className="hover:text-white transition-colors underline"
@@ -156,19 +153,19 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
                 </a>
               </div>
               <div className="flex items-center gap-2.5">
-                <Clock className="w-4 h-4 text-blue-300 shrink-0" />
+                <Clock className="w-4 h-4 text-[#F2B544] shrink-0" />
                 <span>{organization.contact.piketHours}</span>
               </div>
             </div>
 
             {/* Sosial Media */}
-            <div className="pt-2 flex items-center gap-3 text-blue-200">
+            <div className="pt-2 flex items-center gap-3 text-[#FAF6EE]/80">
               {organization.socials?.instagram && (
                 <a
                   href={organization.socials.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-blue-900/80 hover:bg-white hover:text-[#1E3A8A] flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-[#F2B544] hover:text-[#1F3A5F] flex items-center justify-center transition-colors"
                   aria-label="Instagram"
                 >
                   <InstagramIcon className="w-4 h-4" />
@@ -179,7 +176,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
                   href={organization.socials.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-blue-900/80 hover:bg-white hover:text-[#1E3A8A] flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-[#F2B544] hover:text-[#1F3A5F] flex items-center justify-center transition-colors"
                   aria-label="YouTube"
                 >
                   <YoutubeIcon className="w-4 h-4" />
@@ -190,7 +187,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
                   href={organization.socials.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-lg bg-blue-900/80 hover:bg-white hover:text-[#1E3A8A] flex items-center justify-center transition-colors"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-[#F2B544] hover:text-[#1F3A5F] flex items-center justify-center transition-colors"
                   aria-label="GitHub"
                 >
                   <GithubIcon className="w-4 h-4" />
@@ -215,7 +212,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
             </a>
             <button
               onClick={scrollToTop}
-              className="w-8 h-8 rounded-full bg-blue-900/80 hover:bg-white hover:text-[#1E3A8A] flex items-center justify-center transition-colors cursor-pointer ml-2"
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-[#F2B544] hover:text-[#1F3A5F] flex items-center justify-center transition-colors cursor-pointer ml-2"
               title="Kembali ke atas"
             >
               <ArrowUp className="w-4 h-4" />

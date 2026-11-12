@@ -13,6 +13,7 @@ import {
   FileText,
   MoreHorizontal,
   Globe,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDateIndo } from '../../lib/utils';
@@ -77,7 +78,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Quick Shortcut Buttons - Sejajar Horizontal Tanpa Terputus */}
-        <div className="flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1 xl:pb-0 scrollbar-none flex-nowrap shrink-0">
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1.5 xl:pb-0 scrollbar-none flex-nowrap shrink-0">
           <button
             onClick={() => setActivePage('kegiatan-presensi')}
             className="min-h-[42px] px-3.5 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
@@ -98,6 +99,14 @@ export const DashboardPage: React.FC = () => {
           >
             <Lightbulb className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
             <span>Aspirasi ({newAspirations.length} Baru)</span>
+          </button>
+          <button
+            onClick={() => setActivePage('pengaturan')}
+            className="min-h-[42px] px-3.5 py-2 bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all border border-[#E6DFD0] dark:border-[#283D56] flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
+            title="Kelola foto Ketua OSIS & galeri dokumentasi portal publik"
+          >
+            <ImageIcon className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
+            <span>Foto &amp; Portal</span>
           </button>
           <button
             onClick={() => setActivePage('portal-publik')}

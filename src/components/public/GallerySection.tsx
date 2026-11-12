@@ -12,7 +12,7 @@ export interface GalleryItem {
   date: string;
 }
 
-const DUMMY_GALLERY_PHOTOS: GalleryItem[] = [
+export const DEFAULT_GALLERY_PHOTOS: GalleryItem[] = [
   {
     id: 'g-1',
     title: 'Sidang Pleno Paripurna Siswa',
@@ -31,7 +31,7 @@ const DUMMY_GALLERY_PHOTOS: GalleryItem[] = [
     id: 'g-3',
     title: 'Turnamen Futsal Antarkelas',
     caption: 'Semangat sportivitas dan kebersamaan meriah antarjurusan kejuruan.',
-    imageUrl: 'https://images.unsplash.com/photo-1517649763962-0c623266ddc0?w=800&auto=format&fit=crop&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&auto=format&fit=crop&q=80',
     date: 'Agustus 2026',
   },
   {
@@ -62,10 +62,10 @@ interface GallerySectionProps {
 }
 
 export const GallerySection: React.FC<GallerySectionProps> = ({
-  photos = DUMMY_GALLERY_PHOTOS,
+  photos = DEFAULT_GALLERY_PHOTOS,
 }) => {
   return (
-    <section id="galeri" className="bg-white py-16 sm:py-24 border-b border-[#E2E8F0]">
+    <section id="galeri" className="bg-[#FAF6EE] py-16 sm:py-24 border-b border-[#E6DFD0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <ScrollReveal distance={28} duration={650}>
           <SectionHeader
@@ -90,7 +90,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
               delay={(idx % 3) * 110}
               className="flex flex-col h-full"
             >
-              <div className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden shadow-xs hover:border-[#2563EB]/40 hover:shadow-md transition-all duration-200 group flex flex-col h-full">
+              <div className="bg-[#FFFDF8] border border-[#E6DFD0] rounded-xl overflow-hidden shadow-xs hover:border-[#1F3A5F] hover:shadow-md transition-all duration-200 group flex flex-col h-full">
                 {/* Foto membulat */}
                 <div className="relative aspect-4/3 bg-slate-100 overflow-hidden">
                   <img
@@ -98,6 +98,10 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&auto=format&fit=crop&q=80";
+                    }}
                   />
                   <span className="absolute bottom-2.5 right-2.5 px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[11px] font-medium rounded">
                     {item.date}
@@ -107,10 +111,10 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                 {/* Caption Pendek */}
                 <div className="p-4 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-sm sm:text-base font-bold text-[#1E3A8A] group-hover:text-[#2563EB] transition-colors leading-snug">
+                    <h3 className="text-sm sm:text-base font-bold text-[#1F3A5F] group-hover:text-[#162B46] transition-colors leading-snug">
                       {item.title}
                     </h3>
-                    <p className="text-xs text-[#64748B] mt-1.5 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[#5A6472] mt-1.5 line-clamp-2 leading-relaxed">
                       {item.caption}
                     </p>
                   </div>

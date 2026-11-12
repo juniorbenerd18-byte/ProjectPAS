@@ -85,19 +85,19 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
     : events;
 
   return (
-    <section id="kegiatan" className="bg-[#EFF6FF] py-16 sm:py-24 border-b border-[#DBEAFE]">
+    <section id="kegiatan" className="bg-[#FFFDF8] py-16 sm:py-24 border-b border-[#E6DFD0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section dengan Tombol Geser Panah Bulat */}
         <ScrollReveal distance={28} duration={650}>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#2563EB]">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#1F3A5F]">
                 AGENDA KEGIATAN
               </span>
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#1E3A8A] tracking-tight leading-tight mt-2">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-[#1F3A5F] tracking-tight leading-tight mt-2">
                 Kegiatan <Highlight>mendatang</Highlight> yang terbuka untukmu
               </h2>
-              <p className="text-sm sm:text-base text-[#64748B] mt-2 max-w-xl">
+              <p className="text-sm sm:text-base text-[#5A6472] mt-2 max-w-xl">
                 Ikuti berbagai agenda produktif yang diselenggarakan pengurus untuk memperluas jejaring dan wawasan.
               </p>
             </div>
@@ -107,7 +107,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
               <div className="flex items-center gap-2.5 shrink-0">
                 <button
                   onClick={handlePrev}
-                  className="w-10 h-10 rounded-full border border-[#2563EB] bg-white text-[#2563EB] hover:bg-[#2563EB] hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                  className="w-10 h-10 rounded-full border border-[#E6DFD0] bg-[#FFFDF8] text-[#1F3A5F] hover:bg-[#1F3A5F] hover:text-[#FAF6EE] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                   title="Sebelumnya"
                   aria-label="Sebelumnya"
                 >
@@ -115,7 +115,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 </button>
                 <button
                   onClick={handleNext}
-                  className="w-10 h-10 rounded-full border border-[#2563EB] bg-white text-[#2563EB] hover:bg-[#2563EB] hover:text-white flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+                  className="w-10 h-10 rounded-full border border-[#E6DFD0] bg-[#FFFDF8] text-[#1F3A5F] hover:bg-[#1F3A5F] hover:text-[#FAF6EE] flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
                   title="Berikutnya"
                   aria-label="Berikutnya"
                 >
@@ -129,10 +129,10 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
         {/* Grid Kartu Kegiatan */}
         {events.length === 0 ? (
           <ScrollReveal distance={30} duration={600}>
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-10 text-center text-[#64748B]">
-              <CalendarCheck className="w-10 h-10 text-[#2563EB] mx-auto mb-3" />
-              <p className="font-semibold text-base text-[#0F172A]">Belum Ada Kegiatan Publik Mendatang</p>
-              <p className="text-sm text-[#64748B] mt-1">Nantikan pembaruan jadwal kegiatan terbaru dari pengurus.</p>
+            <div className="bg-[#FFFDF8] border border-[#E6DFD0] rounded-xl p-10 text-center text-[#5A6472]">
+              <CalendarCheck className="w-10 h-10 text-[#1F3A5F] mx-auto mb-3" />
+              <p className="font-semibold text-base text-[#1F3A5F]">Belum Ada Kegiatan Publik Mendatang</p>
+              <p className="text-sm text-[#5A6472] mt-1">Nantikan pembaruan jadwal kegiatan terbaru dari pengurus.</p>
             </div>
           </ScrollReveal>
         ) : (

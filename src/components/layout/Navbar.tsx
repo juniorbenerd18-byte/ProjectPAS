@@ -103,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
           {showNotificationMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowNotificationMenu(false)} />
-              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
+              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:w-96 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
                 <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
                   <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Warta &amp; Pengumuman</span>
                   <button
@@ -174,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
           {showRoleMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowRoleMenu(false)} />
-              <div className="absolute right-0 mt-2 w-72 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
+              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-72 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
                 <div className="px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
                   <div className="flex items-center gap-1.5 text-[#1F3A5F] dark:text-[#FAF6EE]">
                     <Sparkles className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />

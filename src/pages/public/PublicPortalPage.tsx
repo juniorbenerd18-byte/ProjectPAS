@@ -22,6 +22,7 @@ export const PublicPortalPage: React.FC = () => {
     members,
     events,
     announcements,
+    galleryPhotos,
     showToast,
     orgProfile,
   } = useApp();
@@ -42,6 +43,11 @@ export const PublicPortalPage: React.FC = () => {
     name: orgProfile.name || portalData.organization.name,
     academicYear: orgProfile.academicYear || portalData.organization.academicYear,
     logoUrl: orgProfile.logoUrl || portalData.organization.logoUrl,
+    ketuaName: orgProfile.ketuaName || 'Agustin Rahmadani',
+    ketuaPhotoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
+    ketuaPeriod: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
+    ketuaWelcomeTitle: orgProfile.ketuaWelcomeTitle,
+    ketuaSpeech: orgProfile.ketuaSpeech,
     isRegistrationOpen:
       orgProfile.isRegistrationOpen !== undefined
         ? orgProfile.isRegistrationOpen
@@ -145,9 +151,9 @@ export const PublicPortalPage: React.FC = () => {
     return undefined; // Akan memakai DEFAULT_ANNOUNCEMENTS di dalam komponen
   }, [announcements]);
 
-  // Handler interaksi tombol
+  // Handler interaksi tombol (Secret 5x gesture to Login Page)
   const handleAdminLogin = () => {
-    setActivePage('dashboard');
+    setActivePage('login');
   };
 
   const handleRegisterEvent = (eventId: string) => {
@@ -159,7 +165,7 @@ export const PublicPortalPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#0F172A] flex flex-col font-sans antialiased selection:bg-[#DBEAFE] selection:text-[#1E3A8A]">
+    <div className="min-h-screen bg-[#FAF6EE] text-[#1F3A5F] flex flex-col font-sans antialiased selection:bg-[#FBEBC8] selection:text-[#7A4B00]">
       {/* 1. Navbar Sticky */}
       <PublicNavbar
         organization={organizationData}
@@ -174,12 +180,22 @@ export const PublicPortalPage: React.FC = () => {
           activeMembersCount={activeMembersCount}
           attendanceRatePercent={prokerAttendanceRate}
           onJoinClick={() => {
-            const cta = document.getElementById('cta');
-            if (cta) cta.scrollIntoView({ behavior: 'smooth' });
+            const kontak = document.getElementById('kontak');
+            if (kontak) {
+              const navOffset = 80;
+              const elPos = kontak.getBoundingClientRect().top;
+              const offset = elPos + window.pageYOffset - navOffset;
+              window.scrollTo({ top: offset, behavior: 'smooth' });
+            }
           }}
           onExploreEventsClick={() => {
             const kegiatan = document.getElementById('kegiatan');
-            if (kegiatan) kegiatan.scrollIntoView({ behavior: 'smooth' });
+            if (kegiatan) {
+              const navOffset = 80;
+              const elPos = kegiatan.getBoundingClientRect().top;
+              const offset = elPos + window.pageYOffset - navOffset;
+              window.scrollTo({ top: offset, behavior: 'smooth' });
+            }
           }}
         />
 
@@ -199,7 +215,7 @@ export const PublicPortalPage: React.FC = () => {
         />
 
         {/* 7. Galeri / Dokumentasi Kegiatan Lalu (Latar: Putih) */}
-        <GallerySection />
+        <GallerySection photos={galleryPhotos} />
 
         {/* 9. Pengumuman Publik (Latar: Putih) */}
         <AnnouncementsSection announcements={publicAnnouncements} />

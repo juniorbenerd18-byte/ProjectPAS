@@ -43,7 +43,7 @@ interface FaceRecognitionScannerProps {
 }
 
 // Models path (served from /public/models/)
-const MODEL_URL = '/models';
+const MODEL_URL = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/models`;
 
 export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   meetingId,
@@ -110,8 +110,20 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       setModelsLoading(true);
       setModelError(null);
       try {
-        // Pastikan TensorFlow.js backend sudah siap (wajib untuk @vladmandic/face-api)
-        await (faceapi.tf as any)?.ready?.();
+        // Pastikan TensorFlow.js backend sudah siap dengan fallback CPU jika WebGL tidak didukung
+        const tf = faceapi.tf as any;
+        if (tf) {
+          try {
+            await tf.setBackend?.('webgl');
+          } catch {
+            try {
+              await tf.setBackend?.('cpu');
+            } catch (e) {
+              console.warn('Backend setup fallback warning:', e);
+            }
+          }
+          await tf.ready?.();
+        }
         await Promise.all([
           faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
@@ -332,7 +344,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       return;
 
     const video = videoRef.current;
-    if (video.readyState < 2) return; // video not ready
+    if (video.readyState < 2 || !video.videoWidth || !video.videoHeight) return; // video not ready or dimensions not initialized
 
     isProcessingRef.current = true;
     try {
@@ -654,7 +666,12 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   {modelsLoaded && scanStatus === 'verifying' && <span className="text-cyan-400 animate-pulse">Menganalisis...</span>}
                   {modelsLoaded && scanStatus === 'matched' && <span className="text-emerald-400">Wajah Terverifikasi</span>}
                   {modelsLoaded && scanStatus === 'already_checked' && <span className="text-blue-400">Sudah Hadir</span>}
-                  {modelsLoaded && scanStatus === 'unregistered' && <span className="text-amber-300">Wajah Belum Terdaftar</span>}
+                  {modelsLoaded && scanStatus === 'unregistered' && (
+                    <span className="text-amber-300 flex items-center gap-1.5 font-bold">
+                      <AlertCircle className="w-3.5 h-3.5 text-amber-400 inline shrink-0" />
+                      Wajah Belum Terdaftar
+                    </span>
+                  )}
                   {modelsLoaded && (scanStatus === 'idle' || scanStatus === 'no_face') && <span className="text-slate-400">Menunggu...</span>}
                 </span>
               </div>
@@ -710,35 +727,26 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   </div>
                 )}
 
-                {/* Unregistered floating pill (Minimal & Face is 100% visible) */}
-                {scanStatus === 'unregistered' && (
-                  <div className="absolute bottom-4 px-3.5 py-1.5 rounded-full bg-amber-500/90 backdrop-blur-md text-white text-[11px] font-bold flex items-center gap-1.5 shadow-lg border border-amber-300/40 animate-in zoom-in-95">
-                    <AlertCircle className="w-3.5 h-3.5 text-amber-100" />
-                    <span>Wajah Baru Terdeteksi</span>
-                  </div>
-                )}
               </div>
 
-              {/* Bottom hint */}
-              <div className="text-center bg-slate-950/70 backdrop-blur-md py-2 px-4 rounded-xl border border-white/10 max-w-md mx-auto">
-                {scanStatus === 'unregistered' ? (
-                  <p className="text-xs font-semibold text-amber-300">
-                    Wajah belum terdaftar. Pilih nama Anda di bawah untuk mendaftar & hadir.
-                  </p>
-                ) : scanStatus === 'matched' ? (
-                  <p className="text-xs font-semibold text-emerald-300">
-                    Presensi berhasil dicatat!
-                  </p>
-                ) : scanStatus === 'already_checked' ? (
-                  <p className="text-xs font-semibold text-blue-300">
-                    Kehadiran Anda sudah tercatat sebelumnya.
-                  </p>
-                ) : (
-                  <p className="text-xs text-slate-300">
-                    Posisikan wajah Anda di dalam bingkai oval
-                  </p>
-                )}
-              </div>
+              {/* Bottom hint - sembunyikan saat unregistered agar kamera & wajah 100% bersih tanpa tertutup text */}
+              {scanStatus !== 'unregistered' && (
+                <div className="text-center bg-slate-950/70 backdrop-blur-md py-2 px-4 rounded-xl border border-white/10 max-w-md mx-auto">
+                  {scanStatus === 'matched' ? (
+                    <p className="text-xs font-semibold text-emerald-300">
+                      Presensi berhasil dicatat!
+                    </p>
+                  ) : scanStatus === 'already_checked' ? (
+                    <p className="text-xs font-semibold text-blue-300">
+                      Kehadiran Anda sudah tercatat sebelumnya.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-slate-300">
+                      Posisikan wajah Anda di dalam bingkai oval
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Camera error overlay */}
