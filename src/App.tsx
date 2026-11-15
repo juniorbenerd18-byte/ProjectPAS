@@ -9,7 +9,6 @@ import { initSmoothScroll } from './lib/smoothScroll';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { KeanggotaanPage } from './pages/anggota/KeanggotaanPage';
 import { KegiatanPresensiPage } from './pages/kegiatan/KegiatanPresensiPage';
-import { KeuanganTerpaduPage } from './pages/keuangan/KeuanganTerpaduPage';
 import { ArsipDokumenPage } from './pages/surat/ArsipDokumenPage';
 import { PengaturanPage } from './pages/pengaturan/PengaturanPage';
 import { PublicPortalPage } from './pages/public/PublicPortalPage';
@@ -63,8 +62,6 @@ const MainLayout: React.FC = () => {
         return <KeanggotaanPage />;
       case 'kegiatan-presensi':
         return <KegiatanPresensiPage />;
-      case 'keuangan':
-        return <KeuanganTerpaduPage />;
       case 'dokumen':
         return <ArsipDokumenPage />;
       case 'aspirasi':
