@@ -245,7 +245,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Cari nama, email, judul..."
-              className="simo-input pl-10 pr-9 min-h-[44px] text-[14px] w-full"
+              className="simo-input !pl-10 pr-9 min-h-[44px] text-[14px] w-full"
             />
             {searchQuery && (
               <button

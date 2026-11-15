@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { WorkProgram, Meeting, ProkerTask, CommitteeSection } from '../../types';
-import { formatRupiah, formatDateIndo, formatNumber, parseFormattedNumber } from '../../lib/utils';
+import { formatRupiah, formatDateIndo, formatNumber, parseFormattedNumber, formatAttendanceTime, normalizeMajor } from '../../lib/utils';
 import { FaceRecognitionScanner } from '../../components/presensi/FaceRecognitionScanner';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
@@ -223,22 +223,24 @@ export const KegiatanPresensiPage: React.FC = () => {
     const headers = ['No', 'Nama Siswa', 'NISN', 'Tingkat Kelas', 'Jurusan', 'Status Kehadiran', 'Waktu Presensi', 'Catatan'];
     const rows = meetingAttendances.map((a, idx) => [
       idx + 1,
-      `"${a.memberName}"`,
-      `"${a.nisn}"`,
+      `"${a.memberName.replace(/"/g, '""')}"`,
+      `="${a.nisn}"`,
       `"${a.grade}"`,
-      `"${a.major}"`,
+      `"${normalizeMajor(a.major).replace(/"/g, '""')}"`,
       a.status.toUpperCase(),
-      a.checkInTime,
-      `"${a.notes || 'Hadir'}"`,
+      `"${formatAttendanceTime(a.checkInTime)}"`,
+      `"${(a.notes || 'Hadir').replace(/"/g, '""')}"`,
     ]);
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    const csvString = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', url);
     link.setAttribute('download', `Presensi_${currentMeeting?.title.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
     showToast('File CSV presensi berhasil diunduh!');
   };
 
@@ -402,7 +404,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                             {att.memberName}
                           </p>
                           <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
-                            {att.grade} • {att.major} ({att.nisn})
+                            {att.grade} • {normalizeMajor(att.major)} ({att.nisn})
                           </p>
                         </div>
                         <div className="text-right">
@@ -410,7 +412,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                             {att.status}
                           </span>
                           <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-mono mt-1">
-                            {att.checkInTime}
+                            {formatAttendanceTime(att.checkInTime)}
                           </p>
                         </div>
                       </div>

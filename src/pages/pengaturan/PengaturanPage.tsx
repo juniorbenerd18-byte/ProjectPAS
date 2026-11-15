@@ -22,9 +22,9 @@ import {
   Edit2,
   Sparkles,
   RotateCcw,
+  Lock,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { isSupabaseConfigured } from '../../lib/supabase';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
 import { GalleryItem } from '../../types';
@@ -55,12 +55,14 @@ export const PengaturanPage: React.FC = () => {
     updateGalleryPhoto,
     deleteGalleryPhoto,
     resetGalleryPhotos,
+    currentRole,
     showToast,
   } = useApp();
 
+  const canResetData = currentRole === 'admin' || currentRole === 'pembina';
+
   const [activeTab, setActiveTab] = useState<'profil' | 'portal' | 'tampilan' | 'data'>('profil');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
-  const isCloud = isSupabaseConfigured();
 
   // Form states for Foto & Profil Ketua OSIS
   const [ketuaForm, setKetuaForm] = useState({
@@ -147,6 +149,7 @@ export const PengaturanPage: React.FC = () => {
   // Form states for Profil Organisasi (Identitas & Legalitas Dokumen Resmi)
   const [profileForm, setProfileForm] = useState({
     name: orgProfile.name,
+    appName: orgProfile.appName || 'SIMO',
     schoolName: orgProfile.schoolName,
     motto: orgProfile.motto || 'Kreatif, Kolaboratif, Berkarakter & Berprestasi di Era Digital',
     academicYear: orgProfile.academicYear,
@@ -166,6 +169,7 @@ export const PengaturanPage: React.FC = () => {
     e.preventDefault();
     updateOrgProfile({
       name: profileForm.name,
+      appName: profileForm.appName,
       schoolName: profileForm.schoolName,
       motto: profileForm.motto,
       academicYear: profileForm.academicYear,
@@ -228,6 +232,11 @@ export const PengaturanPage: React.FC = () => {
   };
 
   const handleConfirmReset = () => {
+    if (!canResetData) {
+      showToast('Akses ditolak: Hanya Super Admin dan Pembina Guru yang berwenang me-reset data sistem!', 'error');
+      setIsResetModalOpen(false);
+      return;
+    }
     resetAllData();
     setIsResetModalOpen(false);
   };
@@ -254,15 +263,16 @@ export const PengaturanPage: React.FC = () => {
         <button
           onClick={toggleTheme}
           className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
+          title={`Saat ini ${theme === 'dark' ? 'Mode Gelap' : 'Mode Terang'}. Klik untuk beralih mode.`}
         >
           {theme === 'dark' ? (
             <>
-              <Sun className="w-4 h-4 text-[#F2B544]" />
+              <Moon className="w-4 h-4 text-[#F2B544]" />
               <span>Mode Gelap (Aktif)</span>
             </>
           ) : (
             <>
-              <Moon className="w-4 h-4 text-[#1F3A5F]" />
+              <Sun className="w-4 h-4 text-[#F2B544]" />
               <span>Mode Terang (Aktif)</span>
             </>
           )}
@@ -345,7 +355,41 @@ export const PengaturanPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                  Nama Organisasi <span className="text-[#F2B544]">*</span>
+                  Nama Aplikasi / Brand Sistem (Header) <span className="text-[#F2B544]">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.appName}
+                  onChange={(e) => setProfileForm({ ...profileForm, appName: e.target.value })}
+                  placeholder="SIMO"
+                  className="simo-input min-h-[44px] text-[15px] w-full font-bold"
+                />
+                <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                  Nama yang muncul di Sidebar kiri atas dan Header mobile (misal: SIMO, OSIS-APP, dll.)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                  Masa Bakti / Tahun Ajaran Aktif <span className="text-[#F2B544]">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={profileForm.academicYear}
+                  onChange={(e) => setProfileForm({ ...profileForm, academicYear: e.target.value })}
+                  placeholder="2025/2026"
+                  className="simo-input min-h-[44px] text-[15px] w-full"
+                />
+                <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                  Tahun periode kepengurusan aktif (tampil di bawah nama sistem di sidebar)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                  Nama Organisasi Lengkap <span className="text-[#F2B544]">*</span>
                 </label>
                 <input
                   type="text"
@@ -373,20 +417,6 @@ export const PengaturanPage: React.FC = () => {
 
               <div>
                 <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                  Masa Bakti / Tahun Ajaran Aktif <span className="text-[#F2B544]">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={profileForm.academicYear}
-                  onChange={(e) => setProfileForm({ ...profileForm, academicYear: e.target.value })}
-                  placeholder="2025/2026"
-                  className="simo-input min-h-[44px] text-[15px] w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                   Motto / Slogan Organisasi
                 </label>
                 <input
@@ -400,16 +430,32 @@ export const PengaturanPage: React.FC = () => {
 
               <div>
                 <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                  URL / Tautan Logo Organisasi (Opsional)
+                </label>
+                <input
+                  type="text"
+                  value={profileForm.logoUrl}
+                  onChange={(e) => setProfileForm({ ...profileForm, logoUrl: e.target.value })}
+                  placeholder="Kosongkan untuk ikon gedung adaptif bawaan"
+                  className="simo-input min-h-[44px] text-[15px] w-full text-xs"
+                />
+                <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                  Logo tampil di kop surat, kartu KTA, dan sidebar (otomatis kontras di mode terang &amp; gelap)
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                   Alamat Sekretariat / Kampus Sekolah
                 </label>
                 <div className="relative">
-                  <MapPin className="w-4 h-4 text-[#5A6472] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <MapPin className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
                   <input
                     type="text"
                     value={profileForm.address}
                     onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
                     placeholder="Jl. Merdeka Belajar No. 45, Kompleks Pendidikan, Jakarta"
-                    className="simo-input pl-10 pr-3 min-h-[44px] text-[15px] w-full"
+                    className="simo-input !pl-10 pr-3 min-h-[44px] text-[15px] w-full"
                   />
                 </div>
               </div>
@@ -419,13 +465,13 @@ export const PengaturanPage: React.FC = () => {
                   Email Resmi OSIS (Untuk Kop Surat)
                 </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-[#5A6472] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Mail className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10" />
                   <input
                     type="email"
                     value={profileForm.email}
                     onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
                     placeholder="osis@smkn1cerdas.sch.id"
-                    className="simo-input pl-10 pr-3 min-h-[44px] text-[15px] w-full"
+                    className="simo-input !pl-10 pr-3 min-h-[44px] text-[15px] w-full"
                   />
                 </div>
               </div>
@@ -897,15 +943,15 @@ export const PengaturanPage: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-2 text-[14px]">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mode Penyimpanan Aktif:</span>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Status Database Cloud:</span>
                 <span className="simo-badge-blue">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {isCloud ? 'Supabase Cloud Database Terkoneksi' : 'Dual-Mode (Local Persisted)'}
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  Supabase Cloud PostgreSQL Aktif &amp; Terhubung
                 </span>
               </div>
               <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed">
-                Semua data keanggotaan, iuran kas, jobdesk tugas panitia, dan presensi biometrik tersimpan otomatis di penyimpanan lokal browser Anda. Bebas risiko offline saat presentasi UKK di hadapan dewan penguji.
+                Aplikasi telah terhubung langsung ke proyek <strong>Supabase Cloud (ProjectPAS)</strong>. Data anggota, notulen rapat, pengumuman, dan divisi tersimpan di cloud PostgreSQL dengan mekanisme sinkronisasi instan serta didukung cadangan luring (Offline-Resilient).
               </p>
             </div>
           </div>
@@ -976,10 +1022,20 @@ export const PengaturanPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => setIsResetModalOpen(true)}
-                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer shrink-0"
+                onClick={() => {
+                  if (!canResetData) {
+                    showToast('Akses dibatasi: Hanya Super Admin & Pembina Guru yang berwenang me-reset database.', 'error');
+                    return;
+                  }
+                  setIsResetModalOpen(true);
+                }}
+                className={`simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer shrink-0 flex items-center gap-2 ${
+                  !canResetData ? 'opacity-70' : ''
+                }`}
+                title={canResetData ? 'Reset ke Default UKK' : 'Akses Terbatas: Hanya Super Admin & Pembina'}
               >
-                Reset ke Default
+                {!canResetData && <Lock className="w-4 h-4 text-amber-500" />}
+                <span>Reset ke Default</span>
               </button>
             </div>
           </div>

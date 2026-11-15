@@ -82,15 +82,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       >
         {/* Brand Header */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-[#E6DFD0] dark:border-[#283D56] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-[12px] bg-[#1F3A5F] flex items-center justify-center shrink-0">
-              <Building2 className="w-5 h-5 text-[#FAF6EE]" strokeWidth={2} />
+          <div className="flex items-center gap-3 min-w-0">
+            {orgProfile.logoUrl ? (
+              <img
+                src={orgProfile.logoUrl}
+                alt="Logo"
+                className="w-9 h-9 rounded-[12px] object-cover shrink-0 border border-[#E6DFD0] dark:border-[#283D56]"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`w-9 h-9 rounded-[12px] bg-[#1F3A5F] dark:bg-[#F2B544] flex items-center justify-center shrink-0 transition-colors ${orgProfile.logoUrl ? 'hidden' : ''}`}>
+              <Building2 className="w-5 h-5 text-[#FAF6EE] dark:text-[#1F3A5F]" strokeWidth={2} />
             </div>
-            <div>
-              <p className="text-base font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight leading-none">
-                SIMO
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight leading-none truncate">
+                {orgProfile.appName || 'SIMO'}
               </p>
-              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] font-semibold mt-1">
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-semibold mt-1 truncate">
                 {orgProfile.academicYear}
               </p>
             </div>

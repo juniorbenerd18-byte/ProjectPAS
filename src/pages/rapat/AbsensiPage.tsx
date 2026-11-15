@@ -11,9 +11,10 @@ import {
   UserCheck,
   Printer,
   ChevronDown,
+  Download,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { generateQRCode } from '../../lib/utils';
+import { generateQRCode, formatAttendanceTime, normalizeMajor } from '../../lib/utils';
 import confetti from 'canvas-confetti';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 
@@ -126,6 +127,35 @@ export const AbsensiPage: React.FC = () => {
       a.nisn.includes(searchTerm) ||
       a.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const exportAttendanceCSV = () => {
+    if (meetingAttendances.length === 0) {
+      showToast('Belum ada data presensi untuk diekspor!', 'error');
+      return;
+    }
+    const headers = ['No', 'Nama Siswa', 'NISN', 'Tingkat Kelas', 'Jurusan', 'Status Kehadiran', 'Waktu Presensi', 'Catatan'];
+    const rows = meetingAttendances.map((a, idx) => [
+      idx + 1,
+      `"${a.memberName.replace(/"/g, '""')}"`,
+      `="${a.nisn}"`,
+      `"${a.grade}"`,
+      `"${normalizeMajor(a.major).replace(/"/g, '""')}"`,
+      a.status.toUpperCase(),
+      `"${formatAttendanceTime(a.checkInTime)}"`,
+      `"${(a.notes || 'Hadir').replace(/"/g, '""')}"`,
+    ]);
+    const csvString = '\uFEFF' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Presensi_${currentMeeting?.title.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast('File CSV presensi berhasil diunduh!');
+  };
 
   return (
     <div className="space-y-6">
@@ -321,11 +351,20 @@ export const AbsensiPage: React.FC = () => {
                 />
               </div>
               <button
+                onClick={exportAttendanceCSV}
+                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer"
+                title="Ekspor CSV Presensi"
+              >
+                <Download className="w-4 h-4" />
+                <span className="hidden sm:inline">Ekspor CSV</span>
+              </button>
+              <button
                 onClick={() => window.print()}
-                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs"
+                className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs flex items-center gap-1.5 cursor-pointer"
                 title="Cetak Presensi"
               >
                 <Printer className="w-4 h-4" />
+                <span className="hidden sm:inline">Cetak</span>
               </button>
             </div>
           </div>
@@ -348,9 +387,11 @@ export const AbsensiPage: React.FC = () => {
                     <tr key={att.id} className="hover:bg-slate-50/70">
                       <td className="py-2.5 px-3 font-bold text-slate-900">{att.memberName}</td>
                       <td className="py-2.5 px-3 text-slate-500">
-                        {att.grade} • {att.major} ({att.nisn})
+                        {att.grade} • {normalizeMajor(att.major)} ({att.nisn})
                       </td>
-                      <td className="py-2.5 px-3 font-mono text-slate-600">{att.checkInTime}</td>
+                      <td className="py-2.5 px-3 font-mono text-slate-600">
+                        {formatAttendanceTime(att.checkInTime)}
+                      </td>
                       <td className="py-2.5 px-3">
                         <span
                           className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${

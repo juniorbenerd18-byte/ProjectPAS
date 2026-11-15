@@ -12,6 +12,8 @@ import {
   Building2,
   Camera,
   AlertCircle,
+  Lock,
+  ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Member, UserRole } from '../../types';
@@ -21,8 +23,24 @@ import { KartuAnggota } from './KartuAnggota';
 import { StrukturOrganisasi } from '../organisasi/StrukturOrganisasi';
 
 export const KeanggotaanPage: React.FC = () => {
-  const { members, divisions, addMember, updateMember, deleteMember, orgProfile } = useApp();
+  const {
+    members,
+    divisions,
+    addMember,
+    updateMember,
+    deleteMember,
+    orgProfile,
+    currentRole,
+    showToast,
+  } = useApp();
   const [activeTab, setActiveTab] = useState<'direktori' | 'struktur' | 'kta'>('direktori');
+
+  // RBAC Permission Check
+  const canManageMembers =
+    currentRole === 'admin' ||
+    currentRole === 'pembina' ||
+    currentRole === 'ketua' ||
+    currentRole === 'sekretaris';
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,12 +76,26 @@ export const KeanggotaanPage: React.FC = () => {
   const [formData, setFormData] = useState(initialForm);
 
   const handleOpenAdd = () => {
+    if (!canManageMembers) {
+      showToast(
+        'Akses dibatasi: Hanya Ketua, Sekretaris, Pembina, atau Admin yang dapat menambah data siswa.',
+        'error'
+      );
+      return;
+    }
     setEditingMember(null);
     setFormData(initialForm);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (m: Member) => {
+    if (!canManageMembers) {
+      showToast(
+        'Akses dibatasi: Hanya Pengurus BPH atau Admin yang dapat mengubah data siswa.',
+        'error'
+      );
+      return;
+    }
     setEditingMember(m);
     setFormData({
       nisn: m.nisn,
@@ -87,9 +119,40 @@ export const KeanggotaanPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!canManageMembers) {
+      showToast('Akses ditolak: Anda tidak memiliki wewenang menyimpan data anggota.', 'error');
+      return;
+    }
+
+    const cleanNisn = formData.nisn.trim();
+    const cleanName = formData.fullName.trim();
+
+    if (!cleanName) {
+      showToast('Nama lengkap siswa wajib diisi!', 'error');
+      return;
+    }
+
+    // Validasi Standar Kemdikbud: NISN harus 10 Digit Angka
+    if (!/^\d{10}$/.test(cleanNisn)) {
+      showToast('NISN tidak valid! Harus terdiri dari tepat 10 digit angka resmi Kemdikbud.', 'error');
+      return;
+    }
+
+    // Cek Duplikasi NISN
+    const isDuplicate = members.some(
+      (m) => m.nisn.trim() === cleanNisn && m.id !== editingMember?.id
+    );
+    if (isDuplicate) {
+      showToast(`NISN "${cleanNisn}" sudah terdaftar atas nama siswa lain!`, 'error');
+      return;
+    }
+
     const div = divisions.find((d) => d.id === formData.divisionId);
     const payload = {
       ...formData,
+      nisn: cleanNisn,
+      fullName: cleanName,
       divisionName: div?.name || 'BPH',
     };
 
@@ -102,6 +165,11 @@ export const KeanggotaanPage: React.FC = () => {
   };
 
   const handleConfirmDelete = () => {
+    if (!canManageMembers) {
+      showToast('Akses ditolak: Anda tidak berwenang menghapus data siswa.', 'error');
+      setMemberToDelete(null);
+      return;
+    }
     if (memberToDelete) {
       deleteMember(memberToDelete.id);
       setMemberToDelete(null);
@@ -227,7 +295,7 @@ export const KeanggotaanPage: React.FC = () => {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Cari nama, NISN, atau kelas..."
-                  className="simo-input pl-10 pr-3 min-h-[44px] text-[14px] w-full"
+                  className="simo-input !pl-10 pr-3 min-h-[44px] text-[14px] w-full"
                 />
               </div>
 
@@ -271,9 +339,12 @@ export const KeanggotaanPage: React.FC = () => {
 
             <button
               onClick={handleOpenAdd}
-              className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0"
+              className={`simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0 ${
+                !canManageMembers ? 'opacity-80' : ''
+              }`}
+              title={canManageMembers ? 'Tambah Siswa Baru' : 'Akses Terbatas: Hanya Pengurus BPH / Admin'}
             >
-              <Plus className="w-4 h-4" />
+              {!canManageMembers ? <Lock className="w-4 h-4 text-amber-300" /> : <Plus className="w-4 h-4" />}
               <span>Tambah Siswa</span>
             </button>
           </div>
@@ -341,24 +412,30 @@ export const KeanggotaanPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="py-4 px-5 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleOpenEdit(m)}
-                            className="simo-btn-outline min-h-[36px] px-3 py-1 rounded-[10px] text-[13px] flex items-center gap-1 cursor-pointer"
-                            title="Edit Data Siswa"
-                          >
-                            <Edit className="w-3.5 h-3.5" />
-                            <span>Edit</span>
-                          </button>
-                          <button
-                            onClick={() => setMemberToDelete(m)}
-                            className="min-h-[36px] min-w-[36px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[10px] border border-transparent hover:border-[#E6DFD0] dark:hover:border-[#283D56] transition-colors cursor-pointer"
-                            title="Hapus"
-                            aria-label={`Hapus ${m.fullName}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
+                        {canManageMembers ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenEdit(m)}
+                              className="simo-btn-outline min-h-[36px] px-3 py-1 rounded-[10px] text-[13px] flex items-center gap-1 cursor-pointer"
+                              title="Edit Data Siswa"
+                            >
+                              <Edit className="w-3.5 h-3.5" />
+                              <span>Edit</span>
+                            </button>
+                            <button
+                              onClick={() => setMemberToDelete(m)}
+                              className="min-h-[36px] min-w-[36px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[10px] border border-transparent hover:border-[#E6DFD0] dark:hover:border-[#283D56] transition-colors cursor-pointer"
+                              title="Hapus"
+                              aria-label={`Hapus ${m.fullName}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] px-2.5 py-1 rounded-[8px] bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/40 border border-[#E6DFD0] dark:border-[#283D56]">
+                            Hanya Lihat (Read-Only)
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -404,23 +481,29 @@ export const KeanggotaanPage: React.FC = () => {
                     {m.divisionName || 'BPH'}
                   </span>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleOpenEdit(m)}
-                      className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Edit className="w-4 h-4" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      onClick={() => setMemberToDelete(m)}
-                      className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] cursor-pointer"
-                      title="Hapus"
-                      aria-label={`Hapus ${m.fullName}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  {canManageMembers ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEdit(m)}
+                        className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => setMemberToDelete(m)}
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] cursor-pointer"
+                        title="Hapus"
+                        aria-label={`Hapus ${m.fullName}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] px-2.5 py-1 rounded-[8px] bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/40 border border-[#E6DFD0] dark:border-[#283D56]">
+                      Hanya Lihat
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

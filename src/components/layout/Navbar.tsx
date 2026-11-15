@@ -18,7 +18,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
-  const { currentRole, setCurrentRole, currentUser, announcements, setActivePage, theme, toggleTheme } = useApp();
+  const { currentRole, setCurrentRole, currentUser, announcements, setActivePage, theme, toggleTheme, orgProfile } = useApp();
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
 
@@ -52,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
         </button>
 
         {/* Nama organisasi di mobile */}
-        <span className="text-base font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] lg:hidden">
-          SIMO
+        <span className="text-base font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] lg:hidden truncate max-w-[160px]">
+          {orgProfile.appName || 'SIMO'}
         </span>
       </div>
 

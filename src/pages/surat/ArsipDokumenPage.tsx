@@ -305,7 +305,7 @@ export const ArsipDokumenPage: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari no surat, perihal, pihak..."
-            className="simo-input pl-10 pr-3 min-h-[40px] text-[14px] w-full"
+            className="simo-input !pl-10 pr-3 min-h-[40px] text-[14px] w-full"
           />
         </div>
       </div>
