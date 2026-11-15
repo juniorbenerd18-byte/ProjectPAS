@@ -21,6 +21,18 @@ import {
   EventRegistration,
 } from '../types';
 import { DEFAULT_GALLERY_PHOTOS } from '../components/public/GallerySection';
+import { formatAttendanceTime, normalizeMajor } from '../lib/utils';
+import {
+  fetchMembersFromCloud,
+  addMemberToCloud,
+  updateMemberInCloud,
+  deleteMemberFromCloud,
+  fetchDivisionsFromCloud,
+  fetchMeetingsFromCloud,
+  fetchAnnouncementsFromCloud,
+  recordAttendanceToCloud,
+  isCloudConnected,
+} from '../lib/supabaseService';
 import {
   initialOrgProfile,
   initialDivisions,
@@ -171,7 +183,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [workPrograms, setWorkPrograms] = useState<WorkProgram[]>(() => loadStored('workPrograms', initialWorkPrograms));
   const [events, setEvents] = useState<EventItem[]>(() => loadStored('events', initialEvents));
   const [meetings, setMeetings] = useState<Meeting[]>(() => loadStored('meetings', initialMeetings));
-  const [attendances, setAttendances] = useState<AttendanceRecord[]>(() => loadStored('attendances', initialAttendances));
+  const [attendances, setAttendances] = useState<AttendanceRecord[]>(() => {
+    const stored = loadStored<AttendanceRecord[]>('attendances', initialAttendances);
+    return stored.map((a) => ({
+      ...a,
+      checkInTime: formatAttendanceTime(a.checkInTime),
+      major: normalizeMajor(a.major),
+      notes: a.notes || 'Hadir',
+    }));
+  });
   const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(() => loadStored('cashTransactions', initialCashTransactions));
   const [memberDues, setMemberDues] = useState<MemberDue[]>(() => loadStored('memberDues', initialMemberDues));
   const [budgets, setBudgets] = useState<BudgetPlan[]>(() => loadStored('budgets', initialBudgets));
@@ -184,8 +204,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>(() => loadStored('eventRegistrations', initialEventRegistrations));
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>(() => loadStored('galleryPhotos', DEFAULT_GALLERY_PHOTOS));
 
-  // Determine current user based on active role
-  const currentUser = members.find((m) => m.role === currentRole) || members[0];
+  // Determine current user based on active role (with resilient fallback to avoid crash if all members deleted)
+  const currentUser = members.find((m) => m.role === currentRole) || members[0] || initialMembers[0];
   const setCurrentUser = (m: Member) => {
     setCurrentRole(m.role);
   };
@@ -215,6 +235,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     meetings, attendances, cashTransactions, memberDues, budgets,
     documents, announcements, aspirations, recruitments, eventRegistrations, galleryPhotos
   ]);
+
+  // Initial Real-time Cloud Sync from Supabase on application mount
+  useEffect(() => {
+    async function initCloudSync() {
+      if (!isCloudConnected()) return;
+      try {
+        const [cloudMembers, cloudDivisions, cloudMeetings, cloudAnnouncements] = await Promise.all([
+          fetchMembersFromCloud(),
+          fetchDivisionsFromCloud(),
+          fetchMeetingsFromCloud(),
+          fetchAnnouncementsFromCloud(),
+        ]);
+        if (cloudMembers && cloudMembers.length > 0) {
+          setMembers(cloudMembers);
+        }
+        if (cloudDivisions && cloudDivisions.length > 0) {
+          setDivisions(cloudDivisions);
+        }
+        if (cloudMeetings && cloudMeetings.length > 0) {
+          setMeetings(cloudMeetings);
+        }
+        if (cloudAnnouncements && cloudAnnouncements.length > 0) {
+          setAnnouncements(cloudAnnouncements);
+        }
+      } catch (err) {
+        console.warn('Initial cloud sync notice:', err);
+      }
+    }
+    initCloudSync();
+  }, []);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     setToast({ message, type });
@@ -257,10 +307,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Jabatan dihapus.', 'info');
   };
 
-  // Members CRUD
+  // Members CRUD with Dual-Sync (Local + Supabase Cloud)
   const addMember = (member: Omit<Member, 'id'>) => {
     const newMember: Member = { ...member, id: `mem-${Date.now()}` };
     setMembers((prev) => [...prev, newMember]);
+    // Async push to Supabase Cloud
+    addMemberToCloud(newMember).catch(() => {});
+
     // Generate initial dues for the member
     const newDue: MemberDue = {
       id: `due-${Date.now()}`,
@@ -273,17 +326,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'belum_lunas',
     };
     setMemberDues((prev) => [...prev, newDue]);
-    showToast(`Anggota ${newMember.fullName} berhasil didaftarkan!`);
+    showToast(`Anggota ${newMember.fullName} berhasil didaftarkan & disinkronkan ke Cloud!`);
   };
 
   const updateMember = (id: string, member: Partial<Member>) => {
     setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, ...member } : m)));
-    showToast('Data anggota berhasil diperbarui!');
+    // Async update to Supabase Cloud
+    updateMemberInCloud(id, member).catch(() => {});
+    showToast('Data anggota berhasil diperbarui & disinkronkan ke Cloud!');
   };
 
   const deleteMember = (id: string) => {
     setMembers((prev) => prev.filter((m) => m.id !== id));
-    showToast('Anggota telah dihapus.', 'info');
+    // Async delete from Supabase Cloud
+    deleteMemberFromCloud(id).catch(() => {});
+    // Cascade cleanup: hapus riwayat presensi & iuran terkait agar tidak menjadi data yatim (orphan)
+    setAttendances((prev) => prev.filter((a) => a.memberId !== id));
+    setMemberDues((prev) => prev.filter((d) => d.memberId !== id));
+    showToast('Anggota dan riwayat terkait telah dihapus.', 'info');
   };
 
   // Theme State (Default to Clean White Light Mode)
@@ -449,12 +509,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (alreadyAttended) {
       return { success: false, message: 'Anda sudah melakukan presensi sebelumnya.' };
     }
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
     const newAtt: AttendanceRecord = {
       ...record,
       id: `att-${Date.now()}`,
-      checkInTime: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      checkInTime: `${hh}:${mm} WIB`,
+      major: normalizeMajor(record.major),
+      notes: record.notes || 'Hadir',
     };
     setAttendances((prev) => [newAtt, ...prev]);
+    // Async push to Supabase Cloud
+    recordAttendanceToCloud(newAtt).catch(() => {});
     showToast(`Presensi berhasil: ${newAtt.memberName} (${newAtt.status.toUpperCase()})`);
     return { success: true, message: 'Presensi berhasil dicatat!' };
   };
