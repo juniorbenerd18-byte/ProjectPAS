@@ -38,7 +38,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
                 S
               </div>
               <span className="text-xl font-bold tracking-tight text-[#FAF6EE]">
-                SIMO
+                {organization.shortName || 'SIMO'}
               </span>
             </div>
             <p className="text-sm text-[#FAF6EE]/75 leading-relaxed">

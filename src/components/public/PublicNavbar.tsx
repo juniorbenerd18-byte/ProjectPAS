@@ -17,6 +17,30 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   const { showToast } = useApp();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
+  const menuContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside or Escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
 
   // Secret 5x logo click mechanism
   const [logoClickCount, setLogoClickCount] = useState(0);
@@ -95,8 +119,9 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
   return (
     <header className="fixed top-3 sm:top-5 inset-x-0 z-50 flex justify-center px-3 sm:px-6 pointer-events-none">
       <div
-        className={`pointer-events-auto w-full max-w-5xl bg-[#FFFDF8]/95 backdrop-blur-md border border-[#E6DFD0] shadow-sm transition-all duration-300 ease-out ${
-          mobileMenuOpen ? 'rounded-3xl' : 'rounded-full'
+        ref={menuContainerRef}
+        className={`pointer-events-auto w-full max-w-5xl bg-[#FFFDF8]/95 backdrop-blur-md border border-[#E6DFD0] shadow-sm transition-[box-shadow,background-color] duration-300 ease-out ${
+          mobileMenuOpen ? 'rounded-2xl sm:rounded-3xl' : 'rounded-[28px] md:rounded-full'
         } px-4 sm:px-6 py-2.5 sm:py-3`}
       >
         <div className="flex items-center justify-between">
@@ -154,7 +179,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
             </div>
             <div className="flex flex-col">
               <span className="text-sm sm:text-base font-extrabold text-[#1F3A5F] tracking-tight leading-none">
-                SIMO
+                {organization.shortName || 'SIMO'}
               </span>
               <span className="text-[10px] text-[#5A6472] font-semibold leading-tight line-clamp-1">
                 {organization.name || 'Portal Resmi OSIS'}
@@ -209,10 +234,16 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Drawer Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden pt-4 pb-2 border-t border-[#E6DFD0] mt-3 space-y-3 animate-fade-in">
-            <div className="flex flex-col space-y-1">
+        {/* Mobile Drawer Menu dengan transisi accordion mulus tanpa glitch lingkaran */}
+        <div
+          className={`grid md:hidden transition-[grid-template-rows,opacity,margin,padding] duration-300 ease-in-out ${
+            mobileMenuOpen
+              ? 'grid-rows-[1fr] opacity-100 mt-3 pt-3 border-t border-[#E6DFD0]'
+              : 'grid-rows-[0fr] opacity-0 mt-0 pt-0 border-t-0 pointer-events-none'
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="flex flex-col space-y-1 pb-2">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
@@ -227,7 +258,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 </a>
               ))}
             </div>
-            <div className="pt-3 border-t border-[#E6DFD0] flex flex-col gap-2">
+            <div className="pt-3 border-t border-[#E6DFD0] flex flex-col gap-2 pb-1">
               <button
                 onClick={handleRegister}
                 className="w-full min-h-[44px] flex items-center justify-center text-center text-xs font-extrabold text-[#1F3A5F] bg-[#F2B544] hover:bg-[#E0A12F] rounded-full shadow-2xs transition-colors cursor-pointer"
@@ -245,7 +276,7 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
               </button>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </header>
   );

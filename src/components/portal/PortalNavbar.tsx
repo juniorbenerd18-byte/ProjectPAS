@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Shield,
   Sun,
@@ -33,6 +33,30 @@ export const PortalNavbar: React.FC<PortalNavbarProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('beranda');
+  const menuContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close menu on click outside or Escape key
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuContainerRef.current && !menuContainerRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [mobileMenuOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,8 +107,9 @@ export const PortalNavbar: React.FC<PortalNavbarProps> = ({
   return (
     <header className="fixed inset-x-0 top-3 sm:top-5 z-50 flex justify-center px-3 sm:px-6 pointer-events-none">
       <div
-        className={`pointer-events-auto relative w-full max-w-5xl backdrop-blur-md transition-all duration-300 ease-out border shadow-lg ${
-          mobileMenuOpen ? 'rounded-3xl' : 'rounded-full'
+        ref={menuContainerRef}
+        className={`pointer-events-auto relative w-full max-w-5xl backdrop-blur-md transition-[background-color,border-color,box-shadow,color] duration-300 ease-out border shadow-lg ${
+          mobileMenuOpen ? 'rounded-2xl sm:rounded-3xl' : 'rounded-[28px] md:rounded-full'
         } ${
           scrolled
             ? 'bg-white/90 dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-100 shadow-xl'
@@ -195,51 +220,57 @@ export const PortalNavbar: React.FC<PortalNavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu inside capsule */}
-        {mobileMenuOpen && (
-          <div
-            className={`md:hidden px-4 pt-2 pb-4 border-t space-y-1 ${
-              scrolled
-                ? 'border-slate-200/80 dark:border-slate-800'
-                : 'border-white/15'
-            }`}
-          >
-            {navLinks.map((link) => {
-              const isActive = activeSection === link.id;
-              return (
-                <button
-                  key={link.id}
-                  onClick={() => scrollToSection(link.id)}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
-                    isActive
-                      ? scrolled
-                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
-                        : 'bg-white text-slate-900'
-                      : scrolled
-                      ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      : 'text-white/90 hover:bg-white/10'
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
-                </button>
-              );
-            })}
+        {/* Mobile Dropdown Menu dengan animasi accordion halus */}
+        <div
+          className={`grid md:hidden transition-[grid-template-rows,opacity,padding] duration-300 ease-in-out ${
+            mobileMenuOpen
+              ? 'grid-rows-[1fr] opacity-100 border-t'
+              : 'grid-rows-[0fr] opacity-0 border-t-0 pointer-events-none'
+          } ${
+            scrolled
+              ? 'border-slate-200/80 dark:border-slate-800'
+              : 'border-white/15'
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="px-4 pt-2 pb-4 space-y-1">
+              {navLinks.map((link) => {
+                const isActive = activeSection === link.id;
+                return (
+                  <button
+                    key={link.id}
+                    onClick={() => scrollToSection(link.id)}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors cursor-pointer ${
+                      isActive
+                        ? scrolled
+                          ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
+                          : 'bg-white text-slate-900'
+                        : scrolled
+                        ? 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        : 'text-white/90 hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{link.label}</span>
+                    {isActive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+                  </button>
+                );
+              })}
 
-            <div className="pt-2">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  onAdminLogin();
-                }}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs cursor-pointer"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Masuk Dashboard Pengurus</span>
-              </button>
+              <div className="pt-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onAdminLogin();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-xs cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Masuk Dashboard Pengurus</span>
+                </button>
+              </div>
             </div>
           </div>
-        )}
+        </div>
       </div>
     </header>
   );

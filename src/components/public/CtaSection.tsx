@@ -9,11 +9,17 @@ import {
   Lightbulb,
   Send,
   CheckCircle2,
+  UserPlus,
+  Ticket,
+  Building2,
+  Sparkles,
 } from "lucide-react";
 import { Highlight } from "./Highlight";
 import { PortalOrganization } from "../../data/portalData";
 import { ScrollReveal } from "../common/ScrollReveal";
 import { useApp } from "../../context/AppContext";
+import { Modal } from "../common/Modal";
+import confetti from "canvas-confetti";
 
 interface CtaSectionProps {
   organization: PortalOrganization;
@@ -21,9 +27,26 @@ interface CtaSectionProps {
 }
 
 export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
-  const { addAspiration, showToast } = useApp();
+  const { addAspiration, addRecruitment, divisions, showToast } = useApp();
 
   const [showContactModal, setShowContactModal] = useState(false);
+  const [isWebRegisterModalOpen, setIsWebRegisterModalOpen] = useState(false);
+  const [submittedTicket, setSubmittedTicket] = useState<{
+    regNumber: string;
+    name: string;
+    division: string;
+  } | null>(null);
+
+  const [webRegForm, setWebRegForm] = useState({
+    fullName: "",
+    nisn: "",
+    grade: "X" as "X" | "XI",
+    classRoom: "X RPL 1",
+    major: "Rekayasa Perangkat Lunak",
+    preferredDivision: divisions[0]?.name || "BPH",
+    reason: "",
+    whatsapp: "",
+  });
 
   const isRegistrationOpen = organization.isRegistrationOpen !== false;
   const gformUrl =
@@ -33,6 +56,69 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
   const noticeMessage =
     organization.registrationNotice ||
     "Pendaftaran Anggota Baru Gelombang 1 ditutup sementara. Gelombang 2 akan dibuka kembali pada 15 Januari 2027 pukul 08:00 WIB.";
+
+  const handleWebRegSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const cleanName = webRegForm.fullName.trim();
+    const cleanNisn = webRegForm.nisn.trim();
+    const cleanReason = webRegForm.reason.trim();
+
+    if (!cleanName) {
+      showToast("Harap isi nama lengkap Anda.", "error");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(cleanNisn)) {
+      showToast("NISN harus berupa 10 digit angka resmi Kemdikbud!", "error");
+      return;
+    }
+
+    if (!cleanReason) {
+      showToast("Harap tuliskan motivasi atau alasan bergabung.", "error");
+      return;
+    }
+
+    const division = webRegForm.preferredDivision || (divisions[0]?.name || "BPH");
+    const reg = addRecruitment({
+      fullName: cleanName,
+      nisn: cleanNisn,
+      grade: webRegForm.grade,
+      classRoom: webRegForm.classRoom.trim() || "X RPL 1",
+      major: webRegForm.major.trim() || "Rekayasa Perangkat Lunak",
+      divisionChoice1: division,
+      divisionChoice2: divisions[1]?.name || "Humas & Dokumentasi",
+      reason: cleanReason,
+      phone: webRegForm.whatsapp.trim() || "-",
+      skills: ["Komunikasi", "Kepemimpinan"],
+    });
+
+    try {
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    } catch {
+      // fallback safe
+    }
+
+    setSubmittedTicket({
+      regNumber: reg.registrationNumber,
+      name: reg.fullName,
+      division: division,
+    });
+
+    showToast("Pendaftaran berhasil terkirim ke sistem pengurus OSIS!", "success");
+
+    // Reset form
+    setWebRegForm({
+      fullName: "",
+      nisn: "",
+      grade: "X",
+      classRoom: "X RPL 1",
+      major: "Rekayasa Perangkat Lunak",
+      preferredDivision: divisions[0]?.name || "BPH",
+      reason: "",
+      whatsapp: "",
+    });
+  };
 
   const [ideaName, setIdeaName] = useState("");
   const [ideaEmail, setIdeaEmail] = useState("");
@@ -122,23 +208,36 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
                   <p className="text-xs text-amber-900 leading-relaxed">{noticeMessage}</p>
                 </div>
               )}
-              <div className="mt-auto flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="mt-auto flex flex-col sm:flex-row gap-2.5 pt-2">
                 {isRegistrationOpen ? (
                   <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubmittedTicket(null);
+                        setIsWebRegisterModalOpen(true);
+                      }}
+                      className="flex-1 px-4 py-3 text-sm font-extrabold text-[#1F3A5F] bg-[#F2B544] hover:bg-[#E0A12F] active:scale-95 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span>Daftar di Web</span>
+                    </button>
                     <a
                       href={gformUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex-1 px-5 py-3 text-sm font-extrabold text-[#1F3A5F] bg-[#F2B544] hover:bg-[#E0A12F] active:scale-95 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 group"
+                      className="px-3.5 py-3 text-xs font-bold text-[#1F3A5F] bg-[#FFFDF8] border border-[#E6DFD0] hover:bg-[#E4EAF2] rounded-xl transition-all flex items-center justify-center gap-1.5"
+                      title="Opsi alternatif via Google Form eksternal"
                     >
-                      <span>Daftar via Google Form</span>
-                      <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                      <span>Google Form</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-[#5A6472]" />
                     </a>
                     <button
+                      type="button"
                       onClick={() => setShowContactModal(true)}
-                      className="flex-1 px-5 py-3 text-sm font-semibold text-[#1F3A5F] bg-[#FFFDF8] border border-[#E6DFD0] hover:bg-[#E4EAF2] rounded-xl transition-all flex items-center justify-center cursor-pointer"
+                      className="px-3.5 py-3 text-xs font-semibold text-[#1F3A5F] bg-[#FFFDF8] border border-[#E6DFD0] hover:bg-[#E4EAF2] rounded-xl transition-all flex items-center justify-center cursor-pointer"
                     >
-                      Hubungi Kami
+                      Kontak
                     </button>
                   </>
                 ) : (
@@ -253,6 +352,186 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
           </ScrollReveal>
         </div>
       </div>
+
+      {/* Modal Pendaftaran Mandiri di Web */}
+      <Modal
+        isOpen={isWebRegisterModalOpen}
+        onClose={() => setIsWebRegisterModalOpen(false)}
+        title="Formulir Rekrutmen Calon Pengurus OSIS"
+        subtitle="Daftarkan dirimu secara mandiri dan resmi ke dalam sistem basis data OSIS"
+        maxWidth="lg"
+      >
+        {submittedTicket ? (
+          <div className="text-center py-6 space-y-4">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-200">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E4EAF2] text-[#1F3A5F] mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#F2B544]" />
+                Registrasi Berhasil
+              </span>
+              <h4 className="text-xl font-black text-[#1F3A5F]">
+                Selamat, {submittedTicket.name}!
+              </h4>
+              <p className="text-sm text-[#5A6472] mt-1 max-w-sm mx-auto">
+                Berkas pendaftaran Anda untuk pilihan <strong>{submittedTicket.division}</strong> telah tercatat di sistem pengurus.
+              </p>
+            </div>
+
+            <div className="p-4 bg-[#FAF6EE] rounded-2xl border border-[#E6DFD0] max-w-xs mx-auto space-y-1">
+              <span className="text-xs text-[#5A6472] font-semibold block">Nomor Registrasi Anda:</span>
+              <p className="text-xl font-black text-[#1F3A5F] font-mono tracking-wider">
+                {submittedTicket.regNumber}
+              </p>
+              <span className="text-[11px] text-[#7A4B00] bg-[#FBEBC8] px-2 py-0.5 rounded-md inline-block font-bold">
+                Harap simpan nomor ini untuk verifikasi
+              </span>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setIsWebRegisterModalOpen(false)}
+                className="px-6 py-2.5 rounded-xl bg-[#1F3A5F] text-[#FAF6EE] font-bold text-sm hover:bg-[#162B46] transition-colors cursor-pointer"
+              >
+                Selesai &amp; Tutup
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleWebRegSubmit} className="space-y-4 pt-1 text-left">
+            <div>
+              <label className="block text-xs font-bold text-[#1F3A5F] mb-1">
+                Nama Lengkap Siswa <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={webRegForm.fullName}
+                onChange={(e) => setWebRegForm({ ...webRegForm, fullName: e.target.value })}
+                placeholder="Contoh: Muhammad Rizki"
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-[#1F3A5F] mb-1">
+                  NISN (10 Digit) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  maxLength={10}
+                  value={webRegForm.nisn}
+                  onChange={(e) => setWebRegForm({ ...webRegForm, nisn: e.target.value.replace(/\D/g, '') })}
+                  placeholder="0081234567"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold font-mono focus:outline-none focus:border-[#1F3A5F]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#1F3A5F] mb-1">
+                  Nomor WhatsApp / HP
+                </label>
+                <input
+                  type="tel"
+                  value={webRegForm.whatsapp}
+                  onChange={(e) => setWebRegForm({ ...webRegForm, whatsapp: e.target.value })}
+                  placeholder="081234567890"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F]"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div>
+                <label className="block text-xs font-bold text-[#1F3A5F] mb-1">Tingkat</label>
+                <select
+                  value={webRegForm.grade}
+                  onChange={(e) => setWebRegForm({ ...webRegForm, grade: e.target.value as "X" | "XI" })}
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F]"
+                >
+                  <option value="X">Kelas X</option>
+                  <option value="XI">Kelas XI</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#1F3A5F] mb-1">Kelas</label>
+                <input
+                  type="text"
+                  value={webRegForm.classRoom}
+                  onChange={(e) => setWebRegForm({ ...webRegForm, classRoom: e.target.value })}
+                  placeholder="X RPL 1"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#1F3A5F] mb-1">Jurusan</label>
+                <input
+                  type="text"
+                  value={webRegForm.major}
+                  onChange={(e) => setWebRegForm({ ...webRegForm, major: e.target.value })}
+                  placeholder="RPL / TKJ / DKV"
+                  required
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1F3A5F] mb-1">
+                Pilihan Minat Divisi / Sekbid <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={webRegForm.preferredDivision}
+                onChange={(e) => setWebRegForm({ ...webRegForm, preferredDivision: e.target.value })}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F]"
+              >
+                {divisions.map((d) => (
+                  <option key={d.id} value={d.name}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1F3A5F] mb-1">
+                Alasan / Motivasi Ingin Bergabung <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                rows={3}
+                value={webRegForm.reason}
+                onChange={(e) => setWebRegForm({ ...webRegForm, reason: e.target.value })}
+                placeholder="Ceritakan motivasi dan kontribusi apa yang ingin Anda berikan..."
+                required
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#FAF6EE] border border-[#E6DFD0] text-[#1F3A5F] text-sm font-semibold focus:outline-none focus:border-[#1F3A5F] resize-none"
+              />
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2.5 border-t border-[#E6DFD0]">
+              <button
+                type="button"
+                onClick={() => setIsWebRegisterModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-[#5A6472] hover:bg-[#FAF6EE] border border-[#E6DFD0] transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl text-xs font-extrabold text-[#1F3A5F] bg-[#F2B544] hover:bg-[#E0A12F] shadow-sm transition-all cursor-pointer"
+              >
+                Kirim Formulir Pendaftaran
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
 
       {showContactModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
