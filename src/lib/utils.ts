@@ -66,3 +66,52 @@ export async function generateQRCode(text: string): Promise<string> {
     return '';
   }
 }
+
+export function formatAttendanceTime(timeStr?: string): string {
+  if (!timeStr) return '-';
+  const trimmed = String(timeStr).trim();
+  if (trimmed.endsWith('WIB')) return trimmed;
+
+  // Handle 'YYYY-MM-DD HH:mm' or 'YYYY-MM-DDTHH:mm:ss'
+  const dateSplit = trimmed.split(/[ T]/);
+  if (dateSplit.length > 1) {
+    const timePart = dateSplit[1];
+    const [h, m] = timePart.split(/[:.]/);
+    if (h !== undefined && m !== undefined) {
+      return `${h.padStart(2, '0')}:${m.padStart(2, '0')} WIB`;
+    }
+  }
+
+  // Handle '18.42', '9.03', '09:03', '14:25'
+  const timeMatch = trimmed.match(/^(\d{1,2})[:.](\d{2})/);
+  if (timeMatch) {
+    const [, h, m] = timeMatch;
+    return `${h.padStart(2, '0')}:${m.padStart(2, '0')} WIB`;
+  }
+
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    const h = parsed.getHours().toString().padStart(2, '0');
+    const m = parsed.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m} WIB`;
+  }
+
+  return trimmed;
+}
+
+export function normalizeMajor(major?: string): string {
+  if (!major) return '-';
+  const trimmed = major.trim();
+  const map: Record<string, string> = {
+    RPL: 'Rekayasa Perangkat Lunak',
+    TKJ: 'Teknik Komputer & Jaringan',
+    AKL: 'Akuntansi & Keuangan Lembaga',
+    DKV: 'Desain Komunikasi Visual',
+    TKRO: 'Teknik Kendaraan Ringan Otomotif',
+    TKR: 'Teknik Kendaraan Ringan Otomotif',
+    MPLB: 'Manajemen Perkantoran & Layanan Bisnis',
+    BD: 'Bisnis Digital',
+  };
+  return map[trimmed.toUpperCase()] || trimmed;
+}
+

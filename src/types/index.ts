@@ -181,6 +181,7 @@ export interface Announcement {
 
 export interface OrgProfile {
   name: string;
+  appName?: string;
   schoolName: string;
   academicYear: string;
   vision: string;
