@@ -1,8 +1,10 @@
 {
   "organization": {
     "name": "OSIS SMK Negeri 1 Cerdas Bangsa",
-    "shortName": "OSIS SMKN 1 CERDAS",
+    "shortName": "SIMO",
+    "appName": "SIMO",
     "schoolName": "SMK Negeri 1 Cerdas Bangsa",
+    "logoUrl": "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80",
     "tagline": "Pusat Informasi, Dokumentasi & Transparansi Program Kerja Organisasi Sekolah",
     "heroBadge": "Portal Akuntabilitas & Karya Nyata Pelajar",
     "academicYear": "2025/2026",

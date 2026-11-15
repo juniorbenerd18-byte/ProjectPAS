@@ -272,5 +272,6 @@ export interface GalleryItem {
   caption: string;
   imageUrl: string;
   date: string;
+  category?: string;
 }
 

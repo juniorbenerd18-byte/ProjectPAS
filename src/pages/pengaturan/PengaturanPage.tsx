@@ -366,7 +366,7 @@ export const PengaturanPage: React.FC = () => {
                   className="simo-input min-h-[44px] text-[15px] w-full font-bold"
                 />
                 <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
-                  Nama yang muncul di Sidebar kiri atas dan Header mobile (misal: SIMO, OSIS-APP, dll.)
+                  Nama brand aplikasi yang muncul di navbar portal publik, sidebar admin, dan header mobile (misal: SIMO, OSIS-APP, dll.)
                 </p>
               </div>
 
@@ -428,20 +428,33 @@ export const PengaturanPage: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                  URL / Tautan Logo Organisasi (Opsional)
+                  Logo Aplikasi &amp; Organisasi (Opsional)
                 </label>
-                <input
-                  type="text"
-                  value={profileForm.logoUrl}
-                  onChange={(e) => setProfileForm({ ...profileForm, logoUrl: e.target.value })}
-                  placeholder="Kosongkan untuk ikon gedung adaptif bawaan"
-                  className="simo-input min-h-[44px] text-[15px] w-full text-xs"
-                />
-                <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
-                  Logo tampil di kop surat, kartu KTA, dan sidebar (otomatis kontras di mode terang &amp; gelap)
-                </p>
+                <div className="flex flex-col sm:flex-row gap-4 items-start">
+                  <div className="w-24 shrink-0">
+                    <ImagePicker
+                      label=""
+                      value={profileForm.logoUrl}
+                      onChange={(url) => setProfileForm({ ...profileForm, logoUrl: url })}
+                      helperText=""
+                      aspectRatio="square"
+                    />
+                  </div>
+                  <div className="flex-1 w-full space-y-2">
+                    <input
+                      type="text"
+                      value={profileForm.logoUrl}
+                      onChange={(e) => setProfileForm({ ...profileForm, logoUrl: e.target.value })}
+                      placeholder="Atau tempel tautan gambar (https://...)"
+                      className="simo-input min-h-[44px] text-[14px] w-full"
+                    />
+                    <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">
+                      Unggah logo dari komputer atau masukkan link URL gambar. Logo otomatis tampil di navbar portal publik, sidebar admin, halaman login, kop surat, dan kartu KTA.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <div>

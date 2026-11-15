@@ -3,6 +3,7 @@ import rawPortalData from './portalData.json';
 export interface PortalOrganization {
   name: string;
   shortName: string;
+  appName?: string;
   schoolName: string;
   tagline: string;
   heroBadge: string;

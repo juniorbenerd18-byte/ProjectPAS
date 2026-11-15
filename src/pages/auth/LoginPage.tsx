@@ -27,6 +27,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
     showToast,
     theme,
     toggleTheme,
+    orgProfile,
   } = useApp();
 
   const [username, setUsername] = useState('0081234501'); // Default Ketua
@@ -205,15 +206,35 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
           {/* Card Header & Brand Logo */}
           <div className="flex flex-col items-center text-center space-y-3 pb-5 border-b border-[#E6DFD0] dark:border-[#283D56]">
             {/* The Official SIMO Logo */}
-            <div className="w-14 h-14 rounded-[16px] bg-[#1F3A5F] flex items-center justify-center text-[#FAF6EE] shadow-none">
+            {orgProfile.logoUrl ? (
+              <img
+                src={orgProfile.logoUrl}
+                alt="Logo"
+                className="w-14 h-14 rounded-[16px] object-cover border border-[#E6DFD0] dark:border-[#283D56] shadow-none"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLElement).nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div
+              className={`w-14 h-14 rounded-[16px] bg-[#1F3A5F] flex items-center justify-center text-[#FAF6EE] shadow-none ${
+                orgProfile.logoUrl ? 'hidden' : ''
+              }`}
+            >
               <span className="w-6 h-6 rounded-full border-2 border-[#F2B544] flex items-center justify-center text-[12px] text-[#F2B544]">
                 ●
               </span>
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
-              Masuk
-            </h1>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+                Masuk ke {orgProfile.appName || 'SIMO'}
+              </h1>
+              <p className="text-xs text-[#5A6472] dark:text-[#9AA8B8] font-medium mt-1">
+                {orgProfile.academicYear ? `Periode ${orgProfile.academicYear} • ` : ''}Portal Manajemen Organisasi
+              </p>
+            </div>
           </div>
 
           {/* Quick Account Switcher Pills (Sangat ramah penguji & juri) */}

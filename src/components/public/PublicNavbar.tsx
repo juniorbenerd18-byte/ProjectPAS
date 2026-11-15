@@ -166,23 +166,36 @@ export const PublicNavbar: React.FC<PublicNavbarProps> = ({
                 }
               }
             }}
-            title="SIMO - Portal Resmi OSIS"
+            title={`${organization.appName || organization.shortName || 'SIMO'} - Portal Resmi OSIS`}
           >
+            {organization.logoUrl ? (
+              <img
+                src={organization.logoUrl}
+                alt="Logo"
+                className={`w-9 h-9 rounded-xl object-cover shrink-0 border border-[#E6DFD0] shadow-2xs group-hover:scale-105 transition-all duration-200 ${
+                  isLogoPulsing ? 'scale-90 ring-2 ring-[#F2B544]' : 'scale-100'
+                }`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLElement).nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
             <div
               className={`w-9 h-9 rounded-xl bg-[#1F3A5F] flex items-center justify-center text-[#FAF6EE] font-black text-sm shadow-2xs group-hover:bg-[#162B46] transition-all duration-200 ${
-                isLogoPulsing ? 'scale-90 ring-2 ring-[#F2B544]' : 'scale-100'
-              }`}
+                organization.logoUrl ? 'hidden' : ''
+              } ${isLogoPulsing ? 'scale-90 ring-2 ring-[#F2B544]' : 'scale-100'}`}
             >
               <span className="w-4 h-4 rounded-full border-2 border-[#F2B544] flex items-center justify-center text-[10px] text-[#F2B544]">
                 ●
               </span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm sm:text-base font-extrabold text-[#1F3A5F] tracking-tight leading-none">
-                {organization.shortName || 'SIMO'}
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm sm:text-base font-extrabold text-[#1F3A5F] tracking-tight leading-none truncate">
+                {organization.appName || organization.shortName || 'SIMO'}
               </span>
-              <span className="text-[10px] text-[#5A6472] font-semibold leading-tight line-clamp-1">
-                {organization.name || 'Portal Resmi OSIS'}
+              <span className="text-[12px] sm:text-[13px] text-[#5A6472] font-semibold mt-1 truncate">
+                {organization.academicYear || '2025/2026'}
               </span>
             </div>
           </a>

@@ -31,6 +31,12 @@ export const PublicPortalPage: React.FC = () => {
   const organizationData = useMemo(() => ({
     ...portalData.organization,
     // Override with admin-editable fields from orgProfile (stored in localStorage)
+    appName: orgProfile.appName || 'SIMO',
+    shortName: orgProfile.appName || 'SIMO',
+    schoolName: orgProfile.schoolName || portalData.organization.schoolName,
+    name: orgProfile.name || portalData.organization.name,
+    academicYear: orgProfile.academicYear || portalData.organization.academicYear,
+    logoUrl: orgProfile.logoUrl || portalData.organization.logoUrl,
     vision: orgProfile.vision || portalData.organization.vision,
     missions: orgProfile.mission?.length
       ? orgProfile.mission
@@ -39,10 +45,6 @@ export const PublicPortalPage: React.FC = () => {
       orgProfile.visionPhotoUrl ||
       portalData.organization.visionPhotoUrl ||
       undefined,
-    schoolName: orgProfile.schoolName || portalData.organization.schoolName,
-    name: orgProfile.name || portalData.organization.name,
-    academicYear: orgProfile.academicYear || portalData.organization.academicYear,
-    logoUrl: orgProfile.logoUrl || portalData.organization.logoUrl,
     ketuaName: orgProfile.ketuaName || 'Agustin Rahmadani',
     ketuaPhotoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
     ketuaPeriod: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',

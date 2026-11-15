@@ -37,8 +37,8 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Kolom Kiri: Foto Ketua OSIS dengan Badge Melayang di Bawah */}
           <ScrollReveal distance={40} duration={750} delay={0} className="w-full lg:w-5/12 flex justify-center">
-            <div className="relative w-full max-w-sm sm:max-w-md rounded-3xl overflow-hidden border border-[#E6DFD0] shadow-sm bg-[#FAF6EE] group">
-              <div className="aspect-3/4 w-full overflow-hidden bg-[#E4EAF2]">
+            <div className="relative w-full max-w-[260px] sm:max-w-md rounded-2xl sm:rounded-3xl overflow-hidden border border-[#E6DFD0] shadow-sm bg-[#FAF6EE] group">
+              <div className="aspect-[4/5] sm:aspect-3/4 w-full overflow-hidden bg-[#E4EAF2]">
                 <img
                   src={ketuaPhoto}
                   alt={`${ketuaName} - Ketua OSIS`}
@@ -52,7 +52,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
               </div>
 
               {/* Kartu Nama Melayang di Bawah Foto */}
-              <div className="absolute bottom-4 inset-x-4 bg-[#FFFDF8]/95 backdrop-blur-md border border-[#E6DFD0] rounded-2xl p-3.5 shadow-md text-center">
+              <div className="absolute bottom-2.5 sm:bottom-4 inset-x-2.5 sm:inset-x-4 bg-[#FFFDF8]/95 backdrop-blur-md border border-[#E6DFD0] rounded-xl sm:rounded-2xl p-2.5 sm:p-3.5 shadow-md text-center">
                 <div className="inline-flex items-center justify-center gap-1.5 text-[#F2B544] mb-0.5">
                   <Sparkles className="w-3.5 h-3.5" />
                   <span className="font-extrabold text-sm sm:text-base text-[#1F3A5F] tracking-tight">

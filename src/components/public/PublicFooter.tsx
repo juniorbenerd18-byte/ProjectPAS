@@ -34,12 +34,32 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
           {/* Kolom 1: Logo & Deskripsi */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#FAF6EE] text-[#1F3A5F] font-bold text-lg flex items-center justify-center shadow-sm">
-                S
+              {organization.logoUrl ? (
+                <img
+                  src={organization.logoUrl}
+                  alt={organization.appName || organization.shortName || 'SIMO'}
+                  className="w-10 h-10 rounded-xl object-cover shrink-0 border border-white/20 shadow-sm"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                    (e.target as HTMLElement).nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+              ) : null}
+              <div
+                className={`w-10 h-10 rounded-xl bg-[#FAF6EE] text-[#1F3A5F] font-bold text-lg flex items-center justify-center shadow-sm ${
+                  organization.logoUrl ? 'hidden' : ''
+                }`}
+              >
+                {(organization.appName || organization.shortName || 'S').charAt(0)}
               </div>
-              <span className="text-xl font-bold tracking-tight text-[#FAF6EE]">
-                {organization.shortName || 'SIMO'}
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold tracking-tight text-[#FAF6EE] leading-none">
+                  {organization.appName || organization.shortName || 'SIMO'}
+                </span>
+                <span className="text-xs text-[#FAF6EE]/70 font-medium mt-1">
+                  Periode {organization.academicYear || '2025/2026'}
+                </span>
+              </div>
             </div>
             <p className="text-sm text-[#FAF6EE]/75 leading-relaxed">
               {organization.tagline ||

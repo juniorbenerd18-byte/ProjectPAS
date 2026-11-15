@@ -30,10 +30,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   };
 
   return (
-    <section id="beranda" className="bg-[#FAF6EE] pt-28 sm:pt-36 pb-16 sm:pb-24 border-b border-[#E6DFD0] overflow-hidden">
+    <section id="beranda" className="bg-[#FAF6EE] pt-24 sm:pt-36 pb-12 sm:pb-24 border-b border-[#E6DFD0] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Split layout: On mobile, photo is above text (flex-col-reverse lg:flex-row) */}
-        <div className="flex flex-col-reverse lg:flex-row items-center gap-12 lg:gap-16">
+        <div className="flex flex-col-reverse lg:flex-row items-center gap-8 sm:gap-12 lg:gap-16">
           {/* Kolom Kiri: Teks & Tombol Aksi */}
           <div className="w-full lg:w-1/2 text-left space-y-6">
             <div className="flex items-center gap-2.5 flex-wrap">
@@ -94,7 +94,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="w-full lg:w-1/2 relative flex justify-center">
             <div className="relative w-full max-w-lg lg:max-w-none">
               {/* Foto kegiatan utama */}
-              <div className="relative rounded-2xl overflow-hidden border border-[#E6DFD0] shadow-sm aspect-4/3 bg-[#E4EAF2]">
+              <div className="relative rounded-2xl overflow-hidden border border-[#E6DFD0] shadow-sm aspect-[16/10] sm:aspect-4/3 bg-[#E4EAF2]">
                 <img
                   src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1000&auto=format&fit=crop&q=80"
                   alt="Kegiatan Kolaborasi Organisasi"
@@ -103,7 +103,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
 
               {/* Floating Stat Card 1: Anggota Aktif (Kiri Atas) */}
-              <div className="absolute -top-3 sm:-top-6 left-1 sm:-left-6 max-w-[180px] xs:max-w-[200px] sm:max-w-[230px] w-full animate-fade-in shadow-md scale-95 sm:scale-100 origin-top-left">
+              <div className="absolute -top-2.5 sm:-top-6 left-0 sm:-left-6 max-w-[170px] xs:max-w-[190px] sm:max-w-[230px] w-full animate-fade-in shadow-md scale-85 sm:scale-100 origin-top-left">
                 <FloatingStatCard
                   icon={<Users className="w-4 h-4" />}
                   title="Anggota aktif"
@@ -113,7 +113,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               </div>
 
               {/* Floating Stat Card 2: Kehadiran Kegiatan (Kanan Bawah) */}
-              <div className="absolute -bottom-3 sm:-bottom-7 right-1 sm:-right-5 max-w-[190px] xs:max-w-[210px] sm:max-w-[250px] w-full animate-fade-in shadow-md scale-95 sm:scale-100 origin-bottom-right">
+              <div className="absolute -bottom-2.5 sm:-bottom-7 right-0 sm:-right-5 max-w-[175px] xs:max-w-[200px] sm:max-w-[250px] w-full animate-fade-in shadow-md scale-85 sm:scale-100 origin-bottom-right">
                 <FloatingStatCard
                   icon={<CheckCircle2 className="w-4 h-4" />}
                   title="Kehadiran kegiatan"
