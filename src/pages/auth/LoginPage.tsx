@@ -9,6 +9,7 @@ import {
   Sun,
   Moon,
   Sparkles,
+  AlertCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { UserRole, Member } from '../../types';
@@ -34,6 +35,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState<UserRole>('ketua');
+  const [errorAlert, setErrorAlert] = useState<string | null>(null);
 
   // Quick Account Presets for seamless testing
   const demoAccounts: {
@@ -84,45 +86,74 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
     setSelectedPreset(preset.role);
     setUsername(preset.identifier);
     setPassword('osis2025');
+    setErrorAlert(null);
     showToast(`Akun ${preset.label} (${preset.name}) terpilih.`, 'info');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorAlert(null);
 
-    if (!username.trim()) {
-      showToast('Harap masukkan NISN atau email akun pengurus.', 'error');
+    const cleanUser = username.trim();
+    const cleanPass = password.trim();
+
+    if (!cleanUser) {
+      setErrorAlert('Harap masukkan NISN atau email akun pengurus.');
+      showToast('Harap masukkan NISN atau email.', 'error');
       return;
     }
 
-    if (!password) {
+    if (!cleanPass) {
+      setErrorAlert('Harap masukkan kata sandi.');
       showToast('Harap masukkan kata sandi.', 'error');
+      return;
+    }
+
+    // Validasi Kata Sandi Pengurus (Default resmi: osis2025)
+    if (cleanPass !== 'osis2025') {
+      setErrorAlert('Kata sandi salah! Kata sandi default pengurus adalah: osis2025');
+      showToast('Kata sandi tidak sesuai.', 'error');
       return;
     }
 
     setIsLoading(true);
 
     setTimeout(() => {
-      // Find matching member or fallback to role
+      // Cari anggota berdasarkan NISN, email, atau preset akun demo
       const matched = members.find(
         (m) =>
-          m.nisn === username.trim() ||
-          m.email.toLowerCase() === username.trim().toLowerCase() ||
-          m.role === selectedPreset
+          m.nisn.toLowerCase() === cleanUser.toLowerCase() ||
+          m.email.toLowerCase() === cleanUser.toLowerCase() ||
+          (cleanUser === 'admin@smk.test' && m.role === 'admin') ||
+          (cleanUser === 'pembina@smk.test' && m.role === 'pembina')
       );
 
+      // Cek apakah user cocok dengan salah satu preset demo
+      const matchedPreset = demoAccounts.find(
+        (acc) => acc.identifier.toLowerCase() === cleanUser.toLowerCase()
+      );
+
+      if (!matched && !matchedPreset) {
+        setIsLoading(false);
+        setErrorAlert(
+          `Akun "${cleanUser}" tidak terdaftar dalam database pengurus OSIS. Silakan periksa kembali atau pilih salah satu akun demo di atas.`
+        );
+        showToast('Akun tidak ditemukan!', 'error');
+        return;
+      }
+
       const targetMember: Member = matched || {
-        id: 'mem-custom',
-        nisn: username,
-        fullName: selectedPreset === 'admin' ? 'Administrator IT' : selectedPreset === 'pembina' ? 'Drs. H. Bambang Sudiro, M.Pd.' : 'Fajar Pratama',
-        email: username.includes('@') ? username : 'pengurus@smk.test',
-        role: selectedPreset,
+        id: `mem-${matchedPreset ? matchedPreset.role : 'custom'}`,
+        nisn: cleanUser,
+        fullName: matchedPreset ? matchedPreset.name : 'Pengurus OSIS',
+        email: cleanUser.includes('@') ? cleanUser : `${cleanUser}@smk.test`,
+        role: matchedPreset ? matchedPreset.role : selectedPreset,
         grade: 'XI',
         classRoom: 'RPL 1',
         major: 'Rekayasa Perangkat Lunak',
         divisionId: 'div-bph',
         divisionName: 'Badan Pengurus Harian (BPH)',
-        position: selectedPreset === 'ketua' ? 'Ketua Umum' : selectedPreset === 'sekretaris' ? 'Sekretaris Umum' : selectedPreset === 'bendahara' ? 'Bendahara Umum' : 'Pengurus',
+        position: matchedPreset ? matchedPreset.label : 'Pengurus',
         phone: '081234567890',
         avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
         isActive: true,
@@ -139,7 +170,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
         'success'
       );
       setActivePage('dashboard');
-    }, 450);
+    }, 400);
   };
 
   return (
@@ -216,6 +247,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+            {/* Error Alert Box */}
+            {errorAlert && (
+              <div className="p-3.5 rounded-[12px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-start gap-2.5 text-red-700 dark:text-red-300 text-[13px] animate-fadeIn">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-semibold leading-relaxed">{errorAlert}</span>
+              </div>
+            )}
             {/* Username / NISN Input */}
             <div className="space-y-1.5">
               <label
