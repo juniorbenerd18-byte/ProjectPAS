@@ -706,30 +706,24 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                 </div>
               </div>
 
-              {/* Center Biometric Face Reticle - Ukuran Proporsional & Presisi (Wajah pas di dalam frame, tidak terlalu besar) */}
-              <div className="relative my-auto flex items-center justify-center py-1 sm:py-2">
+              {/* Center Biometric Face Reticle - Ukuran Proporsional & Pas di Wajah (Head-fitting biometric oval) */}
+              <div className="relative my-auto flex items-center justify-center py-2 sm:py-3">
                 <div
-                  className={`relative w-36 h-48 sm:w-44 sm:h-56 md:w-50 md:h-64 mx-auto rounded-[48%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.50)] ${
+                  className={`relative w-32 h-44 sm:w-36 sm:h-48 md:w-36 md:h-48 mx-auto rounded-[48%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.55)] ${
                     scanStatus === 'unregistered'
-                      ? 'border-[3px] border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-amber-400/30'
+                      ? 'border-[3px] border-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-amber-400/25'
                       : scanStatus === 'already_checked'
-                      ? 'border-[3px] border-blue-400 shadow-[0_0_30px_rgba(96,165,250,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-blue-400/30'
+                      ? 'border-[3px] border-blue-400 shadow-[0_0_24px_rgba(96,165,250,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-blue-400/25'
                       : scanStatus === 'matched'
-                      ? 'border-[3px] border-emerald-400 shadow-[0_0_35px_rgba(52,211,153,0.8),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-emerald-400/30'
+                      ? 'border-[3px] border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.75),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-emerald-400/25'
                       : scanStatus === 'verifying'
-                      ? 'border-[3px] border-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.7),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-cyan-400/30'
-                      : 'border-2 border-cyan-400/80 shadow-[0_0_20px_rgba(34,211,238,0.35),0_0_0_9999px_rgba(10,15,29,0.50)]'
+                      ? 'border-[3px] border-cyan-400 shadow-[0_0_24px_rgba(34,211,238,0.65),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-cyan-400/25'
+                      : 'border-2 border-cyan-400/80 shadow-[0_0_16px_rgba(34,211,238,0.3),0_0_0_9999px_rgba(10,15,29,0.55)]'
                   }`}
                 >
-                  {/* 4 Biometric Corner Guides (Modern Target Brackets) */}
-                  <div className="absolute -top-1 -left-1 w-5 h-5 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-xl pointer-events-none" />
-                  <div className="absolute -top-1 -right-1 w-5 h-5 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-xl pointer-events-none" />
-                  <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-xl pointer-events-none" />
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-xl pointer-events-none" />
-
                   {/* Smooth Laser Scan Sweep */}
                   {scanStatus === 'scanning' && (
-                    <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_14px_#22d3ee] animate-scan-laser pointer-events-none" />
+                    <div className="absolute inset-x-2 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_12px_#22d3ee] animate-scan-laser pointer-events-none" />
                   )}
                 </div>
               </div>
