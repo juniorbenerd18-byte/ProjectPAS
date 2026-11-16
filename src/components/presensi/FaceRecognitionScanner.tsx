@@ -591,33 +591,33 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
       {/* Mode Tabs */}
       <div className="flex items-center justify-center sm:justify-start">
-        <div className="flex p-1 bg-slate-100 rounded-2xl max-w-md w-full">
+        <div className="grid grid-cols-3 p-1 bg-slate-100 rounded-2xl w-full max-w-md">
           <button
             onClick={() => setMode('face')}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2.5 px-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
               mode === 'face' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Camera className="w-3.5 h-3.5" />
-            <span>Scan Wajah (Face AI)</span>
+            <Camera className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+            <span className="leading-tight text-center">Scan Wajah (Face AI)</span>
           </button>
           <button
             onClick={() => setMode('name')}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2.5 px-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
               mode === 'name' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <Search className="w-3.5 h-3.5" />
-            <span>Cari / Input Nama</span>
+            <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+            <span className="leading-tight text-center">Cari / Input Nama</span>
           </button>
           <button
             onClick={() => setMode('qr')}
-            className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2.5 px-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
               mode === 'qr' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>Scan KTA / QR</span>
+            <QrCode className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
+            <span className="leading-tight text-center">Scan KTA / QR</span>
           </button>
         </div>
       </div>
@@ -641,7 +641,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       {mode === 'face' && (
         <div className="space-y-6">
           {/* Video Area */}
-          <div className="relative rounded-3xl overflow-hidden bg-slate-950 aspect-video max-w-2xl mx-auto shadow-2xl border-2 border-slate-800">
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 aspect-[3/4] sm:aspect-video max-w-2xl mx-auto shadow-2xl border-2 border-slate-800">
             <video
               ref={videoRef}
               autoPlay
@@ -652,9 +652,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
             <canvas ref={canvasRef} className="hidden" />
 
             {/* HUD Overlay */}
-            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-5 sm:p-6">
+            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 sm:p-5 md:p-6">
               {/* Top bar (Clean Glassmorphism) */}
-              <div className="flex items-center justify-between text-[11px] text-slate-300 bg-slate-950/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg">
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 bg-slate-950/60 backdrop-blur-md px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 shadow-lg">
                 <span className="flex items-center gap-2 font-medium">
                   <span className={`w-2 h-2 rounded-full ${modelsLoaded ? 'bg-emerald-400 animate-pulse' : modelsLoading ? 'bg-amber-400 animate-pulse' : 'bg-rose-400'}`} />
                   <span className="text-white font-semibold">AI Face Scanner</span>
@@ -678,7 +678,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
               {/* Center oval reticle (Clean & Unobstructed) */}
               <div
-                className={`relative w-48 h-60 sm:w-56 sm:h-72 mx-auto rounded-[50%] border-2 transition-all duration-300 flex items-center justify-center ${
+                className={`relative w-36 h-44 sm:w-48 sm:h-60 md:w-56 md:h-72 mx-auto rounded-[50%] border-2 transition-all duration-300 flex items-center justify-center ${
                   scanStatus === 'unregistered'
                     ? 'border-amber-400 shadow-[0_0_25px_rgba(251,191,36,0.45)] ring-4 ring-amber-400/20'
                     : scanStatus === 'already_checked'
@@ -731,7 +731,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
               {/* Bottom hint - sembunyikan saat unregistered agar kamera & wajah 100% bersih tanpa tertutup text */}
               {scanStatus !== 'unregistered' && (
-                <div className="text-center bg-slate-950/70 backdrop-blur-md py-2 px-4 rounded-xl border border-white/10 max-w-md mx-auto">
+                <div className="text-center bg-slate-950/70 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl border border-white/10 max-w-xs sm:max-w-md mx-auto">
                   {scanStatus === 'matched' ? (
                     <p className="text-xs font-semibold text-emerald-300">
                       Presensi berhasil dicatat!
@@ -785,7 +785,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
           {/* Enrollment Card (Compact & Clean) */}
           {isEnrollModalOpen && (
-            <div className="max-w-2xl mx-auto bg-amber-50/90 border border-amber-300 rounded-3xl p-4 shadow-lg animate-in slide-in-from-bottom-3 backdrop-blur-sm">
+            <div className="max-w-2xl mx-auto bg-amber-50/90 border border-amber-300 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg animate-in slide-in-from-bottom-3 backdrop-blur-sm">
               <div className="flex items-center justify-between gap-3 pb-3 border-b border-amber-200/60">
                 <div className="flex items-center gap-3 min-w-0">
                   {snapshotPhoto ? (
@@ -844,10 +844,11 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                       </div>
                       <button
                         onClick={() => handleEnrollAndCheckIn(student)}
-                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1"
+                        className="px-2.5 sm:px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-[11px] sm:text-xs font-bold shadow-xs cursor-pointer flex items-center gap-1 shrink-0 whitespace-nowrap"
                       >
-                        <Check className="w-3.5 h-3.5" />
-                        <span>Kaitkan & Hadir</span>
+                        <Check className="w-3.5 h-3.5 shrink-0" />
+                        <span className="hidden sm:inline">Kaitkan & Hadir</span>
+                        <span className="sm:hidden">Hadir</span>
                       </button>
                     </div>
                   ))}
@@ -895,9 +896,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
               return (
                 <div
                   key={student.id}
-                  className="p-3.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs flex items-center justify-between hover:border-indigo-300 transition-all"
+                  className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-indigo-300 transition-all"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     {student.avatarUrl ? (
                       <img
                         src={student.avatarUrl}
@@ -919,7 +920,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   </div>
 
                   {alreadyPresent ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0 self-end sm:self-auto">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Sudah Hadir
                     </span>
@@ -927,7 +928,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                     <button
                       onClick={() => handleNameCheckIn(student)}
                       disabled={!isAttendanceOpen}
-                      className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5"
+                      className="px-3 sm:px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0 self-end sm:self-auto"
                     >
                       <UserCheck className="w-3.5 h-3.5" />
                       <span>Catat Hadir</span>

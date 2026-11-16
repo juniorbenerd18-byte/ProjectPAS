@@ -963,6 +963,23 @@ export const initialRecruitments: RecruitmentApplication[] = [
     status: 'lolos_berkas',
     interviewSchedule: 'Sabtu, 4 Oktober 2026 (10:30 WIB)',
   },
+  {
+    id: 'rec-3',
+    registrationNumber: 'OPREC-2026-X03',
+    fullName: 'Dimas Rizky Ramadhan',
+    nisn: '0098765403',
+    grade: 'X',
+    classRoom: 'X TKJ 1',
+    major: 'Teknik Komputer dan Jaringan',
+    phone: '081234567893',
+    email: 'dimas.rizky@student.smk.id',
+    divisionChoice1: 'div-sekbid9',
+    divisionChoice2: 'div-sekbid10',
+    reason: 'Ingin aktif berkontribusi dalam tim teknologi informasi, pemeliharaan perangkat, dan live streaming kegiatan OSIS sekolah.',
+    skills: ['Jaringan Komputer', 'Troubleshooting Hardware', 'Kepemimpinan'],
+    appliedDate: '2026-10-02',
+    status: 'menunggu',
+  },
 ];
 
 export const initialEventRegistrations: EventRegistration[] = [

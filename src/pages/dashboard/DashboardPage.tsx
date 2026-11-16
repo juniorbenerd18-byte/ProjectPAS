@@ -14,10 +14,13 @@ import {
   MoreHorizontal,
   Globe,
   Image as ImageIcon,
+  UserPlus,
+  UserCheck,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDateIndo } from '../../lib/utils';
 import { ScrollReveal } from '../../components/common/ScrollReveal';
+import { RegistrationAdminWidget } from '../../components/dashboard/RegistrationAdminWidget';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -30,7 +33,9 @@ export const DashboardPage: React.FC = () => {
     announcements,
     aspirations,
     documents,
+    recruitments,
     setActivePage,
+    setKeanggotaanTab,
   } = useApp();
 
   // Metrics
@@ -51,11 +56,15 @@ export const DashboardPage: React.FC = () => {
     : [];
   const pendingProkers = workPrograms.filter((p) => p.status === 'diajukan');
   const pendingDocs = documents ? documents.filter((d) => d.status === 'pending') : [];
+  const pendingRecruitments = recruitments
+    ? recruitments.filter((r) => r.status === 'menunggu' || r.status === 'lolos_berkas')
+    : [];
 
   const totalActionItems =
     newAspirations.length +
     pendingProkers.length +
-    pendingDocs.length;
+    pendingDocs.length +
+    pendingRecruitments.length;
 
   return (
     <div className="space-y-6">
@@ -79,6 +88,17 @@ export const DashboardPage: React.FC = () => {
 
         {/* Quick Shortcut Buttons - Sejajar Horizontal Tanpa Terputus */}
         <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1.5 xl:pb-0 scrollbar-none flex-nowrap shrink-0">
+          <button
+            onClick={() => {
+              setKeanggotaanTab('pendaftar');
+              setActivePage('keanggotaan');
+            }}
+            className="min-h-[42px] px-3.5 py-2 bg-[#F2B544] hover:bg-[#E0A12F] text-[#1F3A5F] text-[13px] sm:text-[14px] font-extrabold rounded-[12px] transition-all flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
+            title="Kelola calon siswa yang mendaftar OPREC"
+          >
+            <UserPlus className="w-4 h-4 text-[#1F3A5F]" strokeWidth={2.5} />
+            <span>Pendaftar Oprec {pendingRecruitments.length > 0 && `(${pendingRecruitments.length} Baru)`}</span>
+          </button>
           <button
             onClick={() => setActivePage('kegiatan-presensi')}
             className="min-h-[42px] px-3.5 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
@@ -142,11 +162,39 @@ export const DashboardPage: React.FC = () => {
                 Semua beres! Tidak ada tugas mendesak saat ini.
               </p>
               <p className="text-[12px] text-[#A4B2C3]">
-                Seluruh administrasi program kerja, aspirasi, dan arsip terselesaikan dengan baik.
+                Seluruh administrasi program kerja, pendaftaran anggota, aspirasi, dan arsip terselesaikan dengan baik.
               </p>
             </div>
           ) : (
             <>
+              {/* Tugas Pendaftaran Oprec Baru */}
+              {pendingRecruitments.length > 0 && (
+                <div className="p-2.5 sm:p-3 rounded-[12px] bg-white/10 border border-white/15 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#F2B544] text-[#1F3A5F] flex items-center justify-center shrink-0">
+                      <UserPlus className="w-4 h-4" strokeWidth={2.5} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] sm:text-[14px] font-bold text-[#FAF6EE] truncate">
+                        {pendingRecruitments.length} calon anggota baru mendaftar (OPREC)
+                      </p>
+                      <p className="text-[12px] text-[#A4B2C3] truncate">
+                        Menunggu verifikasi berkas &amp; seleksi wawancara
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setKeanggotaanTab('pendaftar');
+                      setActivePage('keanggotaan');
+                    }}
+                    className="min-h-[34px] px-3.5 py-1 bg-[#F2B544] hover:bg-[#E0A12F] text-[#1F3A5F] font-extrabold text-[12px] rounded-[8px] transition-colors shrink-0 cursor-pointer shadow-none"
+                  >
+                    Verifikasi
+                  </button>
+                </div>
+              )}
+
               {/* Tugas 1: Ide & Aspirasi Baru */}
               {newAspirations.length > 0 && (
                 <div className="p-2.5 sm:p-3 rounded-[12px] bg-white/10 border border-white/15 flex items-center justify-between gap-3">
@@ -264,6 +312,19 @@ export const DashboardPage: React.FC = () => {
               <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
                 +{alumniCount} demisioner / alumni tercatat
               </p>
+              {pendingRecruitments.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setKeanggotaanTab('pendaftar');
+                    setActivePage('keanggotaan');
+                  }}
+                  className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-[#FBEBC8] hover:bg-[#F4DFC0] text-[#7A4B00] border border-[#F2B544] text-[12px] font-bold cursor-pointer transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#F2B544] animate-pulse" />
+                  <span>{pendingRecruitments.length} calon pendaftar menunggu</span>
+                </button>
+              )}
             </div>
 
             <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex justify-end">
@@ -368,6 +429,11 @@ export const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ======================================================== */}
+      {/* BARIS 2.5: WIDGET PENDAFTARAN & OPREC CALON ANGGOTA BARU */}
+      {/* ======================================================== */}
+      <RegistrationAdminWidget />
 
       {/* ======================================================== */}
       {/* BARIS 3: JADWAL RAPAT TERDEKAT & PAPAN PENGUMUMAN RESMI  */}

@@ -14,9 +14,17 @@ import {
   AlertCircle,
   Lock,
   ShieldCheck,
+  UserPlus,
+  Phone,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Eye,
+  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Member, UserRole } from '../../types';
+import { Member, UserRole, RecruitmentApplication } from '../../types';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
 import { KartuAnggota } from './KartuAnggota';
@@ -29,11 +37,19 @@ export const KeanggotaanPage: React.FC = () => {
     addMember,
     updateMember,
     deleteMember,
+    recruitments,
+    updateRecruitment,
+    deleteRecruitment,
+    approveRecruitmentToMember,
+    keanggotaanTab,
+    setKeanggotaanTab,
     orgProfile,
     currentRole,
     showToast,
   } = useApp();
-  const [activeTab, setActiveTab] = useState<'direktori' | 'struktur' | 'kta'>('direktori');
+
+  const activeTab = keanggotaanTab;
+  const setActiveTab = setKeanggotaanTab;
 
   // RBAC Permission Check
   const canManageMembers =
@@ -42,11 +58,41 @@ export const KeanggotaanPage: React.FC = () => {
     currentRole === 'ketua' ||
     currentRole === 'sekretaris';
 
-  // Filter states
+  // Filter states Direktori
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'aktif' | 'alumni'>('all');
   const [gradeFilter, setGradeFilter] = useState<string>('all');
   const [majorFilter, setMajorFilter] = useState<string>('all');
+
+  // Pendaftar Oprec States
+  const [recSearchTerm, setRecSearchTerm] = useState('');
+  const [recStatusFilter, setRecStatusFilter] = useState<
+    'all' | 'menunggu' | 'lolos_berkas' | 'wawancara' | 'diterima' | 'ditolak'
+  >('all');
+  const [selectedRecForDetail, setSelectedRecForDetail] = useState<RecruitmentApplication | null>(null);
+  const [selectedRecForStatus, setSelectedRecForStatus] = useState<RecruitmentApplication | null>(null);
+  const [selectedRecForApprove, setSelectedRecForApprove] = useState<RecruitmentApplication | null>(null);
+  const [recToDelete, setRecToDelete] = useState<RecruitmentApplication | null>(null);
+
+  // Status Edit Form State
+  const [statusForm, setStatusForm] = useState<{
+    status: RecruitmentApplication['status'];
+    interviewSchedule: string;
+    notes: string;
+  }>({
+    status: 'menunggu',
+    interviewSchedule: '',
+    notes: '',
+  });
+
+  // Approve Member Form State
+  const [approveForm, setApproveForm] = useState<{
+    divisionId: string;
+    position: string;
+  }>({
+    divisionId: divisions[0]?.id || '',
+    position: 'Anggota Sekbid',
+  });
 
   // Modal Add / Edit
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -191,6 +237,109 @@ export const KeanggotaanPage: React.FC = () => {
   const activeCount = members.filter((m) => m.status === 'aktif').length;
   const alumniCount = members.filter((m) => m.status === 'alumni').length;
 
+  // Pendaftar Oprec Handlers & Filters
+  const pendingRecruitmentsCount = recruitments.filter(
+    (r) => r.status === 'menunggu' || r.status === 'lolos_berkas'
+  ).length;
+
+  const filteredRecruitments = recruitments.filter((r) => {
+    const matchSearch =
+      r.fullName.toLowerCase().includes(recSearchTerm.toLowerCase()) ||
+      r.nisn.includes(recSearchTerm) ||
+      r.registrationNumber.toLowerCase().includes(recSearchTerm.toLowerCase()) ||
+      r.classRoom.toLowerCase().includes(recSearchTerm.toLowerCase()) ||
+      r.divisionChoice1.toLowerCase().includes(recSearchTerm.toLowerCase());
+    const matchStatus = recStatusFilter === 'all' || r.status === recStatusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  const handleOpenStatusModal = (rec: RecruitmentApplication) => {
+    setSelectedRecForStatus(rec);
+    setStatusForm({
+      status: rec.status,
+      interviewSchedule: rec.interviewSchedule || '',
+      notes: rec.notes || '',
+    });
+  };
+
+  const handleSaveStatus = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRecForStatus) return;
+    updateRecruitment(selectedRecForStatus.id, {
+      status: statusForm.status,
+      interviewSchedule: statusForm.interviewSchedule.trim() || undefined,
+      notes: statusForm.notes.trim() || undefined,
+    });
+    setSelectedRecForStatus(null);
+  };
+
+  const handleOpenApproveModal = (rec: RecruitmentApplication) => {
+    setSelectedRecForApprove(rec);
+    const matchedDiv = divisions.find(
+      (d) =>
+        d.id === rec.divisionChoice1 ||
+        d.name.toLowerCase() === rec.divisionChoice1.toLowerCase()
+    );
+    setApproveForm({
+      divisionId: matchedDiv?.id || divisions[0]?.id || '',
+      position: 'Anggota Sekbid',
+    });
+  };
+
+  const handleConfirmApprove = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedRecForApprove) return;
+    approveRecruitmentToMember(
+      selectedRecForApprove.id,
+      approveForm.divisionId,
+      approveForm.position
+    );
+    setSelectedRecForApprove(null);
+  };
+
+  const handleConfirmDeleteRec = () => {
+    if (recToDelete) {
+      deleteRecruitment(recToDelete.id);
+      setRecToDelete(null);
+    }
+  };
+
+  const getRecStatusBadge = (status: string) => {
+    switch (status) {
+      case 'diterima':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+            Diterima
+          </span>
+        );
+      case 'wawancara':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300">
+            Wawancara
+          </span>
+        );
+      case 'lolos_berkas':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
+            Lolos Berkas
+          </span>
+        );
+      case 'ditolak':
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300">
+            Ditolak
+          </span>
+        );
+      case 'menunggu':
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#FBEBC8] text-[#7A4B00] border border-[#F2B544]">
+            Menunggu
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header & Internal Tab Bar */}
@@ -220,6 +369,22 @@ export const KeanggotaanPage: React.FC = () => {
           >
             <Users className="w-4 h-4" />
             <span>Direktori ({members.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('pendaftar')}
+            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'pendaftar'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
+            }`}
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Pendaftar Oprec ({recruitments.length})</span>
+            {pendingRecruitmentsCount > 0 && (
+              <span className="px-2 py-0.5 text-xs rounded-full bg-[#F2B544] text-[#1F3A5F] font-extrabold">
+                {pendingRecruitmentsCount}
+              </span>
+            )}
           </button>
           <button
             onClick={() => setActiveTab('struktur')}
@@ -517,6 +682,237 @@ export const KeanggotaanPage: React.FC = () => {
       {/* TAB 3: CETAK KTA DIGITAL */}
       {activeTab === 'kta' && <KartuAnggota />}
 
+      {/* TAB 4: PENDAFTAR OPREC */}
+      {activeTab === 'pendaftar' && (
+        <div className="space-y-6">
+          {/* Summary Metric Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="p-4 rounded-[14px] bg-[#FFFDF8] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Total Pendaftar</span>
+              <p className="text-xl sm:text-2xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-0.5">
+                {recruitments.length}
+              </p>
+            </div>
+            <div className="p-4 rounded-[14px] bg-[#FFFDF8] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#F2B544] animate-pulse" />
+                Menunggu
+              </span>
+              <p className="text-xl sm:text-2xl font-black text-[#7A4B00] dark:text-[#F2B544] mt-0.5">
+                {recruitments.filter((r) => r.status === 'menunggu').length}
+              </p>
+            </div>
+            <div className="p-4 rounded-[14px] bg-[#FFFDF8] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Lolos Berkas</span>
+              <p className="text-xl sm:text-2xl font-black text-sky-700 dark:text-sky-400 mt-0.5">
+                {recruitments.filter((r) => r.status === 'lolos_berkas').length}
+              </p>
+            </div>
+            <div className="p-4 rounded-[14px] bg-[#FFFDF8] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Wawancara</span>
+              <p className="text-xl sm:text-2xl font-black text-purple-700 dark:text-purple-400 mt-0.5">
+                {recruitments.filter((r) => r.status === 'wawancara').length}
+              </p>
+            </div>
+            <div className="p-4 rounded-[14px] bg-[#FFFDF8] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] col-span-2 sm:col-span-1">
+              <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Resmi Diterima</span>
+              <p className="text-xl sm:text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
+                {recruitments.filter((r) => r.status === 'diterima').length}
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Bar */}
+          <div className="simo-card p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1 relative">
+              <Search className="w-4 h-4 text-[#5A6472] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Cari berdasarkan nama, NISN, no registrasi, kelas, divisi..."
+                value={recSearchTerm}
+                onChange={(e) => setRecSearchTerm(e.target.value)}
+                className="simo-input pl-10 w-full"
+              />
+            </div>
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 scrollbar-none flex-nowrap">
+              {(
+                [
+                  { id: 'all', label: 'Semua' },
+                  { id: 'menunggu', label: 'Menunggu' },
+                  { id: 'lolos_berkas', label: 'Lolos Berkas' },
+                  { id: 'wawancara', label: 'Wawancara' },
+                  { id: 'diterima', label: 'Diterima' },
+                  { id: 'ditolak', label: 'Ditolak' },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setRecStatusFilter(tab.id)}
+                  className={`min-h-[38px] px-3 py-1.5 rounded-[10px] text-[13px] font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    recStatusFilter === tab.id
+                      ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                      : 'bg-[#FAF6EE] dark:bg-[#1C3048] text-[#5A6472] dark:text-[#9AA8B8] border border-[#E6DFD0] dark:border-[#283D56] hover:text-[#1F3A5F]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* List of Applicants */}
+          {filteredRecruitments.length === 0 ? (
+            <div className="simo-card p-12 text-center space-y-2">
+              <UserPlus className="w-12 h-12 text-[#5A6472] mx-auto opacity-50" />
+              <h3 className="text-lg font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                Tidak Ada Data Pendaftar
+              </h3>
+              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] max-w-md mx-auto">
+                {recSearchTerm || recStatusFilter !== 'all'
+                  ? 'Tidak ditemukan calon pendaftar yang sesuai kriteria pencarian/filter.'
+                  : 'Belum ada calon anggota yang mendaftar melalui formulir web open recruitment.'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {filteredRecruitments.map((rec) => (
+                <div
+                  key={rec.id}
+                  className="simo-card p-5 space-y-4 hover:border-[#1F3A5F] dark:hover:border-[#F2B544] transition-all flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    {/* Header Card: No. Registrasi & Status */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[12px] font-mono font-bold px-2.5 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
+                        {rec.registrationNumber}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">
+                          {rec.appliedDate}
+                        </span>
+                        {getRecStatusBadge(rec.status)}
+                      </div>
+                    </div>
+
+                    {/* Identitas Siswa */}
+                    <div className="flex items-start gap-3.5">
+                      <div className="w-12 h-12 rounded-[14px] bg-[#1F3A5F] text-[#FAF6EE] font-extrabold text-lg flex items-center justify-center shrink-0">
+                        {rec.fullName.charAt(0)}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h4 className="text-base font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] truncate">
+                          {rec.fullName}
+                        </h4>
+                        <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                          NISN: <span className="font-mono font-semibold">{rec.nisn}</span> • {rec.classRoom}
+                        </p>
+                        <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-medium">
+                          {rec.major}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Divisi & Kontak */}
+                    <div className="p-3 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[13px] space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#5A6472] dark:text-[#9AA8B8]">Pilihan 1:</span>
+                        <strong className="text-[#1F3A5F] dark:text-[#FAF6EE]">{rec.divisionChoice1}</strong>
+                      </div>
+                      {rec.divisionChoice2 && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-[#5A6472] dark:text-[#9AA8B8]">Pilihan 2:</span>
+                          <span className="text-[#5A6472] dark:text-[#9AA8B8]">{rec.divisionChoice2}</span>
+                        </div>
+                      )}
+                      {rec.phone && rec.phone !== '-' && (
+                        <div className="flex items-center justify-between pt-1 border-t border-[#E6DFD0]/60 dark:border-[#283D56]/60">
+                          <span className="text-[#5A6472] dark:text-[#9AA8B8]">WhatsApp:</span>
+                          <a
+                            href={`https://wa.me/${rec.phone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                          >
+                            <Phone className="w-3.5 h-3.5" />
+                            <span>{rec.phone}</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Jadwal Wawancara if exists */}
+                    {rec.interviewSchedule && (
+                      <div className="p-2.5 rounded-[10px] bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40 text-[12px] text-purple-900 dark:text-purple-300 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 shrink-0 text-purple-600" />
+                        <span><strong>Jadwal Wawancara:</strong> {rec.interviewSchedule}</span>
+                      </div>
+                    )}
+
+                    {/* Motivasi Ringkas */}
+                    <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] line-clamp-2 italic">
+                      "{rec.reason}"
+                    </p>
+                  </div>
+
+                  {/* Actions Bar */}
+                  <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedRecForDetail(rec)}
+                        className="simo-btn-outline min-h-[36px] px-3 rounded-[10px] text-[13px] flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Detail</span>
+                      </button>
+                      {canManageMembers && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenStatusModal(rec)}
+                          className="simo-btn-outline min-h-[36px] px-3 rounded-[10px] text-[13px] flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                          <span>Ubah Status</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {canManageMembers && rec.status !== 'diterima' && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenApproveModal(rec)}
+                          className="min-h-[36px] px-3.5 py-1 bg-[#F2B544] hover:bg-[#E0A12F] text-[#1F3A5F] text-[13px] font-extrabold rounded-[10px] transition-colors flex items-center gap-1.5 cursor-pointer shadow-none"
+                        >
+                          <UserCheck className="w-4 h-4" />
+                          <span>Terima Jadi Anggota</span>
+                        </button>
+                      )}
+                      {rec.status === 'diterima' && (
+                        <span className="inline-flex items-center gap-1 text-[13px] font-bold text-emerald-700 dark:text-emerald-400">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Anggota Resmi</span>
+                        </span>
+                      )}
+                      {canManageMembers && (
+                        <button
+                          type="button"
+                          onClick={() => setRecToDelete(rec)}
+                          className="min-h-[36px] min-w-[36px] flex items-center justify-center text-[#5A6472] hover:text-rose-600 rounded-[10px] border border-[#E6DFD0] dark:border-[#283D56] cursor-pointer"
+                          title="Hapus Pendaftaran"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Modal Add / Edit Member */}
       <Modal
         isOpen={isModalOpen}
@@ -705,6 +1101,345 @@ export const KeanggotaanPage: React.FC = () => {
                 className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
               >
                 Ya, Hapus Siswa
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Detail Applicant Modal */}
+      <Modal
+        isOpen={Boolean(selectedRecForDetail)}
+        onClose={() => setSelectedRecForDetail(null)}
+        title="Detail Formulir Pendaftaran Oprec"
+      >
+        {selectedRecForDetail && (
+          <div className="space-y-4 text-[14px]">
+            <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] space-y-3">
+              <div className="flex items-center justify-between border-b border-[#E6DFD0] dark:border-[#283D56] pb-2">
+                <span className="text-xs font-mono font-bold text-[#5A6472] dark:text-[#9AA8B8]">
+                  No. Registrasi: {selectedRecForDetail.registrationNumber}
+                </span>
+                {getRecStatusBadge(selectedRecForDetail.status)}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8] block">Nama Lengkap</span>
+                  <strong className="text-base text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    {selectedRecForDetail.fullName}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8] block">NISN Resmi</span>
+                  <span className="font-mono font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    {selectedRecForDetail.nisn}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8] block">Kelas &amp; Jurusan</span>
+                  <span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    {selectedRecForDetail.classRoom} • {selectedRecForDetail.major}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8] block">Kontak WhatsApp</span>
+                  <a
+                    href={`https://wa.me/${selectedRecForDetail.phone.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                  >
+                    <Phone className="w-3.5 h-3.5" />
+                    <span>{selectedRecForDetail.phone}</span>
+                  </a>
+                </div>
+                <div>
+                  <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8] block">Pilihan Divisi 1</span>
+                  <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    {selectedRecForDetail.divisionChoice1}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8] block">Pilihan Divisi 2</span>
+                  <span className="text-[#5A6472] dark:text-[#9AA8B8]">
+                    {selectedRecForDetail.divisionChoice2 || '-'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <span className="text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] uppercase tracking-wide block mb-1">
+                Motivasi / Alasan Bergabung
+              </span>
+              <div className="p-3.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] leading-relaxed">
+                "{selectedRecForDetail.reason}"
+              </div>
+            </div>
+
+            {selectedRecForDetail.skills && selectedRecForDetail.skills.length > 0 && (
+              <div>
+                <span className="text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] uppercase tracking-wide block mb-1">
+                  Keahlian &amp; Minat
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedRecForDetail.skills.map((skill, idx) => (
+                    <span
+                      key={idx}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#E4EAF2] dark:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE]"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedRecForDetail.interviewSchedule && (
+              <div className="p-3 rounded-[12px] bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40 space-y-1">
+                <span className="text-xs font-bold text-purple-900 dark:text-purple-300 block">
+                  Jadwal Wawancara
+                </span>
+                <p className="text-sm font-semibold text-purple-900 dark:text-purple-200">
+                  {selectedRecForDetail.interviewSchedule}
+                </p>
+              </div>
+            )}
+
+            {selectedRecForDetail.notes && (
+              <div className="p-3 rounded-[12px] bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 space-y-1">
+                <span className="text-xs font-bold text-amber-900 dark:text-amber-300 block">
+                  Catatan Evaluasi Pengurus
+                </span>
+                <p className="text-sm text-amber-900 dark:text-amber-200">
+                  {selectedRecForDetail.notes}
+                </p>
+              </div>
+            )}
+
+            <div className="pt-3 flex justify-end gap-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              {canManageMembers && selectedRecForDetail.status !== 'diterima' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const rec = selectedRecForDetail;
+                    setSelectedRecForDetail(null);
+                    handleOpenApproveModal(rec);
+                  }}
+                  className="simo-btn-primary min-h-[40px] px-4 rounded-[10px] text-xs font-bold cursor-pointer"
+                >
+                  Terima Jadi Anggota
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setSelectedRecForDetail(null)}
+                className="simo-btn-outline min-h-[40px] px-4 rounded-[10px] text-xs font-bold cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit Status & Interview Modal */}
+      <Modal
+        isOpen={Boolean(selectedRecForStatus)}
+        onClose={() => setSelectedRecForStatus(null)}
+        title="Ubah Status & Jadwal Seleksi Pendaftar"
+      >
+        {selectedRecForStatus && (
+          <form onSubmit={handleSaveStatus} className="space-y-4">
+            <div>
+              <p className="text-sm text-[#5A6472] dark:text-[#9AA8B8]">
+                Calon Siswa: <strong className="text-[#1F3A5F] dark:text-[#FAF6EE]">{selectedRecForStatus.fullName}</strong> ({selectedRecForStatus.classRoom})
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                Status Seleksi
+              </label>
+              <select
+                value={statusForm.status}
+                onChange={(e) =>
+                  setStatusForm({
+                    ...statusForm,
+                    status: e.target.value as RecruitmentApplication['status'],
+                  })
+                }
+                className="simo-input w-full"
+              >
+                <option value="menunggu">Menunggu Verifikasi Berkas</option>
+                <option value="lolos_berkas">Lolos Berkas Administrasi</option>
+                <option value="wawancara">Tahap Wawancara &amp; Seleksi</option>
+                <option value="diterima">Diterima Resmi</option>
+                <option value="ditolak">Ditolak / Belum Memenuhi Kriteria</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                Jadwal Wawancara (opsional)
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: Sabtu, 4 Oktober 2026 pukul 09:00 WIB"
+                value={statusForm.interviewSchedule}
+                onChange={(e) =>
+                  setStatusForm({ ...statusForm, interviewSchedule: e.target.value })
+                }
+                className="simo-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                Catatan Evaluasi / Keterangan (opsional)
+              </label>
+              <textarea
+                rows={3}
+                placeholder="Tuliskan catatan hasil interview atau alasan seleksi..."
+                value={statusForm.notes}
+                onChange={(e) => setStatusForm({ ...statusForm, notes: e.target.value })}
+                className="simo-input w-full"
+              />
+            </div>
+
+            <div className="pt-3 flex justify-end gap-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <button
+                type="button"
+                onClick={() => setSelectedRecForStatus(null)}
+                className="simo-btn-outline min-h-[40px] px-4 rounded-[10px] text-xs font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="simo-btn-primary min-h-[40px] px-5 rounded-[10px] text-xs font-bold cursor-pointer"
+              >
+                Simpan Perubahan
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Approve to Official Member Modal */}
+      <Modal
+        isOpen={Boolean(selectedRecForApprove)}
+        onClose={() => setSelectedRecForApprove(null)}
+        title="Terima Calon Siswa Menjadi Anggota Resmi"
+      >
+        {selectedRecForApprove && (
+          <form onSubmit={handleConfirmApprove} className="space-y-4">
+            <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] space-y-1.5">
+              <p className="text-sm font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                {selectedRecForApprove.fullName}
+              </p>
+              <p className="text-xs text-[#5A6472] dark:text-[#9AA8B8]">
+                NISN: {selectedRecForApprove.nisn} • {selectedRecForApprove.classRoom} ({selectedRecForApprove.major})
+              </p>
+              <p className="text-xs text-[#7A4B00] dark:text-[#F2B544] font-medium pt-1">
+                Pilihan Divisi Awal: <strong>{selectedRecForApprove.divisionChoice1}</strong>
+              </p>
+            </div>
+
+            <p className="text-xs text-[#5A6472] dark:text-[#9AA8B8]">
+              Siswa ini akan langsung didaftarkan ke basis data anggota resmi (Direktori Siswa), otomatis diterbitkan KTA Digital, dan status pendaftaran diubah menjadi <strong>Diterima</strong>.
+            </p>
+
+            <div>
+              <label className="block text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                Penempatan Divisi / Sekbid
+              </label>
+              <select
+                value={approveForm.divisionId}
+                onChange={(e) =>
+                  setApproveForm({ ...approveForm, divisionId: e.target.value })
+                }
+                className="simo-input w-full"
+              >
+                {divisions.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                Jabatan / Posisi
+              </label>
+              <input
+                type="text"
+                value={approveForm.position}
+                onChange={(e) =>
+                  setApproveForm({ ...approveForm, position: e.target.value })
+                }
+                placeholder="Contoh: Anggota Sekbid, Staff Humas, dll"
+                className="simo-input w-full"
+                required
+              />
+            </div>
+
+            <div className="pt-3 flex justify-end gap-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <button
+                type="button"
+                onClick={() => setSelectedRecForApprove(null)}
+                className="simo-btn-outline min-h-[40px] px-4 rounded-[10px] text-xs font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="simo-btn-primary min-h-[40px] px-5 rounded-[10px] text-xs font-bold cursor-pointer flex items-center gap-1.5"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Terima &amp; Terbitkan KTA</span>
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+
+      {/* Delete Applicant Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(recToDelete)}
+        onClose={() => setRecToDelete(null)}
+        title="Konfirmasi Hapus Data Pendaftar"
+      >
+        {recToDelete && (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56]">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                <p className="font-bold">Apakah Anda yakin ingin menghapus data pendaftar ini?</p>
+                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                  "{recToDelete.fullName}" — No. Reg: {recToDelete.registrationNumber} ({recToDelete.classRoom})
+                </p>
+                <p className="text-[12px] text-rose-600 dark:text-rose-400 mt-2 font-medium">
+                  Tindakan ini tidak dapat dibatalkan.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setRecToDelete(null)}
+                className="simo-btn-outline min-h-[40px] px-4 rounded-[10px] text-xs font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteRec}
+                className="simo-btn-primary min-h-[40px] px-5 rounded-[10px] text-xs font-bold cursor-pointer bg-rose-600 hover:bg-rose-700 text-white"
+              >
+                Ya, Hapus Pendaftar
               </button>
             </div>
           </div>

@@ -258,65 +258,65 @@ export const KegiatanPresensiPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Header & Internal Tab Bar */}
-      <div className="simo-card p-6 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+      <div className="simo-card p-4 sm:p-6 md:p-7 flex flex-col gap-4 sm:gap-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[14px] font-bold mb-2">
-            <Building2 className="w-4 h-4" />
-            <span>Kesiswaan &amp; Kedisiplinan • {orgProfile.name}</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[12px] sm:text-[14px] font-bold mb-2">
+            <Building2 className="w-4 h-4 shrink-0" />
+            <span className="truncate">Kesiswaan &amp; Kedisiplinan • {orgProfile.name}</span>
           </div>
-          <h2 className="text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
             Kegiatan &amp; Presensi Organisasi
           </h2>
-          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+          <p className="text-[13px] sm:text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
             Presensi scan wajah biometrik, manajemen proker, jadwal agenda rapat, dan galeri foto
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] gap-1 self-start sm:self-auto shrink-0 flex-wrap">
+        <div className="grid grid-cols-2 sm:flex p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] gap-1 self-start sm:self-auto shrink-0">
           <button
             onClick={() => setActiveTab('presensi')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'presensi'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Camera className="w-4 h-4" />
-            <span>Presensi Wajah / QR</span>
+            <Camera className="w-4 h-4 shrink-0" />
+            <span>Presensi</span>
           </button>
           <button
             onClick={() => setActiveTab('proker')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'proker'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Briefcase className="w-4 h-4" />
-            <span>Program Kerja</span>
+            <Briefcase className="w-4 h-4 shrink-0" />
+            <span>Proker</span>
           </button>
           <button
             onClick={() => setActiveTab('rapat')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'rapat'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <MessagesSquare className="w-4 h-4" />
-            <span>Jadwal &amp; Notulen</span>
+            <MessagesSquare className="w-4 h-4 shrink-0" />
+            <span>Rapat</span>
           </button>
           <button
             onClick={() => setActiveTab('dokumentasi')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'dokumentasi'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Camera className="w-4 h-4" />
-            <span>Dokumentasi Foto</span>
+            <Camera className="w-4 h-4 shrink-0" />
+            <span>Foto</span>
           </button>
         </div>
       </div>
@@ -324,13 +324,13 @@ export const KegiatanPresensiPage: React.FC = () => {
       {/* TAB 1: PRESENSI CERDAS */}
       {activeTab === 'presensi' && (
         <div className="space-y-6">
-          <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] shrink-0">Pilih Agenda Rapat:</span>
+          <div className="simo-card p-4 sm:p-5 space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+              <span className="text-[13px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] shrink-0">Pilih Agenda Rapat:</span>
               <select
                 value={selectedMeetingId}
                 onChange={(e) => setSelectedMeetingId(e.target.value)}
-                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold w-full sm:w-auto"
+                className="simo-input min-h-[44px] px-3 text-[13px] sm:text-[14px] font-semibold w-full sm:w-auto"
               >
                 {meetings.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -340,9 +340,9 @@ export const KegiatanPresensiPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
               <span
-                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-[10px] text-[13px] font-bold ${
+                className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-[10px] text-[12px] sm:text-[13px] font-bold ${
                   currentMeeting?.isAttendanceOpen
                     ? 'simo-badge-blue'
                     : 'simo-badge-neutral'
@@ -371,8 +371,8 @@ export const KegiatanPresensiPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-7 simo-card p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+            <div className="lg:col-span-7 simo-card p-4 sm:p-6">
               <FaceRecognitionScanner
                 meetingId={currentMeeting.id}
                 meetingTitle={currentMeeting.title}
@@ -380,14 +380,14 @@ export const KegiatanPresensiPage: React.FC = () => {
               />
             </div>
 
-            <div className="lg:col-span-5 simo-card p-6 space-y-4 flex flex-col justify-between">
+            <div className="lg:col-span-5 simo-card p-4 sm:p-6 space-y-4 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between pb-3 border-b border-[#E6DFD0] dark:border-[#283D56] mb-3">
-                  <div>
-                    <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Daftar Kehadiran</h3>
-                    <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">{currentMeeting.title}</p>
+                <div className="flex items-start sm:items-center justify-between pb-3 border-b border-[#E6DFD0] dark:border-[#283D56] mb-3 gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Daftar Kehadiran</h3>
+                    <p className="text-[12px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] truncate">{currentMeeting.title}</p>
                   </div>
-                  <span className="px-3 py-1 rounded-[8px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] font-bold text-[13px]">
+                  <span className="px-2.5 sm:px-3 py-1 rounded-[8px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] font-bold text-[12px] sm:text-[13px] shrink-0 whitespace-nowrap">
                     {meetingAttendances.length} Hadir
                   </span>
                 </div>
@@ -397,21 +397,21 @@ export const KegiatanPresensiPage: React.FC = () => {
                     meetingAttendances.map((att) => (
                       <div
                         key={att.id}
-                        className="p-3.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between"
+                        className="p-3 sm:p-3.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#17293E] border border-[#E6DFD0] dark:border-[#283D56] flex items-start sm:items-center justify-between gap-2"
                       >
-                        <div>
-                          <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-tight">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[13px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-tight truncate">
                             {att.memberName}
                           </p>
-                          <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                          <p className="text-[11px] sm:text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5 sm:mt-1 truncate">
                             {att.grade} • {normalizeMajor(att.major)} ({att.nisn})
                           </p>
                         </div>
-                        <div className="text-right">
-                          <span className="inline-block px-2.5 py-0.5 rounded-[6px] text-[11px] font-bold uppercase bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE]">
+                        <div className="text-right shrink-0">
+                          <span className="inline-block px-2 sm:px-2.5 py-0.5 rounded-[6px] text-[10px] sm:text-[11px] font-bold uppercase bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE]">
                             {att.status}
                           </span>
-                          <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-mono mt-1">
+                          <p className="text-[11px] sm:text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-mono mt-0.5 sm:mt-1">
                             {formatAttendanceTime(att.checkInTime)}
                           </p>
                         </div>
@@ -426,20 +426,20 @@ export const KegiatanPresensiPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-4 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <div className="flex gap-2 sm:gap-3 mt-4 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
                 <button
                   onClick={exportAttendanceCSV}
-                  className="simo-btn-outline flex-1 min-h-[44px] rounded-[12px] text-[14px] font-bold flex items-center justify-center gap-2 cursor-pointer"
+                  className="simo-btn-outline flex-1 min-h-[40px] sm:min-h-[44px] rounded-[12px] text-[12px] sm:text-[14px] font-bold flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4 shrink-0" />
                   <span>Ekspor CSV</span>
                 </button>
                 <button
                   onClick={() => window.print()}
-                  className="simo-btn-primary flex-1 min-h-[44px] rounded-[12px] text-[14px] font-bold flex items-center justify-center gap-2 cursor-pointer"
+                  className="simo-btn-primary flex-1 min-h-[40px] sm:min-h-[44px] rounded-[12px] text-[12px] sm:text-[14px] font-bold flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>Cetak Presensi</span>
+                  <Printer className="w-4 h-4 shrink-0" />
+                  <span>Cetak</span>
                 </button>
               </div>
             </div>
@@ -447,27 +447,27 @@ export const KegiatanPresensiPage: React.FC = () => {
 
           {/* Deep Analytics: Komposisi Tingkat Kelas Peserta Hadir (Single Continuous Card with Dividers) */}
           <div className="simo-card p-0 overflow-hidden">
-            <div className="p-4 sm:p-5 border-b border-[#E6DFD0] dark:border-[#283D56]">
-              <h4 className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] uppercase tracking-wider flex items-center gap-2">
-                <Users className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544]" />
-                <span>Komposisi Kehadiran Peserta Berdasarkan Tingkat Kelas</span>
+            <div className="p-3 sm:p-4 md:p-5 border-b border-[#E6DFD0] dark:border-[#283D56]">
+              <h4 className="text-[12px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />
+                <span>Komposisi Kehadiran Berdasarkan Kelas</span>
               </h4>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E6DFD0] dark:divide-[#283D56] text-center">
-              <div className="p-6">
-                <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-bold uppercase block">Kelas X</span>
-                <span className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">{gradeXCount} Siswa</span>
-                <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 block">Kader Junior</span>
+            <div className="grid grid-cols-3 divide-x divide-[#E6DFD0] dark:divide-[#283D56] text-center">
+              <div className="p-3 sm:p-6">
+                <span className="text-[11px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-bold uppercase block">Kelas X</span>
+                <span className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">{gradeXCount}</span>
+                <span className="text-[10px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5 sm:mt-1 block">Kader Junior</span>
               </div>
-              <div className="p-6 bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/30">
-                <span className="text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold uppercase block">Kelas XI</span>
-                <span className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">{gradeXICount} Siswa</span>
-                <span className="text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">Pengurus Inti</span>
+              <div className="p-3 sm:p-6 bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/30">
+                <span className="text-[11px] sm:text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold uppercase block">Kelas XI</span>
+                <span className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">{gradeXICount}</span>
+                <span className="text-[10px] sm:text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] mt-0.5 sm:mt-1 block">Pengurus Inti</span>
               </div>
-              <div className="p-6">
-                <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-bold uppercase block">Kelas XII</span>
-                <span className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">{gradeXIICount} Siswa</span>
-                <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 block">Dewan Penasehat</span>
+              <div className="p-3 sm:p-6">
+                <span className="text-[11px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-bold uppercase block">Kelas XII</span>
+                <span className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1 block">{gradeXIICount}</span>
+                <span className="text-[10px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5 sm:mt-1 block">Dewan Penasehat</span>
               </div>
             </div>
           </div>
@@ -479,35 +479,35 @@ export const KegiatanPresensiPage: React.FC = () => {
         <div className="space-y-6">
           {/* Deep Analytics: RAB & Financial (Single Continuous Card with Dividers) */}
           <div className="simo-card p-0 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E6DFD0] dark:divide-[#283D56] overflow-hidden">
-            <div className="p-6">
-              <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Total Pagu Anggaran Proker</span>
-              <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{formatRupiah(totalProkerBudget)}</p>
-              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">{workPrograms.length} Rencana kegiatan semester ini</p>
+            <div className="p-4 sm:p-6">
+              <span className="text-[12px] sm:text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Total Pagu Anggaran Proker</span>
+              <p className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{formatRupiah(totalProkerBudget)}</p>
+              <p className="text-[11px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">{workPrograms.length} Rencana kegiatan semester ini</p>
             </div>
-            <div className="p-6 bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/30">
-              <span className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Rata-Rata Capaian Proker</span>
-              <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{avgProkerProgress}%</p>
+            <div className="p-4 sm:p-6 bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/30">
+              <span className="text-[12px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Rata-Rata Capaian Proker</span>
+              <p className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{avgProkerProgress}%</p>
               <div className="w-full h-2 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-full mt-2 overflow-hidden border border-[#E6DFD0] dark:border-[#283D56]">
                 <div className="h-full bg-[#1F3A5F] dark:bg-[#F2B544] rounded-full" style={{ width: `${avgProkerProgress}%` }} />
               </div>
             </div>
-            <div className="p-6">
-              <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Status Kelayakan</span>
-              <p className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">
+            <div className="p-4 sm:p-6">
+              <span className="text-[12px] sm:text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Status Kelayakan</span>
+              <p className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">
                 {workPrograms.filter((p) => p.status === 'disetujui' || p.status === 'berjalan' || p.status === 'selesai').length} / {workPrograms.length}
               </p>
               <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 font-semibold">Telah disetujui Pembina OSIS</p>
             </div>
           </div>
 
-          <div className="simo-card p-5 flex items-center justify-between">
+          <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Program Kerja &amp; Capaian Milestone</h3>
-              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Kelola target anggaran dan perbarui progres pelaksanaan</p>
+              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Program Kerja &amp; Capaian Milestone</h3>
+              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Kelola target anggaran dan perbarui progres pelaksanaan</p>
             </div>
             <button
               onClick={() => setIsAddProkerModalOpen(true)}
-              className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0"
+              className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Proker</span>
@@ -720,14 +720,14 @@ export const KegiatanPresensiPage: React.FC = () => {
       {/* TAB 3: JADWAL RAPAT & NOTULEN */}
       {activeTab === 'rapat' && (
         <div className="space-y-6">
-          <div className="simo-card p-5 flex items-center justify-between">
+          <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Jadwal Agenda Rapat &amp; Notulensi</h3>
-              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Kelola jadwal musyawarah pengurus dan arsip keputusan rapat</p>
+              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Jadwal Agenda Rapat &amp; Notulensi</h3>
+              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Kelola jadwal musyawarah pengurus dan arsip keputusan rapat</p>
             </div>
             <button
               onClick={() => setIsAddMeetingModalOpen(true)}
-              className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0"
+              className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               <span>Jadwalkan Rapat</span>
@@ -782,14 +782,14 @@ export const KegiatanPresensiPage: React.FC = () => {
       {/* TAB 4: DOKUMENTASI FOTO */}
       {activeTab === 'dokumentasi' && (
         <div className="space-y-6">
-          <div className="simo-card p-5 flex items-center justify-between">
+          <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Galeri Foto Dokumentasi Kegiatan</h3>
-              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Pilih foto dari komputer lokal untuk mendokumentasikan kegiatan</p>
+              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Galeri Foto Dokumentasi Kegiatan</h3>
+              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Pilih foto dari komputer lokal untuk mendokumentasikan kegiatan</p>
             </div>
             <button
               onClick={() => setIsAddPhotoModalOpen(true)}
-              className="simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0"
+              className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
               <span>Upload Foto dari Komputer</span>

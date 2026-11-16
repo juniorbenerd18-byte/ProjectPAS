@@ -187,10 +187,10 @@ export const AbsensiPage: React.FC = () => {
         {/* Left Column: QR Screen & Scanner (5 Cols) */}
         <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-5">
           {/* Tab Selector */}
-          <div className="flex p-1 bg-slate-100 rounded-xl">
+          <div className="grid grid-cols-3 p-1 bg-slate-100 rounded-xl">
             <button
               onClick={() => setActiveTab('qr')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === 'qr'
                   ? 'bg-white text-indigo-700 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
@@ -200,7 +200,7 @@ export const AbsensiPage: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('scanner')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === 'scanner'
                   ? 'bg-white text-indigo-700 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
@@ -210,7 +210,7 @@ export const AbsensiPage: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTab('manual')}
-              className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+              className={`py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg transition-all cursor-pointer text-center ${
                 activeTab === 'manual'
                   ? 'bg-white text-indigo-700 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800'
@@ -329,7 +329,7 @@ export const AbsensiPage: React.FC = () => {
         </div>
 
         {/* Right Column: Attendance Records Table (7 Cols) */}
-        <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
+        <div className="lg:col-span-7 bg-white p-4 sm:p-6 rounded-2xl border border-slate-200/80 shadow-2xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900">
@@ -339,15 +339,15 @@ export const AbsensiPage: React.FC = () => {
                 Total tercatat: <strong className="text-indigo-600">{meetingAttendances.length}</strong> siswa
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-                <Search className="w-3.5 h-3.5 text-slate-400" />
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200/80 text-xs flex-1 sm:flex-none">
+                <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Cari siswa hadir..."
-                  className="w-36 bg-transparent outline-none text-slate-700"
+                  className="w-full sm:w-36 bg-transparent outline-none text-slate-700"
                 />
               </div>
               <button

@@ -136,6 +136,11 @@ interface AppContextType {
   recruitments: RecruitmentApplication[];
   addRecruitment: (rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>) => RecruitmentApplication;
   updateRecruitment: (id: string, partial: Partial<RecruitmentApplication>) => void;
+  deleteRecruitment: (id: string) => void;
+  approveRecruitmentToMember: (recruitmentId: string, customDivisionId?: string, customPosition?: string) => void;
+
+  keanggotaanTab: 'direktori' | 'struktur' | 'kta' | 'pendaftar';
+  setKeanggotaanTab: (tab: 'direktori' | 'struktur' | 'kta' | 'pendaftar') => void;
 
   eventRegistrations: EventRegistration[];
   registerForEvent: (reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>) => EventRegistration;
@@ -173,6 +178,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const [activePage, setActivePage] = useState<string>(() => loadStored('activePage', 'portal-publik'));
+  const [keanggotaanTab, setKeanggotaanTab] = useState<'direktori' | 'struktur' | 'kta' | 'pendaftar'>('direktori');
   const [currentRole, setCurrentRole] = useState<UserRole>('ketua');
   const [toast, setToast] = useState<Toast | null>(null);
 
@@ -694,6 +700,63 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Status pendaftaran calon anggota diperbarui!');
   };
 
+  const deleteRecruitment = (id: string) => {
+    setRecruitments((prev) => prev.filter((r) => r.id !== id));
+    showToast('Data pendaftaran berhasil dihapus');
+  };
+
+  const approveRecruitmentToMember = (
+    recruitmentId: string,
+    customDivisionId?: string,
+    customPosition?: string
+  ) => {
+    const rec = recruitments.find((r) => r.id === recruitmentId);
+    if (!rec) {
+      showToast('Data calon pendaftar tidak ditemukan!', 'error');
+      return;
+    }
+
+    const isDuplicate = members.some((m) => m.nisn.trim() === rec.nisn.trim());
+    if (isDuplicate) {
+      showToast(`Siswa dengan NISN "${rec.nisn}" sudah terdaftar sebagai anggota resmi!`, 'error');
+      return;
+    }
+
+    const targetDivision =
+      divisions.find((d) => d.id === customDivisionId) ||
+      divisions.find(
+        (d) =>
+          d.id === rec.divisionChoice1 ||
+          d.name.toLowerCase() === rec.divisionChoice1.toLowerCase()
+      ) ||
+      divisions[0];
+
+    const newMember: Omit<Member, 'id'> = {
+      nisn: rec.nisn,
+      fullName: rec.fullName,
+      email: rec.email || `${rec.nisn}@student.smk.id`,
+      role: 'anggota',
+      grade: rec.grade,
+      classRoom: rec.classRoom,
+      major: rec.major,
+      divisionId: targetDivision?.id || '',
+      divisionName: targetDivision?.name || 'BPH',
+      position: customPosition || 'Anggota Sekbid',
+      phone: rec.phone,
+      avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
+      isActive: true,
+      status: 'aktif',
+      joinDate: new Date().toISOString().split('T')[0],
+      generation: `Angkatan ${orgProfile.academicYear}`,
+    };
+
+    addMember(newMember);
+    setRecruitments((prev) =>
+      prev.map((r) => (r.id === recruitmentId ? { ...r, status: 'diterima' } : r))
+    );
+    showToast(`Selamat! ${rec.fullName} resmi diterima sebagai anggota dan KTA telah diterbitkan!`, 'success');
+  };
+
   // Public Portal Actions: Event Registrations
   const registerForEvent = (
     reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>
@@ -854,6 +917,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         recruitments,
         addRecruitment,
         updateRecruitment,
+        deleteRecruitment,
+        approveRecruitmentToMember,
+        keanggotaanTab,
+        setKeanggotaanTab,
         eventRegistrations,
         registerForEvent,
         galleryPhotos,

@@ -20,10 +20,11 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activePage, setActivePage, orgProfile, workPrograms, aspirations, showToast } = useApp();
+  const { activePage, setActivePage, orgProfile, workPrograms, aspirations, recruitments, showToast } = useApp();
 
   const pendingProkerCount = workPrograms.filter((p) => p.status === 'diajukan').length;
   const pendingAspirationsCount = aspirations ? aspirations.filter((a) => a.status === 'diterima' || a.status === 'diproses').length : 0;
+  const pendingRecruitmentsCount = recruitments ? recruitments.filter((r) => r.status === 'menunggu' || r.status === 'lolos_berkas').length : 0;
 
   const handleNavClick = (pageId: string) => {
     setActivePage(pageId);
@@ -43,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       id: 'keanggotaan',
       label: 'Keanggotaan & KTA',
       icon: <Users className="w-4 h-4 shrink-0" />,
-      badge: null as string | null,
+      badge: pendingRecruitmentsCount > 0 ? `${pendingRecruitmentsCount} Baru` : null,
     },
     {
       id: 'kegiatan-presensi',
