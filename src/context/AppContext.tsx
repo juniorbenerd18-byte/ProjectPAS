@@ -31,6 +31,17 @@ import {
   fetchMeetingsFromCloud,
   fetchAnnouncementsFromCloud,
   recordAttendanceToCloud,
+  fetchRecruitmentsFromCloud,
+  addRecruitmentToCloud,
+  updateRecruitmentInCloud,
+  deleteRecruitmentFromCloud,
+  fetchAspirationsFromCloud,
+  addAspirationToCloud,
+  updateAspirationInCloud,
+  deleteAspirationFromCloud,
+  fetchWorkProgramsFromCloud,
+  addWorkProgramToCloud,
+  updateWorkProgramInCloud,
   isCloudConnected,
 } from '../lib/supabaseService';
 import {
@@ -247,11 +258,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     async function initCloudSync() {
       if (!isCloudConnected()) return;
       try {
-        const [cloudMembers, cloudDivisions, cloudMeetings, cloudAnnouncements] = await Promise.all([
+        const [
+          cloudMembers,
+          cloudDivisions,
+          cloudMeetings,
+          cloudAnnouncements,
+          cloudRecruitments,
+          cloudAspirations,
+          cloudWorkPrograms,
+        ] = await Promise.all([
           fetchMembersFromCloud(),
           fetchDivisionsFromCloud(),
           fetchMeetingsFromCloud(),
           fetchAnnouncementsFromCloud(),
+          fetchRecruitmentsFromCloud(),
+          fetchAspirationsFromCloud(),
+          fetchWorkProgramsFromCloud(),
         ]);
         if (cloudMembers && cloudMembers.length > 0) {
           setMembers(cloudMembers);
@@ -264,6 +286,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         if (cloudAnnouncements && cloudAnnouncements.length > 0) {
           setAnnouncements(cloudAnnouncements);
+        }
+        if (cloudRecruitments && cloudRecruitments.length > 0) {
+          setRecruitments(cloudRecruitments);
+        }
+        if (cloudAspirations && cloudAspirations.length > 0) {
+          setAspirations(cloudAspirations);
+        }
+        if (cloudWorkPrograms && cloudWorkPrograms.length > 0) {
+          setWorkPrograms((prev) => {
+            return cloudWorkPrograms.map((p) => {
+              const localMatch = prev.find((lp) => lp.id === p.id);
+              return {
+                ...p,
+                tasks: localMatch?.tasks || [],
+              };
+            });
+          });
         }
       } catch (err) {
         console.warn('Initial cloud sync notice:', err);
@@ -393,11 +432,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       tasks: proker.tasks || [],
     };
     setWorkPrograms((prev) => [...prev, newProker]);
+    addWorkProgramToCloud(newProker).catch(() => {});
     showToast(`Program Kerja "${newProker.title}" berhasil diajukan!`);
   };
 
   const updateWorkProgram = (id: string, proker: Partial<WorkProgram>) => {
     setWorkPrograms((prev) => prev.map((p) => (p.id === id ? { ...p, ...proker } : p)));
+    updateWorkProgramInCloud(id, proker).catch(() => {});
     showToast('Program kerja berhasil diperbarui!');
   };
 
@@ -645,12 +686,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       likes: 1,
     };
     setAspirations((prev) => [newAsp, ...prev]);
+    addAspirationToCloud(newAsp).catch(() => {});
     showToast('Aspirasi Anda berhasil dikirim dan akan ditinjau oleh Pengurus OSIS!', 'success');
   };
 
   const likeAspiration = (id: string) => {
     setAspirations((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, likes: a.likes + 1 } : a))
+      prev.map((a) => {
+        if (a.id === id) {
+          const updated = { ...a, likes: a.likes + 1 };
+          updateAspirationInCloud(id, { likes: updated.likes }).catch(() => {});
+          return updated;
+        }
+        return a;
+      })
     );
     showToast('Dukungan aspirasi berhasil ditambahkan!');
   };
@@ -661,17 +710,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     response?: string,
     respondedBy?: string
   ) => {
+    const responder = respondedBy || currentUser.fullName;
     setAspirations((prev) =>
-      prev.map((a) =>
-        a.id === id
-          ? {
-              ...a,
-              status,
-              response: response !== undefined ? response : a.response,
-              respondedBy: respondedBy || currentUser.fullName,
-            }
-          : a
-      )
+      prev.map((a) => {
+        if (a.id === id) {
+          const updated = {
+            ...a,
+            status,
+            response: response !== undefined ? response : a.response,
+            respondedBy: responder,
+          };
+          updateAspirationInCloud(id, {
+            status,
+            response: updated.response,
+            respondedBy: responder,
+          }).catch(() => {});
+          return updated;
+        }
+        return a;
+      })
     );
     showToast(`Status aspirasi diperbarui menjadi: ${status.toUpperCase()}`);
   };
@@ -689,6 +746,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'menunggu',
     };
     setRecruitments((prev) => [newRec, ...prev]);
+    addRecruitmentToCloud(newRec).catch(() => {});
     showToast(`Pendaftaran Oprec berhasil! No. Registrasi: ${newRec.registrationNumber}`, 'success');
     return newRec;
   };
@@ -697,11 +755,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRecruitments((prev) =>
       prev.map((r) => (r.id === id ? { ...r, ...partial } : r))
     );
+    updateRecruitmentInCloud(id, partial).catch(() => {});
     showToast('Status pendaftaran calon anggota diperbarui!');
   };
 
   const deleteRecruitment = (id: string) => {
     setRecruitments((prev) => prev.filter((r) => r.id !== id));
+    deleteRecruitmentFromCloud(id).catch(() => {});
     showToast('Data pendaftaran berhasil dihapus');
   };
 
@@ -754,6 +814,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRecruitments((prev) =>
       prev.map((r) => (r.id === recruitmentId ? { ...r, status: 'diterima' } : r))
     );
+    updateRecruitmentInCloud(recruitmentId, { status: 'diterima' }).catch(() => {});
     showToast(`Selamat! ${rec.fullName} resmi diterima sebagai anggota dan KTA telah diterbitkan!`, 'success');
   };
 

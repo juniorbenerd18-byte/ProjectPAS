@@ -221,3 +221,62 @@ CREATE TABLE IF NOT EXISTS announcements (
     target_role VARCHAR(50) DEFAULT 'Semua',
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- 15. PENDAFTAR OPREC CALON ANGGOTA (OPEN RECRUITMENT)
+CREATE TABLE IF NOT EXISTS recruitments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    registration_number VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(150) NOT NULL,
+    nisn VARCHAR(20) NOT NULL,
+    grade VARCHAR(10) NOT NULL,
+    class_room VARCHAR(30) NOT NULL,
+    major VARCHAR(100) NOT NULL,
+    phone VARCHAR(30) NOT NULL,
+    email VARCHAR(150),
+    division_choice_1 VARCHAR(100) NOT NULL,
+    division_choice_2 VARCHAR(100) NOT NULL,
+    reason TEXT NOT NULL,
+    skills JSONB DEFAULT '[]'::jsonb,
+    applied_date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(30) DEFAULT 'menunggu',
+    interview_schedule VARCHAR(100),
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 16. KOTAK IDE & ASPIRASI SISWA
+CREATE TABLE IF NOT EXISTS aspirations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    student_name VARCHAR(150) NOT NULL,
+    is_anonymous BOOLEAN DEFAULT false,
+    class_room VARCHAR(30) NOT NULL,
+    email VARCHAR(150),
+    sender_role VARCHAR(50) DEFAULT 'siswa',
+    category VARCHAR(50) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    content TEXT NOT NULL,
+    date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(30) DEFAULT 'diterima',
+    response TEXT,
+    responded_by VARCHAR(100),
+    likes INT DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 17. PENDAFTARAN EVENT / KEGIATAN SISWA
+CREATE TABLE IF NOT EXISTS event_registrations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    ticket_code VARCHAR(50) UNIQUE NOT NULL,
+    event_id VARCHAR(100) NOT NULL,
+    event_title VARCHAR(200) NOT NULL,
+    student_name VARCHAR(150) NOT NULL,
+    grade VARCHAR(10) NOT NULL,
+    class_room VARCHAR(30) NOT NULL,
+    major VARCHAR(100) NOT NULL,
+    nisn VARCHAR(20) NOT NULL,
+    phone VARCHAR(30) NOT NULL,
+    email VARCHAR(150),
+    registration_date DATE DEFAULT CURRENT_DATE,
+    status VARCHAR(30) DEFAULT 'terdaftar',
+    created_at TIMESTAMPTZ DEFAULT now()
+);
