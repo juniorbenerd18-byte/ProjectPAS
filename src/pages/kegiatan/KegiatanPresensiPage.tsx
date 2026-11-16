@@ -256,66 +256,66 @@ export const KegiatanPresensiPage: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Top Header & Internal Tab Bar */}
-      <div className="simo-card p-4 sm:p-6 md:p-7 flex flex-col gap-4 sm:gap-5">
+      <div className="simo-card p-3 sm:p-6 md:p-7 flex flex-col gap-2.5 sm:gap-5">
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[12px] sm:text-[14px] font-bold mb-2">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[12px] sm:text-[14px] font-bold mb-2">
             <Building2 className="w-4 h-4 shrink-0" />
             <span className="truncate">Kesiswaan &amp; Kedisiplinan • {orgProfile.name}</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+          <h2 className="text-lg sm:text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
             Kegiatan &amp; Presensi Organisasi
           </h2>
-          <p className="text-[13px] sm:text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+          <p className="hidden sm:block text-[13px] sm:text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
             Presensi scan wajah biometrik, manajemen proker, jadwal agenda rapat, dan galeri foto
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="grid grid-cols-2 sm:flex p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] gap-1 self-start sm:self-auto shrink-0">
+        <div className="grid grid-cols-4 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch sm:self-start shrink-0">
           <button
             onClick={() => setActiveTab('presensi')}
-            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'presensi'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Camera className="w-4 h-4 shrink-0" />
+            <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Presensi</span>
           </button>
           <button
             onClick={() => setActiveTab('proker')}
-            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'proker'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Briefcase className="w-4 h-4 shrink-0" />
+            <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Proker</span>
           </button>
           <button
             onClick={() => setActiveTab('rapat')}
-            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'rapat'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <MessagesSquare className="w-4 h-4 shrink-0" />
+            <MessagesSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Rapat</span>
           </button>
           <button
             onClick={() => setActiveTab('dokumentasi')}
-            className={`min-h-[40px] px-3 py-1.5 text-[12px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'dokumentasi'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Camera className="w-4 h-4 shrink-0" />
+            <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Foto</span>
           </button>
         </div>
@@ -323,14 +323,16 @@ export const KegiatanPresensiPage: React.FC = () => {
 
       {/* TAB 1: PRESENSI CERDAS */}
       {activeTab === 'presensi' && (
-        <div className="space-y-6">
-          <div className="simo-card p-4 sm:p-5 space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-              <span className="text-[13px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] shrink-0">Pilih Agenda Rapat:</span>
+        <div className="space-y-3 sm:space-y-6">
+          <div className="simo-card p-3 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-4">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="text-[12px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] shrink-0">
+                Agenda:
+              </span>
               <select
                 value={selectedMeetingId}
                 onChange={(e) => setSelectedMeetingId(e.target.value)}
-                className="simo-input min-h-[44px] px-3 text-[13px] sm:text-[14px] font-semibold w-full sm:w-auto"
+                className="simo-input min-h-[38px] sm:min-h-[44px] px-2.5 sm:px-3 text-[12px] sm:text-[14px] font-semibold w-full"
               >
                 {meetings.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -340,21 +342,21 @@ export const KegiatanPresensiPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pt-1.5 sm:pt-0 border-t sm:border-t-0 border-[#E6DFD0]/60 dark:border-[#283D56]/60">
               <span
-                className={`inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-[10px] text-[12px] sm:text-[13px] font-bold ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 sm:py-1.5 rounded-[8px] sm:rounded-[10px] text-[11px] sm:text-[13px] font-bold ${
                   currentMeeting?.isAttendanceOpen
                     ? 'simo-badge-blue'
                     : 'simo-badge-neutral'
                 }`}
               >
                 <span
-                  className={`w-2.5 h-2.5 rounded-full ${
-                    currentMeeting?.isAttendanceOpen ? 'bg-[#1F3A5F] dark:bg-[#FAF6EE]' : 'bg-[#5A6472]'
+                  className={`w-2 h-2 rounded-full ${
+                    currentMeeting?.isAttendanceOpen ? 'bg-[#1F3A5F] dark:bg-[#FAF6EE] animate-pulse' : 'bg-[#5A6472]'
                   }`}
                 />
                 <span>
-                  {currentMeeting?.isAttendanceOpen ? 'Sesi Presensi Buka' : 'Presensi Ditutup'}
+                  {currentMeeting?.isAttendanceOpen ? 'Sesi Buka' : 'Presensi Tutup'}
                 </span>
               </span>
 
@@ -364,15 +366,15 @@ export const KegiatanPresensiPage: React.FC = () => {
                     isAttendanceOpen: !currentMeeting.isAttendanceOpen,
                   })
                 }
-                className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                className="simo-btn-outline min-h-[32px] sm:min-h-[40px] px-3 sm:px-4 rounded-[8px] sm:rounded-[12px] text-[11px] sm:text-[13px] font-bold cursor-pointer"
               >
                 {currentMeeting?.isAttendanceOpen ? 'Tutup Sesi' : 'Buka Sesi'}
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
-            <div className="lg:col-span-7 simo-card p-4 sm:p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-6">
+            <div className="lg:col-span-7 simo-card p-2.5 sm:p-6">
               <FaceRecognitionScanner
                 meetingId={currentMeeting.id}
                 meetingTitle={currentMeeting.title}

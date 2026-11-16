@@ -550,91 +550,102 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   // RENDER
   // =========================================================
   return (
-    <div className="space-y-6">
+    <div className="space-y-2.5 sm:space-y-4">
 
       {/* Model loading status banner */}
       {modelsLoading && (
-        <div className="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs flex items-center gap-2.5">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-900 dark:text-indigo-200 text-xs flex items-center gap-2">
           <Loader2 className="w-4 h-4 text-indigo-500 animate-spin shrink-0" />
-          <div>
-            <p className="font-bold">Memuat Model AI Face Recognition...</p>
-            <p className="text-[11px] text-indigo-600 mt-0.5">
-              Harap tunggu, engine biometrik sedang diinisialisasi (hanya perlu beberapa detik).
+          <div className="min-w-0">
+            <p className="font-bold truncate">Memuat Model AI Face Recognition...</p>
+            <p className="text-[10px] sm:text-[11px] text-indigo-600 dark:text-indigo-300 mt-0.5 hidden xs:block">
+              Harap tunggu, engine biometrik sedang diinisialisasi.
             </p>
           </div>
         </div>
       )}
 
       {modelError && (
-        <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-center gap-2.5">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-rose-900 dark:text-rose-200 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-          <div>
+          <div className="min-w-0">
             <p className="font-bold">Error Model AI</p>
-            <p className="text-[11px] text-rose-700 mt-0.5">{modelError}</p>
+            <p className="text-[10px] sm:text-[11px] text-rose-700 dark:text-rose-300 mt-0.5">{modelError}</p>
           </div>
         </div>
       )}
 
-      {/* Registered faces info */}
+      {/* Registered faces info - Compact 1-line strip */}
       {modelsLoaded && !isBuilding && (
-        <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs flex items-center gap-2 text-emerald-900">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span className="font-semibold">
-            {registeredCount > 0
-              ? `${registeredCount} wajah terdaftar terdeteksi dari foto lokal anggota — siap verifikasi real-time.`
-              : 'Belum ada foto wajah lokal terdaftar. Upload foto anggota dari perangkat agar face recognition aktif.'}
+        <div className="px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-[11px] sm:text-xs flex items-center justify-between gap-2 text-emerald-900 dark:text-emerald-200">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span className="font-semibold truncate">
+              {registeredCount > 0
+                ? `${registeredCount} wajah terdaftar (Biometrik Siap)`
+                : 'Belum ada foto wajah lokal terdaftar'}
+            </span>
+          </div>
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-200/60 dark:bg-emerald-800/60 shrink-0">
+            AI Aktif
           </span>
         </div>
       )}
 
       {isBuilding && (
-        <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs flex items-center gap-2 text-amber-900">
+        <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs flex items-center gap-2 text-amber-900 dark:text-amber-200">
           <Loader2 className="w-4 h-4 text-amber-600 animate-spin shrink-0" />
-          <span className="font-semibold">Membangun database biometrik wajah dari foto anggota...</span>
+          <span className="font-semibold text-[11px] sm:text-xs">Membangun database biometrik wajah...</span>
         </div>
       )}
 
-      {/* Mode Tabs */}
+      {/* Mode Tabs (Sleek SIMO Design System) */}
       <div className="flex items-center justify-center sm:justify-start">
-        <div className="grid grid-cols-3 p-1 bg-slate-100 rounded-2xl w-full max-w-md">
+        <div className="grid grid-cols-3 p-1 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-xl sm:rounded-2xl w-full max-w-md">
           <button
             onClick={() => setMode('face')}
-            className={`py-2.5 px-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
-              mode === 'face' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`py-1.5 sm:py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
+              mode === 'face'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-xs'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Camera className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="leading-tight text-center">Scan Wajah (Face AI)</span>
+            <Camera className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Scan Wajah</span>
           </button>
           <button
             onClick={() => setMode('name')}
-            className={`py-2.5 px-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
-              mode === 'name' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`py-1.5 sm:py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
+              mode === 'name'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-xs'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="leading-tight text-center">Cari / Input Nama</span>
+            <Search className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Cari Nama</span>
           </button>
           <button
             onClick={() => setMode('qr')}
-            className={`py-2.5 px-1.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
-              mode === 'qr' ? 'bg-white text-indigo-700 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+            className={`py-1.5 sm:py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
+              mode === 'qr'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-xs'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <QrCode className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
-            <span className="leading-tight text-center">Scan KTA / QR</span>
+            <QrCode className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Scan KTA</span>
           </button>
         </div>
       </div>
 
       {/* Warning if attendance closed */}
       {!isAttendanceOpen && (
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center gap-2.5">
-          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+        <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-center gap-2.5">
+          <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
           <div>
             <p className="font-bold">Presensi Sedang Ditutup</p>
-            <p className="text-[11px] text-amber-700 mt-0.5">
-              Sesi presensi rapat ini sedang ditutup. Silakan aktifkan status "Absensi Terbuka" pada jadwal rapat.
+            <p className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-300 mt-0.5">
+              Sesi presensi rapat ini sedang ditutup. Klik "Buka Sesi" pada bar jadwal agenda rapat.
             </p>
           </div>
         </div>
@@ -644,9 +655,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       {/* MODE 1: FACE AI                                          */}
       {/* ======================================================== */}
       {mode === 'face' && (
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-4">
           {/* Video Area */}
-          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 aspect-[3/4] sm:aspect-video max-w-2xl mx-auto shadow-2xl border-2 border-slate-800">
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 aspect-[4/5] sm:aspect-video max-h-[50vh] sm:max-h-none max-w-2xl mx-auto shadow-2xl border-2 border-slate-800">
             <video
               ref={videoRef}
               autoPlay
@@ -657,26 +668,26 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
             <canvas ref={canvasRef} className="hidden" />
 
             {/* HUD Overlay */}
-            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 sm:p-5 md:p-6 z-10">
+            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2.5 sm:p-5 md:p-6 z-10">
               {/* Top bar (Clean Glassmorphism) */}
-              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 bg-slate-950/70 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 shadow-lg">
-                <span className="flex items-center gap-2 font-medium">
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 bg-slate-950/70 backdrop-blur-md px-2.5 sm:px-4 py-1 sm:py-2 rounded-full border border-white/10 shadow-lg">
+                <span className="flex items-center gap-1.5 sm:gap-2 font-medium">
                   <span className={`w-2 h-2 rounded-full ${modelsLoaded ? 'bg-emerald-400 animate-pulse' : modelsLoading ? 'bg-amber-400 animate-pulse' : 'bg-rose-400'}`} />
                   <span className="text-white font-semibold">AI Face Scanner</span>
                 </span>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <span className="font-bold">
-                    {modelsLoading && <span className="text-amber-300 animate-pulse">Memuat Model AI...</span>}
-                    {!modelsLoading && !modelsLoaded && <span className="text-rose-400">Model Gagal Dimuat</span>}
-                    {modelsLoaded && scanStatus === 'scanning' && <span className="text-slate-300">Siap Memindai</span>}
+                    {modelsLoading && <span className="text-amber-300 animate-pulse">Memuat...</span>}
+                    {!modelsLoading && !modelsLoaded && <span className="text-rose-400">Gagal Dimuat</span>}
+                    {modelsLoaded && scanStatus === 'scanning' && <span className="text-slate-300">Siap</span>}
                     {modelsLoaded && scanStatus === 'verifying' && <span className="text-cyan-400 animate-pulse">Menganalisis...</span>}
-                    {modelsLoaded && scanStatus === 'matched' && <span className="text-emerald-400">Wajah Terverifikasi</span>}
+                    {modelsLoaded && scanStatus === 'matched' && <span className="text-emerald-400">Terverifikasi</span>}
                     {modelsLoaded && scanStatus === 'already_checked' && <span className="text-blue-400">Sudah Hadir</span>}
                     {modelsLoaded && scanStatus === 'unregistered' && (
-                      <span className="text-amber-300 flex items-center gap-1.5 font-bold">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-400 inline shrink-0" />
-                        Wajah Belum Terdaftar
+                      <span className="text-amber-300 flex items-center gap-1 font-bold">
+                        <AlertCircle className="w-3 h-3 text-amber-400 inline shrink-0" />
+                        Belum Terdaftar
                       </span>
                     )}
                     {modelsLoaded && (scanStatus === 'idle' || scanStatus === 'no_face') && <span className="text-slate-400">Menunggu...</span>}
@@ -686,7 +697,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   <button
                     type="button"
                     onClick={toggleFacingMode}
-                    className="pointer-events-auto p-1 px-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center gap-1 text-[10px] font-bold border border-white/15 cursor-pointer shadow-xs"
+                    className="pointer-events-auto p-1 px-1.5 sm:px-2 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center gap-1 text-[10px] font-bold border border-white/15 cursor-pointer shadow-xs"
                     title="Ganti Kamera Depan / Belakang"
                   >
                     <RefreshCw className="w-3 h-3" />
@@ -698,7 +709,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
               {/* Center Biometric Face Reticle (FaceID Style with Dark Vignette Mask Cutout) */}
               <div className="relative my-auto flex items-center justify-center">
                 <div
-                  className={`relative w-48 h-60 sm:w-56 sm:h-72 md:w-64 md:h-80 mx-auto rounded-[46%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.50)] ${
+                  className={`relative w-44 h-56 sm:w-56 sm:h-72 md:w-64 md:h-80 mx-auto rounded-[46%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.50)] ${
                     scanStatus === 'unregistered'
                       ? 'border-[3px] border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-amber-400/30'
                       : scanStatus === 'already_checked'
@@ -891,25 +902,25 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       {/* MODE 2: CARI NAMA                                        */}
       {/* ======================================================== */}
       {mode === 'name' && (
-        <div className="space-y-4 max-w-xl mx-auto">
-          <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-xs text-indigo-950">
+        <div className="space-y-3 sm:space-y-4 max-w-xl mx-auto">
+          <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/30 border border-[#E6DFD0] dark:border-[#283D56] text-xs text-[#1F3A5F] dark:text-[#E4EAF2]">
             <p className="font-bold flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-indigo-600" />
+              <Zap className="w-4 h-4 text-[#F2B544]" />
               Pencarian Cepat Nama Siswa
             </p>
-            <p className="text-[11px] text-indigo-700 mt-0.5">
+            <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
               Ketik nama atau NISN untuk mencatat kehadiran dalam 1 klik.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
+          <div className="flex items-center gap-2.5 px-3.5 py-2 bg-white dark:bg-[#17293E] rounded-xl sm:rounded-2xl border border-[#E6DFD0] dark:border-[#283D56] shadow-2xs">
             <Search className="w-4 h-4 text-slate-400 shrink-0" />
             <input
               type="text"
               value={nameSearch}
               onChange={(e) => setNameSearch(e.target.value)}
               placeholder="Ketik nama atau NISN siswa..."
-              className="w-full text-xs outline-none text-slate-800 placeholder:text-slate-400"
+              className="w-full text-xs outline-none bg-transparent text-slate-800 dark:text-[#FAF6EE] placeholder:text-slate-400 dark:placeholder:text-[#9AA8B8]"
               autoFocus
             />
           </div>
@@ -922,23 +933,23 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
               return (
                 <div
                   key={student.id}
-                  className="p-3 sm:p-3.5 bg-white rounded-2xl border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-indigo-300 transition-all"
+                  className="p-3 sm:p-3.5 bg-white dark:bg-[#17293E] rounded-xl sm:rounded-2xl border border-[#E6DFD0] dark:border-[#283D56] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 hover:border-[#1F3A5F] dark:hover:border-[#F2B544] transition-all"
                 >
                   <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                     {student.avatarUrl ? (
                       <img
                         src={student.avatarUrl}
                         alt={student.fullName}
-                        className="w-10 h-10 rounded-xl object-cover border border-slate-200"
+                        className="w-10 h-10 rounded-xl object-cover border border-[#E6DFD0] dark:border-[#283D56]"
                       />
                     ) : (
-                      <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-center">
                         <User className="w-4 h-4 text-slate-400" />
                       </div>
                     )}
                     <div>
-                      <h4 className="text-xs font-bold text-slate-900 leading-tight">{student.fullName}</h4>
-                      <p className="text-[11px] text-slate-500">
+                      <h4 className="text-xs font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-tight">{student.fullName}</h4>
+                      <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8]">
                         {student.classRoom} • {student.major}
                       </p>
                       <span className="text-[10px] text-slate-400 font-mono">NISN: {student.nisn}</span>
@@ -946,7 +957,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   </div>
 
                   {alreadyPresent ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0 self-end sm:self-auto">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-1 rounded-full shrink-0 self-end sm:self-auto">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Sudah Hadir
                     </span>
@@ -954,7 +965,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                     <button
                       onClick={() => handleNameCheckIn(student)}
                       disabled={!isAttendanceOpen}
-                      className="px-3 sm:px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0 self-end sm:self-auto"
+                      className="px-3 sm:px-3.5 py-1.5 simo-btn-primary disabled:opacity-50 text-xs font-bold rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0 self-end sm:self-auto"
                     >
                       <UserCheck className="w-3.5 h-3.5" />
                       <span>Catat Hadir</span>
@@ -971,14 +982,14 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       {/* MODE 3: SCAN KTA / QR                                    */}
       {/* ======================================================== */}
       {mode === 'qr' && (
-        <div className="max-w-xl mx-auto space-y-4 text-center">
-          <div className="p-6 bg-white rounded-3xl border border-slate-200/80 shadow-2xs space-y-4">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <QrCode className="w-8 h-8" />
+        <div className="max-w-xl mx-auto space-y-3 sm:space-y-4 text-center">
+          <div className="p-4 sm:p-6 bg-white dark:bg-[#17293E] rounded-2xl sm:rounded-3xl border border-[#E6DFD0] dark:border-[#283D56] shadow-2xs space-y-3 sm:space-y-4">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] flex items-center justify-center">
+              <QrCode className="w-7 h-7 sm:w-8 sm:h-8" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Scan Kartu Tanda Anggota (KTA)</h3>
-              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+              <h3 className="text-sm font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Scan Kartu Tanda Anggota (KTA)</h3>
+              <p className="text-xs text-[#5A6472] dark:text-[#9AA8B8] mt-1 max-w-sm mx-auto">
                 Arahkan barcode/QR pada KTA ke kamera, atau masukkan NISN secara manual.
               </p>
             </div>
@@ -988,7 +999,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                 type="text"
                 placeholder="Masukkan NISN / Token KTA Siswa..."
                 id="manual-token-input"
-                className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 outline-none focus:border-indigo-500"
+                className="flex-1 px-3 py-2 text-xs rounded-xl bg-transparent border border-[#E6DFD0] dark:border-[#283D56] text-slate-800 dark:text-[#FAF6EE] outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
               />
               <button
                 onClick={() => {
@@ -1005,7 +1016,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                     }
                   }
                 }}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+                className="px-4 py-2 simo-btn-primary rounded-xl text-xs font-bold shadow-xs cursor-pointer"
               >
                 Verifikasi KTA
               </button>
