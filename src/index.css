@@ -333,3 +333,22 @@ h1, h2, h3, h4, h5, h6 {
     display: block !important;
   }
 }
+
+/* Biometric Face Scanner Laser Animation */
+@keyframes scanLaser {
+  0% {
+    top: 6%;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 92%;
+    opacity: 0.6;
+  }
+}
+
+.animate-scan-laser {
+  animation: scanLaser 2.2s ease-in-out infinite alternate;
+}

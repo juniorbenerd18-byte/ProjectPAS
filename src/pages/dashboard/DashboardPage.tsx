@@ -69,25 +69,28 @@ export const DashboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* ======================================================== */}
-      {/* HEADER: SAPAAN + ROLE + MASA BAKTI + TOMBOL CEPAT        */}
+      {/* HEADER: SAPAAN + ROLE + MASA BAKTI                       */}
       {/* ======================================================== */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
-        <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
-              Halo, {currentUser.fullName}!
-            </h1>
-            <span className="text-[13px] font-bold px-3 py-0.5 rounded-full bg-[#FBEBC8] text-[#7A4B00] border border-[#F2B544]/60">
-              {currentRole.replace('_', ' ').toUpperCase()}
-            </span>
+      <div className="space-y-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
+        {/* Baris 1: Sapaan Luas (Tidak Tergencet) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-2xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] tracking-tight">
+                Halo, {currentUser.fullName}!
+              </h1>
+              <span className="text-[13px] font-bold px-3 py-0.5 rounded-full bg-[#FBEBC8] text-[#7A4B00] border border-[#F2B544]/60 shrink-0">
+                {currentRole.replace('_', ' ').toUpperCase()}
+              </span>
+            </div>
+            <p className="text-[14px] sm:text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 font-medium">
+              Masa Bakti {orgProfile.academicYear} • {orgProfile.schoolName} — Pantau tata kelola dan operasional organisasi.
+            </p>
           </div>
-          <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 font-medium">
-            Masa Bakti {orgProfile.academicYear} • {orgProfile.schoolName} — Pantau tata kelola dan operasional organisasi.
-          </p>
         </div>
 
-        {/* Quick Shortcut Buttons - Sejajar Horizontal Tanpa Terputus */}
-        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1.5 xl:pb-0 scrollbar-none flex-nowrap shrink-0">
+        {/* Baris 2: Toolbar Tombol Cepat - Rapi & Responsif di Semua Ukuran Layar */}
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex items-center gap-2 sm:gap-2.5 overflow-x-auto pb-1.5 scrollbar-none flex-nowrap lg:flex-wrap">
           <button
             onClick={() => {
               setKeanggotaanTab('pendaftar');
