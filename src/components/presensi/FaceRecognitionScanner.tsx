@@ -657,7 +657,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       {mode === 'face' && (
         <div className="space-y-3 sm:space-y-4">
           {/* Video Area */}
-          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 aspect-[4/5] sm:aspect-video max-h-[50vh] sm:max-h-none max-w-2xl mx-auto shadow-2xl border-2 border-slate-800">
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 aspect-[4/5] sm:aspect-[16/10] min-h-[380px] max-h-[58vh] sm:max-h-[500px] max-w-2xl mx-auto shadow-2xl border-2 border-slate-800">
             <video
               ref={videoRef}
               autoPlay
@@ -668,9 +668,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
             <canvas ref={canvasRef} className="hidden" />
 
             {/* HUD Overlay */}
-            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-2.5 sm:p-5 md:p-6 z-10">
+            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 sm:p-5 md:p-6 z-10">
               {/* Top bar (Clean Glassmorphism) */}
-              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 bg-slate-950/70 backdrop-blur-md px-2.5 sm:px-4 py-1 sm:py-2 rounded-full border border-white/10 shadow-lg">
+              <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-slate-300 bg-slate-950/75 backdrop-blur-md px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/10 shadow-lg shrink-0">
                 <span className="flex items-center gap-1.5 sm:gap-2 font-medium">
                   <span className={`w-2 h-2 rounded-full ${modelsLoaded ? 'bg-emerald-400 animate-pulse' : modelsLoading ? 'bg-amber-400 animate-pulse' : 'bg-rose-400'}`} />
                   <span className="text-white font-semibold">AI Face Scanner</span>
@@ -706,10 +706,10 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                 </div>
               </div>
 
-              {/* Center Biometric Face Reticle (FaceID Style with Dark Vignette Mask Cutout) */}
-              <div className="relative my-auto flex items-center justify-center">
+              {/* Center Biometric Face Reticle - Ukuran Proporsional & Presisi (Wajah pas di dalam frame, tidak terlalu besar) */}
+              <div className="relative my-auto flex items-center justify-center py-1 sm:py-2">
                 <div
-                  className={`relative w-44 h-56 sm:w-56 sm:h-72 md:w-64 md:h-80 mx-auto rounded-[46%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.50)] ${
+                  className={`relative w-36 h-48 sm:w-44 sm:h-56 md:w-50 md:h-64 mx-auto rounded-[48%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.50)] ${
                     scanStatus === 'unregistered'
                       ? 'border-[3px] border-amber-400 shadow-[0_0_30px_rgba(251,191,36,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-amber-400/30'
                       : scanStatus === 'already_checked'
@@ -722,68 +722,56 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   }`}
                 >
                   {/* 4 Biometric Corner Guides (Modern Target Brackets) */}
-                  <div className="absolute -top-1 -left-1 w-6 h-6 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-2xl pointer-events-none" />
-                  <div className="absolute -top-1 -right-1 w-6 h-6 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-2xl pointer-events-none" />
-                  <div className="absolute -bottom-1 -left-1 w-6 h-6 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-2xl pointer-events-none" />
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-2xl pointer-events-none" />
+                  <div className="absolute -top-1 -left-1 w-5 h-5 border-t-[3px] border-l-[3px] border-cyan-400 rounded-tl-xl pointer-events-none" />
+                  <div className="absolute -top-1 -right-1 w-5 h-5 border-t-[3px] border-r-[3px] border-cyan-400 rounded-tr-xl pointer-events-none" />
+                  <div className="absolute -bottom-1 -left-1 w-5 h-5 border-b-[3px] border-l-[3px] border-cyan-400 rounded-bl-xl pointer-events-none" />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 border-b-[3px] border-r-[3px] border-cyan-400 rounded-br-xl pointer-events-none" />
 
                   {/* Smooth Laser Scan Sweep */}
                   {scanStatus === 'scanning' && (
-                    <div className="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_14px_#22d3ee] animate-scan-laser pointer-events-none" />
-                  )}
-
-                  {/* Verifying subtle pill */}
-                  {scanStatus === 'verifying' && (
-                    <div className="absolute bottom-4 px-3.5 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-md text-cyan-300 text-[11px] font-bold flex items-center gap-1.5 border border-cyan-500/40 shadow-lg animate-in fade-in-50">
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Menganalisis wajah...</span>
-                    </div>
-                  )}
-
-                  {/* Matched sleek bottom card */}
-                  {scanStatus === 'matched' && matchedStudent && (
-                    <div className="absolute bottom-3 inset-x-3 bg-emerald-600/95 backdrop-blur-md text-white p-2.5 rounded-2xl text-center shadow-2xl border border-emerald-400/50 animate-in slide-in-from-bottom-2">
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-black">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
-                        <span className="truncate">{matchedStudent.fullName}</span>
-                      </div>
-                      <p className="text-[10px] text-emerald-100 mt-0.5 font-semibold">
-                        {matchedStudent.classRoom} • {matchConfidence}% Cocok • Hadir
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Already checked bottom pill */}
-                  {scanStatus === 'already_checked' && matchedStudent && (
-                    <div className="absolute bottom-3 inset-x-3 bg-blue-600/95 backdrop-blur-md text-white p-2 rounded-2xl text-center shadow-2xl border border-blue-400/50 animate-in slide-in-from-bottom-2">
-                      <div className="flex items-center justify-center gap-1.5 text-xs font-black">
-                        <Info className="w-3.5 h-3.5 text-blue-200 shrink-0" />
-                        <span className="truncate">{matchedStudent.fullName}</span>
-                      </div>
-                      <p className="text-[10px] text-blue-100 mt-0.5 font-medium">Sudah presensi sebelumnya</p>
-                    </div>
+                    <div className="absolute inset-x-3 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_14px_#22d3ee] animate-scan-laser pointer-events-none" />
                   )}
                 </div>
               </div>
 
-              {/* Bottom hint - sembunyikan saat unregistered agar kamera & wajah 100% bersih tanpa tertutup text */}
-              {scanStatus !== 'unregistered' && (
-                <div className="text-center bg-slate-950/75 backdrop-blur-md py-1.5 sm:py-2 px-3 sm:px-4 rounded-xl border border-white/10 max-w-xs sm:max-w-md mx-auto shadow-lg">
-                  {scanStatus === 'matched' ? (
-                    <p className="text-xs font-bold text-emerald-300">
-                      Presensi berhasil dicatat!
+              {/* Bottom Dedicated Status & Identification Dock - Selalu Tampil Jelas & Tidak Tenggelam */}
+              <div className="shrink-0 w-full max-w-sm sm:max-w-md mx-auto z-20">
+                {scanStatus === 'matched' && matchedStudent ? (
+                  <div className="bg-emerald-600/95 dark:bg-emerald-700/95 backdrop-blur-md text-white py-2 px-3.5 rounded-2xl text-center shadow-2xl border border-emerald-400/50 animate-in slide-in-from-bottom-2">
+                    <div className="flex items-center justify-center gap-1.5 font-black text-xs sm:text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
+                      <span className="truncate">{matchedStudent.fullName}</span>
+                      <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold shrink-0">{matchedStudent.classRoom}</span>
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-emerald-100 font-semibold mt-0.5">
+                      Presensi Berhasil Dicatat • {matchConfidence}% Cocok
                     </p>
-                  ) : scanStatus === 'already_checked' ? (
-                    <p className="text-xs font-bold text-blue-300">
-                      Kehadiran Anda sudah tercatat sebelumnya.
-                    </p>
-                  ) : (
-                    <p className="text-xs text-slate-200 font-medium">
-                      Posisikan wajah Anda di dalam bingkai oval
-                    </p>
-                  )}
-                </div>
-              )}
+                  </div>
+                ) : scanStatus === 'already_checked' && matchedStudent ? (
+                  <div className="bg-blue-600/95 backdrop-blur-md text-white py-2 px-3.5 rounded-2xl text-center shadow-2xl border border-blue-400/50 animate-in slide-in-from-bottom-2">
+                    <div className="flex items-center justify-center gap-1.5 font-bold text-xs sm:text-sm">
+                      <Info className="w-4 h-4 text-blue-200 shrink-0" />
+                      <span className="truncate">{matchedStudent.fullName}</span>
+                      <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold shrink-0">{matchedStudent.classRoom}</span>
+                    </div>
+                    <p className="text-[10px] text-blue-100 mt-0.5 font-medium">Sudah presensi hadir pada agenda ini</p>
+                  </div>
+                ) : scanStatus === 'verifying' ? (
+                  <div className="bg-slate-900/90 backdrop-blur-md text-cyan-300 py-1.5 px-4 rounded-full text-center border border-cyan-500/40 shadow-lg text-[11px] font-bold flex items-center justify-center gap-2 mx-auto w-fit animate-in fade-in-50">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-400" />
+                    <span>Menganalisis biometrik wajah...</span>
+                  </div>
+                ) : scanStatus === 'unregistered' ? (
+                  <div className="bg-amber-500/90 backdrop-blur-md text-white py-1.5 px-4 rounded-full text-center border border-amber-400/50 shadow-lg text-[11px] font-bold flex items-center justify-center gap-1.5 mx-auto w-fit animate-in fade-in-50">
+                    <AlertCircle className="w-3.5 h-3.5 text-amber-200 shrink-0" />
+                    <span>Wajah Belum Terdaftar di Sistem</span>
+                  </div>
+                ) : (
+                  <div className="bg-slate-950/80 backdrop-blur-md py-1.5 px-3.5 rounded-full border border-white/10 text-center text-slate-300 text-[10px] sm:text-[11px] font-medium max-w-xs mx-auto shadow-md">
+                    Posisikan wajah Anda di dalam bingkai oval
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Camera error overlay */}
