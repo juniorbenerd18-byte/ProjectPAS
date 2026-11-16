@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# QA Evidence & Screen Recordings (Local only)
+qa-evidence/
+
