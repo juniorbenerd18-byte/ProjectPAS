@@ -153,7 +153,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
               setShowNotificationMenu(false);
             }}
             className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] hover:bg-[#FAF6EE] dark:hover:bg-[#213B5C] transition-colors cursor-pointer"
-            aria-label="Pilih peran simulator penguji"
+            aria-label="Pilih profil peran pengurus"
           >
             <img
               src={currentUser.avatarUrl}
@@ -178,10 +178,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
                 <div className="px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
                   <div className="flex items-center gap-1.5 text-[#1F3A5F] dark:text-[#FAF6EE]">
                     <Sparkles className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
-                    <span className="text-[14px] font-extrabold">Simulator Penguji UKK</span>
+                    <span className="text-[14px] font-extrabold">Pilih Peran Pengurus</span>
                   </div>
                   <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
-                    Ganti peran untuk memvalidasi hak akses
+                    Ganti akun peran untuk melihat hak akses
                   </p>
                 </div>
                 <div className="p-2 space-y-1 max-h-64 overflow-y-auto">

@@ -40,7 +40,7 @@ export const LaporanPusatPage: React.FC = () => {
         <div>
           <h2 className="text-base font-bold text-slate-900">Pusat Laporan & Rekapitulasi Organisasi</h2>
           <p className="text-xs text-slate-500">
-            Ringkasan eksekutif seluruh modul untuk penilaian akreditasi & pengujian UKK
+            Ringkasan eksekutif seluruh modul untuk penilaian akreditasi &amp; tata kelola organisasi
           </p>
         </div>
         <button

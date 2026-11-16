@@ -216,7 +216,7 @@ export const AbsensiPage: React.FC = () => {
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              Simulasi / Input
+              Input Manual
             </button>
           </div>
 
@@ -265,15 +265,15 @@ export const AbsensiPage: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 3: SIMULATOR / MANUAL INPUT */}
+          {/* TAB 3: MANUAL INPUT */}
           {activeTab === 'manual' && (
             <form onSubmit={handleManualSubmit} className="space-y-4">
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600">
                 <span className="font-bold text-indigo-600 flex items-center gap-1 mb-1">
                   <Sparkles className="w-3.5 h-3.5" />
-                  Simulator Penguji UKK & Izin Manual
+                  Pencatatan Kehadiran &amp; Izin Manual
                 </span>
-                Gunakan tab ini untuk mendemonstrasikan presensi tanpa kamera, atau menginput izin/sakit dengan surat dispensasi.
+                Gunakan tab ini untuk menginput presensi manual anggota atau mencatat izin/sakit dengan surat dispensasi.
               </div>
 
               <div>

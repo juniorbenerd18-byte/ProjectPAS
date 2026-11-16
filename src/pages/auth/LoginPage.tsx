@@ -30,8 +30,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
     orgProfile,
   } = useApp();
 
-  const [username, setUsername] = useState('0081234501'); // Default Ketua
-  const [password, setPassword] = useState('osis2025');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -137,7 +137,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
       if (!matched && !matchedPreset) {
         setIsLoading(false);
         setErrorAlert(
-          `Akun "${cleanUser}" tidak terdaftar dalam database pengurus OSIS. Silakan periksa kembali atau pilih salah satu akun demo di atas.`
+          `Akun "${cleanUser}" tidak terdaftar dalam database pengurus OSIS. Silakan periksa kembali NISN atau email Anda.`
         );
         showToast('Akun tidak ditemukan!', 'error');
         return;
@@ -237,37 +237,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
             </div>
           </div>
 
-          {/* Quick Account Switcher Pills (Sangat ramah penguji & juri) */}
-          <div className="pt-5 pb-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">
-                Pilih Akun Cepat (Mode Uji Coba)
-              </span>
-              <Sparkles className="w-3.5 h-3.5 text-[#F2B544]" />
-            </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none flex-nowrap">
-              {demoAccounts.map((acc) => {
-                const isSelected = selectedPreset === acc.role;
-                return (
-                  <button
-                    key={acc.role}
-                    type="button"
-                    onClick={() => handleSelectPreset(acc)}
-                    className={`px-3 py-1.5 rounded-[10px] text-[12px] font-extrabold whitespace-nowrap transition-all border cursor-pointer shrink-0 ${
-                      isSelected
-                        ? 'bg-[#1F3A5F] text-[#FAF6EE] border-[#1F3A5F]'
-                        : 'bg-transparent text-[#5A6472] dark:text-[#9AA8B8] border-[#E6DFD0] dark:border-[#283D56] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C]'
-                    }`}
-                  >
-                    {acc.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+          <form onSubmit={handleSubmit} className="space-y-4 pt-5">
             {/* Error Alert Box */}
             {errorAlert && (
               <div className="p-3.5 rounded-[12px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-start gap-2.5 text-red-700 dark:text-red-300 text-[13px] animate-fadeIn">
@@ -292,7 +263,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="0081234501 atau email pengurus"
+                  placeholder="Masukkan NISN atau email pengurus"
                   required
                   className="w-full pl-10 pr-4 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544] transition-colors"
                 />
@@ -308,9 +279,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
                 >
                   Kata Sandi
                 </label>
-                <span className="text-[11px] font-semibold text-[#5A6472] dark:text-[#9AA8B8]">
-                  Default: osis2025
-                </span>
               </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5A6472] dark:text-[#9AA8B8]">

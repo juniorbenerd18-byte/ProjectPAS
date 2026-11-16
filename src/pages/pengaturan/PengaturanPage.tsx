@@ -910,7 +910,7 @@ export const PengaturanPage: React.FC = () => {
               </div>
               <div>
                 <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Panduan Deployment ke Cloudflare Pages</h3>
-                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Hosting gratis, kilat, dan aman untuk pengujian UKK</p>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Hosting cloud performa tinggi dan aman untuk sistem organisasi</p>
               </div>
             </div>
 
@@ -1026,9 +1026,9 @@ export const PengaturanPage: React.FC = () => {
                   <AlertCircle className="w-5 h-5 text-[#F2B544]" />
                 </div>
                 <div>
-                  <h3 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Reset Seluruh Data ke Nilai Default UKK</h3>
+                  <h3 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Reset Seluruh Data ke Nilai Standar Awal</h3>
                   <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5 leading-relaxed">
-                    Menghapus data ubahan lokal dan mengembalikan data anggota demo, jadwal rapat, proker, dan transaksi kas awal.
+                    Menghapus data ubahan lokal dan memulihkan data anggota, jadwal rapat, proker, dan transaksi kas standar.
                   </p>
                 </div>
               </div>
