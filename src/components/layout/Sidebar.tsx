@@ -44,7 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       id: 'keanggotaan',
       label: 'Keanggotaan & KTA',
       icon: <Users className="w-4 h-4 shrink-0" />,
-      badge: pendingRecruitmentsCount > 0 ? `${pendingRecruitmentsCount} Baru` : null,
+      badge: pendingRecruitmentsCount > 0 ? `${pendingRecruitmentsCount}` : null,
     },
     {
       id: 'kegiatan-presensi',
@@ -143,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0 ml-2">
                   {item.badge && (
-                    <span className="px-2 py-0.5 rounded-full text-[12px] font-extrabold bg-[#F2B544] text-[#1F3A5F]">
+                    <span className="min-w-[20px] h-5 px-1.5 flex items-center justify-center rounded-full text-[11px] font-extrabold bg-[#F2B544] text-[#1F3A5F]">
                       {item.badge}
                     </span>
                   )}
