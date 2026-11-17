@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Menu,
-  Bell,
   Sun,
   Moon,
   Globe,
@@ -13,10 +12,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
-  const { currentRole, currentUser, announcements, setActivePage, theme, toggleTheme, orgProfile } = useApp();
-  const [showNotificationMenu, setShowNotificationMenu] = useState(false);
-
-  const unreadCount = announcements.length;
+  const { currentRole, currentUser, setActivePage, theme, toggleTheme, orgProfile } = useApp();
 
   return (
     <header className="h-16 bg-[#FFFDF8] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 transition-colors shadow-none">
@@ -61,67 +57,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
             <Moon className="w-5 h-5 text-[#1F3A5F]" strokeWidth={2} />
           )}
         </button>
-
-        {/* Notification Bell */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowNotificationMenu(!showNotificationMenu);
-            }}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] rounded-[12px] relative cursor-pointer transition-colors"
-            title="Pengumuman Organisasi"
-            aria-label="Buka notifikasi pengumuman"
-          >
-            <Bell className="w-5 h-5" strokeWidth={2} />
-            {unreadCount > 0 && (
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 rounded-full bg-[#F2B544] ring-2 ring-[#FFFDF8] dark:ring-[#17293E]" />
-            )}
-          </button>
-
-          {showNotificationMenu && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowNotificationMenu(false)} />
-              <div className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-xl z-50">
-                <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
-                  <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Warta &amp; Pengumuman</span>
-                  <button
-                    onClick={() => {
-                      setActivePage('pengumuman');
-                      setShowNotificationMenu(false);
-                    }}
-                    className="text-[14px] text-[#1F3A5F] dark:text-[#F2B544] hover:underline font-bold cursor-pointer"
-                  >
-                    Lihat Semua
-                  </button>
-                </div>
-                <div className="p-2 space-y-1 max-h-72 overflow-y-auto">
-                  {announcements.slice(0, 4).map((ann) => (
-                    <div
-                      key={ann.id}
-                      className="px-3.5 py-3 rounded-[12px] hover:bg-[#FAF6EE] dark:hover:bg-[#213B5C] transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className={`text-[12px] font-extrabold px-2 py-0.5 rounded-full border ${
-                          ann.priority === 'penting'
-                            ? 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544]'
-                            : 'bg-[#E4EAF2] text-[#1F3A5F] border-[#E6DFD0]'
-                        }`}>
-                          {ann.priority}
-                        </span>
-                        <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-medium">{ann.date}</span>
-                      </div>
-                      <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] line-clamp-1">{ann.title}</p>
-                      <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] line-clamp-1 mt-0.5">{ann.content}</p>
-                    </div>
-                  ))}
-                  {announcements.length === 0 && (
-                    <p className="text-center text-[14px] text-[#5A6472] py-6">Belum ada pengumuman</p>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
 
         {/* User Profile Info */}
         <div className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] select-none">

@@ -258,9 +258,10 @@ export const ArsipDokumenPage: React.FC = () => {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="simo-card p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mr-1 flex items-center gap-1.5">
+      <div className="simo-card p-4 sm:p-5 space-y-3.5">
+        {/* Horizontal scrollable category pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-1 px-1 no-scrollbar">
+          <span className="text-[13px] sm:text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1.5 shrink-0">
             <Filter className="w-4 h-4" />
             Kategori:
           </span>
@@ -274,7 +275,7 @@ export const ArsipDokumenPage: React.FC = () => {
             <button
               key={tab.id}
               onClick={() => setFilterType(tab.id as any)}
-              className={`min-h-[40px] px-3.5 py-1.5 rounded-[10px] text-[14px] font-bold transition-all cursor-pointer ${
+              className={`min-h-[38px] px-3.5 py-1.5 rounded-[10px] text-[13px] sm:text-[14px] font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 filterType === tab.id
                   ? 'simo-chip-active'
                   : 'simo-chip'
@@ -283,30 +284,31 @@ export const ArsipDokumenPage: React.FC = () => {
               {tab.label}
             </button>
           ))}
+        </div>
 
-          <div className="h-5 w-[1px] bg-[#E6DFD0] dark:bg-[#283D56] mx-1 hidden sm:block" />
-
+        {/* Second row: Status filter & Search bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 pt-1">
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="simo-input min-h-[40px] py-1.5 px-3 text-[14px] font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]"
+            className="simo-input min-h-[40px] py-1.5 px-3 text-[13px] sm:text-[14px] font-semibold text-[#1F3A5F] dark:text-[#FAF6EE] w-full sm:w-44 shrink-0"
           >
             <option value="all">Semua Status</option>
             <option value="arsip">Arsip</option>
             <option value="terkirim">Terkirim</option>
             <option value="pending">Pending</option>
           </select>
-        </div>
 
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari no surat, perihal, pihak..."
-            className="simo-input !pl-10 pr-3 min-h-[40px] text-[14px] w-full"
-          />
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari no surat, perihal, pihak..."
+              className="simo-input !pl-10 pr-3 min-h-[40px] text-[13px] sm:text-[14px] w-full"
+            />
+          </div>
         </div>
       </div>
 
@@ -868,22 +870,22 @@ export const ArsipDokumenPage: React.FC = () => {
           </div>
 
             {/* Modal Actions */}
-            <div className="no-print flex items-center justify-between pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
-              <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+            <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="text-[12px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
                 Format Dokumen: <b>Standar A4 Kedinasan Indonesia</b>
               </span>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setIsDisposisiModalOpen(false)}
-                  className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                  className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer flex-1 sm:flex-none justify-center"
                 >
                   Tutup
                 </button>
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="simo-btn-primary min-h-[44px] px-6 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shadow-md"
+                  className="simo-btn-primary min-h-[44px] px-5 sm:px-6 rounded-[12px] text-[14px] font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md flex-1 sm:flex-none"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Cetak Lembar Disposisi</span>
