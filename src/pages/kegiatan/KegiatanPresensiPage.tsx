@@ -146,8 +146,8 @@ export const KegiatanPresensiPage: React.FC = () => {
   return (
     <div className="space-y-3.5 sm:space-y-6">
       {/* Top Header & Internal Tab Bar */}
-      <div className="simo-card p-3 sm:p-6 md:p-7 flex flex-col gap-2.5 sm:gap-5">
-        <div>
+      <div className="simo-card p-4 sm:p-6 md:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-5">
+        <div className="min-w-0">
           <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] text-[12px] sm:text-[14px] font-bold mb-2">
             <Building2 className="w-4 h-4 shrink-0" />
             <span className="truncate">Kesiswaan &amp; Kedisiplinan • {orgProfile.name}</span>
@@ -161,12 +161,12 @@ export const KegiatanPresensiPage: React.FC = () => {
         </div>
 
         {/* Tab Controls */}
-        <div className="grid grid-cols-3 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch sm:self-start shrink-0">
+        <div className="grid grid-cols-3 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch md:self-auto shrink-0">
           <button
             onClick={() => setActiveTab('presensi')}
-            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+            className={`min-h-[36px] sm:min-h-[44px] px-2 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'presensi'
-                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-sm'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
@@ -175,9 +175,9 @@ export const KegiatanPresensiPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('rapat')}
-            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+            className={`min-h-[36px] sm:min-h-[44px] px-2 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'rapat'
-                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-sm'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
@@ -186,9 +186,9 @@ export const KegiatanPresensiPage: React.FC = () => {
           </button>
           <button
             onClick={() => setActiveTab('dokumentasi')}
-            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+            className={`min-h-[36px] sm:min-h-[44px] px-2 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
               activeTab === 'dokumentasi'
-                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-sm'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
