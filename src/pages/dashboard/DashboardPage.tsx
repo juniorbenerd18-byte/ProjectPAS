@@ -7,7 +7,6 @@ import {
   Calendar,
   Clock,
   Megaphone,
-  CreditCard,
   Building2,
   Lightbulb,
   FileText,
@@ -108,13 +107,6 @@ export const DashboardPage: React.FC = () => {
           >
             <QrCode className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
             <span>Presensi AI &amp; QR</span>
-          </button>
-          <button
-            onClick={() => setActivePage('keanggotaan')}
-            className="min-h-[42px] px-3.5 py-2 bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all border border-[#E6DFD0] dark:border-[#283D56] flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
-          >
-            <CreditCard className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" strokeWidth={2} />
-            <span>KTA Digital</span>
           </button>
           <button
             onClick={() => setActivePage('aspirasi')}

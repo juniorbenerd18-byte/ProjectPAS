@@ -150,8 +150,8 @@ interface AppContextType {
   deleteRecruitment: (id: string) => void;
   approveRecruitmentToMember: (recruitmentId: string, customDivisionId?: string, customPosition?: string) => void;
 
-  keanggotaanTab: 'direktori' | 'struktur' | 'kta' | 'pendaftar';
-  setKeanggotaanTab: (tab: 'direktori' | 'struktur' | 'kta' | 'pendaftar') => void;
+  keanggotaanTab: 'direktori' | 'struktur' | 'pendaftar';
+  setKeanggotaanTab: (tab: 'direktori' | 'struktur' | 'pendaftar') => void;
 
   eventRegistrations: EventRegistration[];
   registerForEvent: (reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>) => EventRegistration;
@@ -189,7 +189,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const [activePage, setActivePage] = useState<string>(() => loadStored('activePage', 'portal-publik'));
-  const [keanggotaanTab, setKeanggotaanTab] = useState<'direktori' | 'struktur' | 'kta' | 'pendaftar'>('direktori');
+  const [keanggotaanTab, setKeanggotaanTab] = useState<'direktori' | 'struktur' | 'pendaftar'>('direktori');
   const [currentRole, setCurrentRole] = useState<UserRole>('ketua');
   const [toast, setToast] = useState<Toast | null>(null);
 

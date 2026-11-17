@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   Users,
   Layers,
-  CreditCard,
   Plus,
   Search,
   Trash2,
@@ -27,7 +26,6 @@ import { useApp } from '../../context/AppContext';
 import { Member, UserRole, RecruitmentApplication } from '../../types';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
-import { KartuAnggota } from './KartuAnggota';
 import { StrukturOrganisasi } from '../organisasi/StrukturOrganisasi';
 
 export const KeanggotaanPage: React.FC = () => {
@@ -51,12 +49,11 @@ export const KeanggotaanPage: React.FC = () => {
   const activeTab = keanggotaanTab;
   const setActiveTab = setKeanggotaanTab;
 
-  // RBAC Permission Check
+  // RBAC Permission Check — hanya Ketua, Admin, dan Pembina
   const canManageMembers =
     currentRole === 'admin' ||
     currentRole === 'pembina' ||
-    currentRole === 'ketua' ||
-    currentRole === 'sekretaris';
+    currentRole === 'ketua';
 
   // Filter states Direktori
   const [searchTerm, setSearchTerm] = useState('');
@@ -397,17 +394,6 @@ export const KeanggotaanPage: React.FC = () => {
             <Layers className="w-4 h-4" />
             <span>Bagan Struktur</span>
           </button>
-          <button
-            onClick={() => setActiveTab('kta')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'kta'
-                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
-                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
-            }`}
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>Cetak KTA (QR)</span>
-          </button>
         </div>
       </div>
 
@@ -679,10 +665,7 @@ export const KeanggotaanPage: React.FC = () => {
       {/* TAB 2: BAGAN STRUKTUR */}
       {activeTab === 'struktur' && <StrukturOrganisasi />}
 
-      {/* TAB 3: CETAK KTA DIGITAL */}
-      {activeTab === 'kta' && <KartuAnggota />}
-
-      {/* TAB 4: PENDAFTAR OPREC */}
+      {/* TAB 3: PENDAFTAR OPREC */}
       {activeTab === 'pendaftar' && (
         <div className="space-y-6">
           {/* Summary Metric Cards */}
@@ -1017,6 +1000,17 @@ export const KeanggotaanPage: React.FC = () => {
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Email</label>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="siswa@smk.test"
+              className="simo-input min-h-[44px] text-[14px] w-full"
+            />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

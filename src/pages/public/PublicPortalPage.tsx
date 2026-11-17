@@ -64,7 +64,7 @@ export const PublicPortalPage: React.FC = () => {
           : true,
       registrationGFormUrl:
         orgProfile.registrationGFormUrl ||
-        'https://forms.gle/contohFormPendaftaranOSIS',
+        'https://forms.gle/zG5aSLW3MzWud3uz7',
       registrationOpenDate:
         orgProfile.registrationOpenDate || '01 November 2026',
       registrationCloseDate:

@@ -8,7 +8,6 @@ import {
   AlertCircle,
   Search,
   UserCheck,
-  QrCode,
   User,
   Zap,
   UserPlus,
@@ -33,7 +32,7 @@ interface BiometricLog {
   confidence: number;
   timestamp: string;
   snapshotUrl?: string;
-  method: 'biometric_ai' | 'face_enrollment' | 'manual_name' | 'kta_qr';
+  method: 'biometric_ai' | 'face_enrollment' | 'manual_name';
   status: 'sukses' | 'duplikat' | 'baru_didaftarkan';
 }
 
@@ -53,7 +52,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 }) => {
   const { members, updateMember, recordAttendance, attendances, showToast } = useApp();
 
-  const [mode, setMode] = useState<'face' | 'name' | 'qr'>('face');
+  const [mode, setMode] = useState<'face' | 'name'>('face');
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
@@ -601,7 +600,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
       {/* Mode Tabs (Sleek SIMO Design System) */}
       <div className="flex items-center justify-center sm:justify-start">
-        <div className="grid grid-cols-3 p-1 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-xl sm:rounded-2xl w-full max-w-md">
+        <div className="grid grid-cols-2 p-1 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-xl sm:rounded-2xl w-full max-w-md">
           <button
             onClick={() => setMode('face')}
             className={`py-1.5 sm:py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
@@ -623,17 +622,6 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
           >
             <Search className="w-3.5 h-3.5 shrink-0" />
             <span className="truncate">Cari Nama</span>
-          </button>
-          <button
-            onClick={() => setMode('qr')}
-            className={`py-1.5 sm:py-2 px-1 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all flex items-center justify-center gap-1 sm:gap-1.5 cursor-pointer ${
-              mode === 'qr'
-                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-xs'
-                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
-            }`}
-          >
-            <QrCode className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Scan KTA</span>
           </button>
         </div>
       </div>
@@ -706,20 +694,10 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                 </div>
               </div>
 
-              {/* Center Biometric Face Reticle - Ukuran Proporsional & Pas di Wajah (Head-fitting biometric oval) */}
+              {/* Center Biometric Face Reticle - Dihilangkan, hanya laser scan sweep */}
               <div className="relative my-auto flex items-center justify-center py-2 sm:py-3">
                 <div
-                  className={`relative w-32 h-44 sm:w-36 sm:h-48 md:w-36 md:h-48 mx-auto rounded-[48%] transition-all duration-300 flex items-center justify-center shadow-[0_0_0_9999px_rgba(10,15,29,0.55)] ${
-                    scanStatus === 'unregistered'
-                      ? 'border-[3px] border-amber-400 shadow-[0_0_24px_rgba(251,191,36,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-amber-400/25'
-                      : scanStatus === 'already_checked'
-                      ? 'border-[3px] border-blue-400 shadow-[0_0_24px_rgba(96,165,250,0.6),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-blue-400/25'
-                      : scanStatus === 'matched'
-                      ? 'border-[3px] border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.75),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-emerald-400/25'
-                      : scanStatus === 'verifying'
-                      ? 'border-[3px] border-cyan-400 shadow-[0_0_24px_rgba(34,211,238,0.65),0_0_0_9999px_rgba(10,15,29,0.55)] ring-4 ring-cyan-400/25'
-                      : 'border-2 border-cyan-400/80 shadow-[0_0_16px_rgba(34,211,238,0.3),0_0_0_9999px_rgba(10,15,29,0.55)]'
-                  }`}
+                  className="relative w-32 h-44 sm:w-36 sm:h-48 md:w-36 md:h-48 mx-auto transition-all duration-300 flex items-center justify-center"
                 >
                   {/* Smooth Laser Scan Sweep */}
                   {scanStatus === 'scanning' && (
@@ -762,7 +740,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                   </div>
                 ) : (
                   <div className="bg-slate-950/80 backdrop-blur-md py-1.5 px-3.5 rounded-full border border-white/10 text-center text-slate-300 text-[10px] sm:text-[11px] font-medium max-w-xs mx-auto shadow-md">
-                    Posisikan wajah Anda di dalam bingkai oval
+                    Posisikan wajah Anda di depan kamera
                   </div>
                 )}
               </div>
@@ -960,52 +938,6 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* MODE 3: SCAN KTA / QR                                    */}
-      {/* ======================================================== */}
-      {mode === 'qr' && (
-        <div className="max-w-xl mx-auto space-y-3 sm:space-y-4 text-center">
-          <div className="p-4 sm:p-6 bg-white dark:bg-[#17293E] rounded-2xl sm:rounded-3xl border border-[#E6DFD0] dark:border-[#283D56] shadow-2xs space-y-3 sm:space-y-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#E4EAF2] flex items-center justify-center">
-              <QrCode className="w-7 h-7 sm:w-8 sm:h-8" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Scan Kartu Tanda Anggota (KTA)</h3>
-              <p className="text-xs text-[#5A6472] dark:text-[#9AA8B8] mt-1 max-w-sm mx-auto">
-                Arahkan barcode/QR pada KTA ke kamera, atau masukkan NISN secara manual.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-              <input
-                type="text"
-                placeholder="Masukkan NISN / Token KTA Siswa..."
-                id="manual-token-input"
-                className="flex-1 px-3 py-2 text-xs rounded-xl bg-transparent border border-[#E6DFD0] dark:border-[#283D56] text-slate-800 dark:text-[#FAF6EE] outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
-              />
-              <button
-                onClick={() => {
-                  const input = document.getElementById('manual-token-input') as HTMLInputElement;
-                  if (input && input.value.trim()) {
-                    const student = members.find(
-                      (m) => m.nisn === input.value.trim() || m.id === input.value.trim()
-                    );
-                    if (student) {
-                      handleNameCheckIn(student);
-                      input.value = '';
-                    } else {
-                      showToast('Siswa dengan NISN tersebut tidak ditemukan', 'error');
-                    }
-                  }
-                }}
-                className="px-4 py-2 simo-btn-primary rounded-xl text-xs font-bold shadow-xs cursor-pointer"
-              >
-                Verifikasi KTA
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

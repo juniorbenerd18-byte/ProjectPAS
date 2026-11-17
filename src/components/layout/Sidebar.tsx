@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     {
       id: 'keanggotaan',
-      label: 'Keanggotaan & KTA',
+      label: 'Keanggotaan',
       icon: <Users className="w-4 h-4 shrink-0" />,
       badge: pendingRecruitmentsCount > 0 ? `${pendingRecruitmentsCount}` : null,
     },
