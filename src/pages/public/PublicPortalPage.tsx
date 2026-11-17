@@ -54,6 +54,10 @@ export const PublicPortalPage: React.FC = () => {
         orgProfile.visionPhotoUrl ||
         portalData.organization.visionPhotoUrl ||
         undefined,
+      heroPhotoUrl:
+        orgProfile.heroPhotoUrl ||
+        portalData.organization.heroPhotoUrl ||
+        undefined,
       ketuaName,
       ketuaPhotoUrl: ketuaPhoto,
       ketuaPeriod: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',

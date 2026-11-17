@@ -14,6 +14,7 @@ import {
   MapPin,
   ShieldCheck,
   UserCheck,
+  Users,
   AlertCircle,
   Save,
   Image as ImageIcon,
@@ -96,10 +97,20 @@ export const PengaturanPage: React.FC = () => {
     ? ` (${currentKetuaMember.grade ? `${currentKetuaMember.grade} ` : ''}${currentKetuaMember.classRoom})`
     : '';
 
-  // Form states for Foto & Profil Ketua OSIS
+  // Banner Hero Portal
+  const [heroPhotoUrl, setHeroPhotoUrl] = useState(orgProfile.heroPhotoUrl || '');
+
+  const handleSaveHeroBanner = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    updateOrgProfile({
+      heroPhotoUrl: heroPhotoUrl || undefined,
+    });
+    showToast('Foto banner utama portal berhasil disimpan!', 'success');
+  };
+
+  // Form states for Profil & Sambutan Ketua OSIS
   const [ketuaForm, setKetuaForm] = useState({
     name: currentKetuaName,
-    photoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
     period: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
     welcomeTitle: orgProfile.ketuaWelcomeTitle || `Menjadi Wadah Inovasi Untuk ${orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa'} Unggul.`,
     speech: orgProfile.ketuaSpeech || `Assalamu'alaikum Warahmatullahi Wabarakatuh, Salam Sejahtera untuk kita semua.\n\nTeman-teman yang saya banggakan, OSIS bukan sekadar label organisasi, melainkan ruang kolaborasi. Kami hadir bukan untuk memberi perintah, tetapi untuk mengajak seluruh siswa bergerak melampaui kebiasaan.\n\nMari kita ciptakan sekolah yang tidak hanya unggul dalam angka, tapi juga kaya dalam inovasi dan karakter. SIMO hadir sebagai jembatan yang inklusif bagi setiap aspirasi.\n\nMari bersinergi, karena perubahan besar dimulai dari langkah kecil yang dilakukan bersama.`,
@@ -109,12 +120,11 @@ export const PengaturanPage: React.FC = () => {
     if (e) e.preventDefault();
     updateOrgProfile({
       ketuaName: currentKetuaName,
-      ketuaPhotoUrl: ketuaForm.photoUrl,
       ketuaPeriod: ketuaForm.period,
       ketuaWelcomeTitle: ketuaForm.welcomeTitle,
       ketuaSpeech: ketuaForm.speech,
     });
-    showToast('Foto & data Ketua OSIS berhasil diperbarui!', 'success');
+    showToast('Profil & sambutan Ketua OSIS berhasil diperbarui!', 'success');
   };
 
   // State Modal Tambah / Edit Foto Galeri Dokumentasi
@@ -619,16 +629,83 @@ export const PengaturanPage: React.FC = () => {
       {/* ======================================================== */}
       {activeTab === 'portal' && (
         <div className="space-y-8">
-          {/* SECTION 1: FOTO & SAMBUTAN KETUA OSIS */}
+          {/* SECTION 1: FOTO BANNER UTAMA PORTAL PUBLIK (HERO BANNER) */}
+          <div className="simo-card p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6DFD0] dark:border-[#283D56] gap-3">
+              <div>
+                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-[#F2B544]" />
+                  <span>Foto Banner Utama Beranda Portal (Hero Banner)</span>
+                </h3>
+                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                  Foto banner beranda utama portal publik yang menyambut siswa dan pengunjung
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleSaveHeroBanner()}
+                className="simo-btn-primary min-h-[44px] px-5 py-2 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <Save className="w-4 h-4" />
+                <span>Simpan Banner Portal</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              {/* Kolom Preview Banner */}
+              <div className="lg:col-span-5 flex flex-col items-center">
+                <p className="text-xs font-bold uppercase tracking-wider text-[#5A6472] dark:text-[#9AA8B8] mb-2 self-start">
+                  Live Preview Banner Beranda
+                </p>
+                <div className="relative w-full rounded-2xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] shadow-sm aspect-[16/10] bg-[#E4EAF2] dark:bg-[#1E344D]">
+                  <img
+                    src={heroPhotoUrl || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1000&auto=format&fit=crop&q=80'}
+                    alt="Hero Banner Preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1000&auto=format&fit=crop&q=80';
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Form Input Banner */}
+              <div className="lg:col-span-7 space-y-4">
+                <ImagePicker
+                  label="Unggah Foto Banner Beranda (Dari Komputer)"
+                  value={heroPhotoUrl}
+                  onChange={(url) => setHeroPhotoUrl(url)}
+                  helperText="Pilih foto kegiatan siswa / organisasi bernuansa lanskap (rasio 16:9 atau 4:3) resolusi jernih."
+                  aspectRatio="video"
+                />
+
+                <div>
+                  <label className="block text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
+                    Atau Masukkan Tautan / Link URL Gambar Banner
+                  </label>
+                  <input
+                    type="text"
+                    value={heroPhotoUrl}
+                    onChange={(e) => setHeroPhotoUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/... atau /banner.jpg"
+                    className="simo-input min-h-[44px] text-[13px] w-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* SECTION 2: PROFIL & SAMBUTAN KETUA OSIS */}
           <div className="simo-card p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6DFD0] dark:border-[#283D56] gap-3">
               <div>
                 <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
                   <Sparkles className="w-5 h-5 text-[#F2B544]" />
-                  <span>Foto &amp; Profil Sambutan Ketua OSIS</span>
+                  <span>Profil &amp; Sambutan Resmi Ketua OSIS</span>
                 </h3>
                 <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
-                  Foto dan sambutan ini tampil pada bagian "Tentang / Sambutan Ketua OSIS" di portal publik
+                  Foto otomatis tersinkron dari Keanggotaan. Kelola teks sambutan dan kutipan untuk portal publik di sini.
                 </p>
               </div>
               <button
@@ -637,7 +714,7 @@ export const PengaturanPage: React.FC = () => {
                 className="simo-btn-primary min-h-[44px] px-5 py-2 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shrink-0"
               >
                 <Save className="w-4 h-4" />
-                <span>Simpan Profil Ketua OSIS</span>
+                <span>Simpan Sambutan Ketua</span>
               </button>
             </div>
 
@@ -650,7 +727,7 @@ export const PengaturanPage: React.FC = () => {
                 <div className="relative w-full max-w-[260px] rounded-2xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] shadow-md bg-[#FAF6EE] dark:bg-[#17293E] group">
                   <div className="aspect-[3/4] w-full overflow-hidden bg-[#E4EAF2] dark:bg-[#213B5C]">
                     <img
-                      src={ketuaForm.photoUrl || currentKetuaMember?.avatarUrl || '/ketua-osis.png'}
+                      src={currentKetuaMember?.avatarUrl || orgProfile.ketuaPhotoUrl || '/ketua-osis.png'}
                       alt="Ketua OSIS Preview"
                       className="w-full h-full object-cover object-top"
                       onError={(e) => {
@@ -676,26 +753,27 @@ export const PengaturanPage: React.FC = () => {
 
               {/* Form Input Data Ketua */}
               <div className="lg:col-span-8 space-y-4">
-                <div>
-                  <ImagePicker
-                    label="Unggah Foto Ketua OSIS (Dari Komputer)"
-                    value={ketuaForm.photoUrl}
-                    onChange={(url) => setKetuaForm({ ...ketuaForm, photoUrl: url })}
-                    helperText="Pilih foto portrait resmi Ketua OSIS dari komputer (JPG/PNG). Rekomendasi rasio 3:4 atau tegak."
-                    aspectRatio="card"
-                  />
-                  <div className="mt-2">
-                    <label className="block text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] mb-1">
-                      Atau Masukkan URL Link Foto (Opsional)
-                    </label>
-                    <input
-                      type="text"
-                      value={ketuaForm.photoUrl}
-                      onChange={(e) => setKetuaForm({ ...ketuaForm, photoUrl: e.target.value })}
-                      placeholder="/ketua-osis.png atau https://..."
-                      className="simo-input min-h-[40px] text-[13px] w-full"
-                    />
+                {/* Single Source of Truth Notification */}
+                <div className="p-4 rounded-[14px] bg-[#E4EAF2]/60 dark:bg-[#1E344D] border border-[#CBD5E1] dark:border-[#283D56] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-[#F2B544]" />
+                      <span className="font-extrabold text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                        Foto Profil Ketua OSIS Terhubung Otomatis
+                      </span>
+                    </div>
+                    <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
+                      Foto profil Ketua OSIS di portal publik otomatis menggunakan foto anggota aktif <strong>{currentKetuaName}</strong> dari menu Keanggotaan.
+                    </p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setActivePage('keanggotaan')}
+                    className="simo-btn-outline min-h-[38px] px-3.5 rounded-[10px] text-[13px] font-bold shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    <span>Ubah di Keanggotaan</span>
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -758,7 +836,7 @@ export const PengaturanPage: React.FC = () => {
             </div>
           </div>
 
-          {/* SECTION 2: GALERI DOKUMENTASI KEGIATAN ("Rekam jejak karya dan momen berharga") */}
+          {/* SECTION 3: GALERI DOKUMENTASI KEGIATAN ("Rekam jejak karya dan momen berharga") */}
           <div className="simo-card p-6 space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#E6DFD0] dark:border-[#283D56] gap-3">
               <div>

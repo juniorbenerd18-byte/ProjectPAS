@@ -43,6 +43,13 @@ export const KegiatanPresensiPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'presensi' | 'rapat' | 'dokumentasi'>('presensi');
   const [selectedMeetingId, setSelectedMeetingId] = useState<string>(meetings[0]?.id || '');
 
+  // Role pembatasan yang berwenang membuka / menutup sesi presensi
+  const canManageAttendance =
+    currentRole === 'admin' ||
+    currentRole === 'ketua' ||
+    currentRole === 'sekretaris' ||
+    currentRole === 'pembina';
+
   // Meeting Modal state
   const [isAddMeetingModalOpen, setIsAddMeetingModalOpen] = useState(false);
   const [meetingForm, setMeetingForm] = useState({
@@ -237,16 +244,25 @@ export const KegiatanPresensiPage: React.FC = () => {
                 </span>
               </span>
 
-              <button
-                onClick={() =>
-                  updateMeeting(currentMeeting.id, {
-                    isAttendanceOpen: !currentMeeting.isAttendanceOpen,
-                  })
-                }
-                className="simo-btn-outline min-h-[32px] sm:min-h-[40px] px-3 sm:px-4 rounded-[8px] sm:rounded-[12px] text-[11px] sm:text-[13px] font-bold cursor-pointer"
-              >
-                {currentMeeting?.isAttendanceOpen ? 'Tutup Sesi' : 'Buka Sesi'}
-              </button>
+              {canManageAttendance && (
+                <button
+                  onClick={() => {
+                    const nextState = !currentMeeting.isAttendanceOpen;
+                    updateMeeting(currentMeeting.id, {
+                      isAttendanceOpen: nextState,
+                    });
+                    showToast(
+                      nextState
+                        ? `Sesi presensi untuk "${currentMeeting.title}" berhasil dibuka.`
+                        : `Sesi presensi untuk "${currentMeeting.title}" telah ditutup.`,
+                      'info'
+                    );
+                  }}
+                  className="simo-btn-outline min-h-[32px] sm:min-h-[40px] px-3 sm:px-4 rounded-[8px] sm:rounded-[12px] text-[11px] sm:text-[13px] font-bold cursor-pointer"
+                >
+                  {currentMeeting?.isAttendanceOpen ? 'Tutup Sesi' : 'Buka Sesi'}
+                </button>
+              )}
             </div>
           </div>
 

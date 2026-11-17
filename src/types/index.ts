@@ -187,6 +187,7 @@ export interface OrgProfile {
   vision: string;
   mission: string[];
   visionPhotoUrl?: string;
+  heroPhotoUrl?: string;
   history: string;
   logoUrl: string;
   pembinaName: string;

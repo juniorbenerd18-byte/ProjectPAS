@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowRight, Users, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Users } from 'lucide-react';
 import { Highlight } from './Highlight';
 import { FloatingStatCard } from './FloatingStatCard';
 import { PortalOrganization } from '../../data/portalData';
@@ -90,35 +90,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           </div>
 
-          {/* Kolom Kanan: Foto Kegiatan & Dua Floating Stat Card (Animasi Muncul Bertahap & Pop-In) */}
+          {/* Kolom Ranan: Foto Kegiatan & Floating Stat Card */}
           <div className="w-full lg:w-1/2 relative flex justify-center animate-hero-image">
             <div className="relative w-full max-w-lg lg:max-w-none">
               {/* Foto kegiatan utama */}
               <div className="relative rounded-2xl overflow-hidden border border-[#E6DFD0] shadow-sm aspect-[16/10] sm:aspect-4/3 bg-[#E4EAF2] group">
                 <img
-                  src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1000&auto=format&fit=crop&q=80"
+                  src={organization.heroPhotoUrl || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1000&auto=format&fit=crop&q=80'}
                   alt="Kegiatan Kolaborasi Organisasi"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
 
-              {/* Floating Stat Card 1: Anggota Aktif (Kiri Atas) */}
+              {/* Floating Stat Card: Anggota Aktif (Kiri Atas) */}
               <div className="absolute -top-2.5 sm:-top-6 left-0 sm:-left-6 max-w-[170px] xs:max-w-[190px] sm:max-w-[230px] w-full shadow-md scale-85 sm:scale-100 origin-top-left animate-card-pop-1">
                 <FloatingStatCard
                   icon={<Users className="w-4 h-4" />}
                   title="Anggota aktif"
                   value={`${activeMembersCount}`}
                   subtitle="Terdata & terverifikasi"
-                />
-              </div>
-
-              {/* Floating Stat Card 2: Kehadiran Kegiatan (Kanan Bawah) */}
-              <div className="absolute -bottom-2.5 sm:-bottom-7 right-0 sm:-right-5 max-w-[175px] xs:max-w-[200px] sm:max-w-[250px] w-full shadow-md scale-85 sm:scale-100 origin-bottom-right animate-card-pop-2">
-                <FloatingStatCard
-                  icon={<CheckCircle2 className="w-4 h-4" />}
-                  title="Kehadiran kegiatan"
-                  value={`${attendanceRatePercent}%`}
-                  progressPercent={attendanceRatePercent}
                 />
               </div>
             </div>

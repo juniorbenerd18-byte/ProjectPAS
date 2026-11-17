@@ -13,6 +13,7 @@ export interface PortalOrganization {
   vision: string;
   missions: string[];
   visionPhotoUrl?: string;
+  heroPhotoUrl?: string;
   logoUrl?: string;
   ketuaPhotoUrl?: string;
   ketuaName?: string;
