@@ -443,66 +443,67 @@ export const KeanggotaanPage: React.FC = () => {
           </div>
 
           {/* Filter Bar */}
-          <div className="simo-card p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-3 flex-1">
-              <div className="relative w-full sm:w-72">
+          <div className="simo-card p-4 sm:p-5 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2.5 flex-1">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[200px] md:max-w-xs xl:max-w-sm">
                 <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Cari nama, NISN, atau kelas..."
-                  className="simo-input !pl-10 pr-3 min-h-[44px] text-[14px] w-full"
+                  className="simo-input !pl-10 pr-3 min-h-[42px] text-[13px] sm:text-[14px] w-full"
                 />
               </div>
 
-              {/* Status Filter */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold"
-              >
-                <option value="all">Semua Status</option>
-                <option value="aktif">Anggota Aktif</option>
-                <option value="alumni">Demisioner / Alumni</option>
-              </select>
+              {/* 3 Dropdown Filters - Selalu sejajar berdampingan */}
+              <div className="grid grid-cols-3 gap-2 w-full md:w-auto md:flex md:items-center shrink-0">
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  className="simo-input min-h-[42px] px-2.5 sm:px-3 text-[13px] font-semibold w-full md:w-auto cursor-pointer"
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="aktif">Anggota Aktif</option>
+                  <option value="alumni">Demisioner / Alumni</option>
+                </select>
 
-              {/* Grade Filter */}
-              <select
-                value={gradeFilter}
-                onChange={(e) => setGradeFilter(e.target.value)}
-                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold"
-              >
-                <option value="all">Semua Kelas</option>
-                <option value="X">Kelas X</option>
-                <option value="XI">Kelas XI</option>
-                <option value="XII">Kelas XII</option>
-              </select>
+                <select
+                  value={gradeFilter}
+                  onChange={(e) => setGradeFilter(e.target.value)}
+                  className="simo-input min-h-[42px] px-2.5 sm:px-3 text-[13px] font-semibold w-full md:w-auto cursor-pointer"
+                >
+                  <option value="all">Semua Kelas</option>
+                  <option value="X">Kelas X</option>
+                  <option value="XI">Kelas XI</option>
+                  <option value="XII">Kelas XII</option>
+                </select>
 
-              {/* Major Filter */}
-              <select
-                value={majorFilter}
-                onChange={(e) => setMajorFilter(e.target.value)}
-                className="simo-input min-h-[44px] px-3 text-[14px] font-semibold"
-              >
-                <option value="all">Semua Jurusan</option>
-                {majors.map((mj) => (
-                  <option key={mj} value={mj}>
-                    {mj}
-                  </option>
-                ))}
-              </select>
+                <select
+                  value={majorFilter}
+                  onChange={(e) => setMajorFilter(e.target.value)}
+                  className="simo-input min-h-[42px] px-2.5 sm:px-3 text-[13px] font-semibold w-full md:w-auto cursor-pointer"
+                >
+                  <option value="all">Semua Jurusan</option>
+                  {majors.map((mj) => (
+                    <option key={mj} value={mj}>
+                      {mj}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <button
               onClick={handleOpenAdd}
-              className={`simo-btn-primary min-h-[44px] px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0 ${
+              className={`simo-btn-primary min-h-[42px] px-4 py-2 rounded-[12px] flex items-center justify-center gap-2 cursor-pointer shrink-0 text-[13px] font-bold ${
                 !canManageMembers ? 'opacity-80' : ''
               }`}
               title={canManageMembers ? 'Tambah Siswa Baru' : 'Akses Terbatas: Hanya Pengurus BPH / Admin'}
             >
               {!canManageMembers ? <Lock className="w-4 h-4 text-amber-300" /> : <Plus className="w-4 h-4" />}
-              <span>Tambah Siswa</span>
+              <span className="whitespace-nowrap">Tambah Siswa</span>
             </button>
           </div>
 
@@ -516,7 +517,7 @@ export const KeanggotaanPage: React.FC = () => {
                     <th className="py-4 px-5">Kelas &amp; NISN</th>
                     <th className="py-4 px-5">Divisi / Sekbid</th>
                     <th className="py-4 px-5">Jabatan</th>
-                    <th className="py-4 px-5">Status &amp; Biometrik</th>
+                    <th className="py-4 px-5 whitespace-nowrap">Status &amp; Biometrik</th>
                     <th className="py-4 px-5 text-right">Aksi</th>
                   </tr>
                 </thead>
@@ -549,21 +550,21 @@ export const KeanggotaanPage: React.FC = () => {
                           {m.position}
                         </span>
                       </td>
-                      <td className="py-4 px-5">
-                        <div className="flex flex-col gap-1.5 items-start">
+                      <td className="py-4 px-5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
                           <span
                             className={m.status === 'aktif' ? 'simo-badge-blue' : 'simo-badge-neutral'}
                           >
                             {m.status}
                           </span>
                           {m.avatarUrl ? (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] bg-[#FAF6EE] dark:bg-[#17293E] px-2 py-0.5 rounded-[6px] border border-[#E6DFD0] dark:border-[#283D56]">
-                              <Camera className="w-3 h-3 text-[#F2B544]" />
-                              Wajah Terdaftar
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] bg-[#FAF6EE] dark:bg-[#17293E] px-2.5 py-0.5 rounded-[6px] border border-[#E6DFD0] dark:border-[#283D56] whitespace-nowrap">
+                              <Camera className="w-3 h-3 text-[#F2B544] shrink-0" />
+                              <span>Wajah Terdaftar</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] bg-[#FAF6EE] px-2 py-0.5 rounded-[6px]">
-                              Belum Rekam
+                            <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] bg-[#FAF6EE] dark:bg-[#17293E]/60 px-2.5 py-0.5 rounded-[6px] whitespace-nowrap">
+                              <span>Belum Rekam</span>
                             </span>
                           )}
                         </div>
