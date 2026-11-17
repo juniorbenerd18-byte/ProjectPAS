@@ -315,62 +315,62 @@ export const ArsipDokumenPage: React.FC = () => {
       {/* Desktop Document Table */}
       <div className="simo-card p-0 overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-[15px]">
+          <table className="w-full min-w-[740px] text-left text-[14px]">
             <thead>
-              <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[14px]">
-                <th className="py-4 px-5">Tipe & No. Dokumen</th>
-                <th className="py-4 px-5">Perihal / Judul Dokumen</th>
-                <th className="py-4 px-5">Pengirim / Penerima</th>
-                <th className="py-4 px-5">Tanggal</th>
-                <th className="py-4 px-5 text-center">Status</th>
-                <th className="py-4 px-5 text-right">Aksi</th>
+              <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[13px] uppercase tracking-wider">
+                <th className="py-3.5 px-3.5 lg:px-4 w-[160px]">Tipe & No. Dokumen</th>
+                <th className="py-3.5 px-3.5 lg:px-4 min-w-[200px] max-w-[300px]">Perihal / Judul Dokumen</th>
+                <th className="py-3.5 px-3.5 lg:px-4 max-w-[180px]">Pengirim / Penerima</th>
+                <th className="py-3.5 px-3.5 lg:px-4 w-[125px] whitespace-nowrap">Tanggal</th>
+                <th className="py-3.5 px-3.5 lg:px-4 w-[110px] text-center whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-3.5 lg:px-4 w-[140px] text-right sticky right-0 bg-[#FAF6EE] dark:bg-[#17293E] z-10 shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.08)]">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
               {filteredDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[15px]">
+                  <td colSpan={6} className="py-12 text-center text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[14px]">
                     Tidak ada dokumen yang sesuai kriteria filter.
                   </td>
                 </tr>
               ) : (
                 filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-[#FAF6EE]/50 dark:hover:bg-[#17293E]/50 transition-colors">
-                    <td className="py-4 px-5 whitespace-nowrap">
-                      <div className="flex flex-col gap-1.5 items-start">
+                  <tr key={doc.id} className="group hover:bg-[#FAF6EE]/50 dark:hover:bg-[#1a2e47]/40 transition-colors">
+                    <td className="py-3.5 px-3.5 lg:px-4 whitespace-nowrap">
+                      <div className="flex flex-col gap-1 items-start">
                         {getTypeBadge(doc.type)}
-                        <span className="font-mono font-bold text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px]">
+                        <span className="font-mono font-bold text-[#1F3A5F] dark:text-[#FAF6EE] text-[12px]">
                           {doc.documentNumber}
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-5">
-                      <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] block text-[15px] leading-snug">
+                    <td className="py-3.5 px-3.5 lg:px-4 min-w-[200px] max-w-[300px]">
+                      <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] block text-[14px] leading-snug">
                         {doc.title}
                       </span>
                       {doc.fileUrl && (
-                        <span className="inline-flex items-center gap-1.5 text-[13px] text-[#1F3A5F] dark:text-[#F2B544] font-semibold mt-1">
+                        <span className="inline-flex items-center gap-1.5 text-[12px] text-[#1F3A5F] dark:text-[#F2B544] font-semibold mt-1">
                           <Eye className="w-3.5 h-3.5" /> Berkas Terlampir
                         </span>
                       )}
                     </td>
-                    <td className="py-4 px-5 text-[#5A6472] dark:text-[#9AA8B8] font-medium whitespace-nowrap text-[14px]">
+                    <td className="py-3.5 px-3.5 lg:px-4 text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[13px] leading-snug max-w-[180px] break-words">
                       {doc.senderOrReceiver}
                     </td>
-                    <td className="py-4 px-5 whitespace-nowrap text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[14px]">
+                    <td className="py-3.5 px-3.5 lg:px-4 whitespace-nowrap text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[13px]">
                       {formatDateIndo(doc.documentDate)}
                     </td>
-                    <td className="py-4 px-5 whitespace-nowrap text-center">
+                    <td className="py-3.5 px-3.5 lg:px-4 whitespace-nowrap text-center">
                       {getStatusBadge(doc.status)}
                     </td>
-                    <td className="py-4 px-5 whitespace-nowrap text-right">
-                      <div className="flex items-center justify-end gap-2">
+                    <td className="py-3.5 px-3.5 lg:px-4 whitespace-nowrap text-right sticky right-0 bg-[#FFFDF8] dark:bg-[#17293E] group-hover:bg-[#FAF6EE] dark:group-hover:bg-[#17293E] z-10 shadow-[-6px_0_10px_-4px_rgba(0,0,0,0.08)]">
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
                           onClick={() => {
                             setPreviewDoc(doc);
                             setIsDisposisiModalOpen(true);
                           }}
-                          className="simo-btn-outline min-h-[38px] px-3.5 py-1.5 rounded-[10px] text-[13px] flex items-center gap-1.5 cursor-pointer"
+                          className="simo-btn-outline min-h-[34px] px-3 py-1 rounded-[8px] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer shrink-0"
                           title="Cetak Lembar Disposisi Resmi"
                         >
                           <Printer className="w-3.5 h-3.5" />
@@ -380,7 +380,7 @@ export const ArsipDokumenPage: React.FC = () => {
                         {(currentRole === 'sekretaris' || currentRole === 'admin' || currentRole === 'ketua') && (
                           <button
                             onClick={() => setDocToDelete(doc)}
-                            className="min-h-[38px] min-w-[38px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[10px] border border-transparent hover:border-[#E6DFD0] dark:hover:border-[#283D56] transition-colors cursor-pointer"
+                            className="min-h-[34px] min-w-[34px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] rounded-[8px] border border-transparent hover:border-[#E6DFD0] dark:hover:border-[#283D56] transition-colors cursor-pointer shrink-0"
                             title="Hapus Dokumen"
                             aria-label={`Hapus ${doc.title}`}
                           >
