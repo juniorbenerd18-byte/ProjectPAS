@@ -59,33 +59,13 @@ export const PengaturanPage: React.FC = () => {
     currentRole,
     setActivePage,
     showToast,
+    syncState,
+    syncNow,
+    cloudConnected,
   } = useApp();
 
   const canResetData = currentRole === 'admin' || currentRole === 'pembina';
   const canAccessSettings = currentRole === 'admin' || currentRole === 'ketua' || currentRole === 'sekretaris' || currentRole === 'pembina';
-
-  // Guard: redirect ke dashboard jika role tidak diizinkan
-  if (!canAccessSettings) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center p-6">
-        <div className="w-16 h-16 rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 flex items-center justify-center">
-          <Lock className="w-8 h-8 text-[#1F3A5F] dark:text-[#FAF6EE]" />
-        </div>
-        <div>
-          <h2 className="text-xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] mb-2">Akses Dibatasi</h2>
-          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] max-w-sm">
-            Halaman pengaturan hanya dapat diakses oleh <strong>Admin, Ketua OSIS, Sekretaris,</strong> dan <strong>Pembina OSIS</strong>.
-          </p>
-        </div>
-        <button
-          onClick={() => setActivePage('dashboard')}
-          className="simo-btn-primary min-h-[44px] px-6 rounded-[12px] text-[14px] font-bold cursor-pointer"
-        >
-          Kembali ke Dashboard
-        </button>
-      </div>
-    );
-  }
 
   const [activeTab, setActiveTab] = useState<'profil' | 'portal' | 'data'>('profil');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
@@ -282,6 +262,30 @@ export const PengaturanPage: React.FC = () => {
     resetAllData();
     setIsResetModalOpen(false);
   };
+
+  // Guard: redirect ke dashboard jika role tidak diizinkan
+  // (dipindah setelah semua hook agar urutan Hook tetap stabil)
+  if (!canAccessSettings) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center p-6">
+        <div className="w-16 h-16 rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 flex items-center justify-center">
+          <Lock className="w-8 h-8 text-[#1F3A5F] dark:text-[#FAF6EE]" />
+        </div>
+        <div>
+          <h2 className="text-xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] mb-2">Akses Dibatasi</h2>
+          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] max-w-sm">
+            Halaman pengaturan hanya dapat diakses oleh <strong>Admin, Ketua OSIS, Sekretaris,</strong> dan <strong>Pembina OSIS</strong>.
+          </p>
+        </div>
+        <button
+          onClick={() => setActivePage('dashboard')}
+          className="simo-btn-primary min-h-[44px] px-6 rounded-[12px] text-[14px] font-bold cursor-pointer"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -946,14 +950,62 @@ export const PengaturanPage: React.FC = () => {
             <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-2 text-[14px]">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Status Database Cloud:</span>
-                <span className="simo-badge-blue">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  Supabase Cloud PostgreSQL Aktif &amp; Terhubung
-                </span>
+                {!cloudConnected ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/60">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Cloud Belum Dikonfigurasi
+                  </span>
+                ) : syncState.state === 'error' ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/60">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    Gagal Tersinkron
+                  </span>
+                ) : syncState.state === 'syncing' ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/60">
+                    <span className="w-3.5 h-3.5 border-2 border-amber-600 border-t-transparent rounded-full animate-spin" />
+                    Menyinkronkan...
+                  </span>
+                ) : (
+                  <span className="simo-badge-blue">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    Supabase Cloud PostgreSQL Tersinkron
+                  </span>
+                )}
               </div>
               <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed">
-                Aplikasi telah terhubung langsung ke proyek <strong>Supabase Cloud (ProjectPAS)</strong>. Data anggota, notulen rapat, pengumuman, dan divisi tersimpan di cloud PostgreSQL dengan mekanisme sinkronisasi instan serta didukung cadangan luring (Offline-Resilient).
+                Profil organisasi (logo, hero, sambutan), galeri dokumentasi, kegiatan, dokumen,
+                kas, iuran, RAB, presensi, aspirasi, dan pendaftaran disimpan di Supabase Cloud.
+                Perubahan langsung menyebar ke perangkat lain yang membuka aplikasi.
               </p>
+              {syncState.message && (
+                <p
+                  className={`text-[12px] leading-relaxed ${
+                    syncState.state === 'error'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-[#5A6472] dark:text-[#9AA8B8]'
+                  }`}
+                >
+                  {syncState.message}
+                </p>
+              )}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                <span className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">
+                  {syncState.lastSyncedAt
+                    ? `Sinkron terakhir: ${new Date(syncState.lastSyncedAt).toLocaleString('id-ID')}`
+                    : 'Belum pernah disinkronkan pada sesi ini.'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void syncNow();
+                  }}
+                  disabled={!cloudConnected || syncState.state === 'syncing'}
+                  className="simo-btn-outline min-h-[40px] px-4 rounded-[10px] text-[13px] font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                >
+                  <Cloud className="w-4 h-4" />
+                  <span>Sinkronkan Sekarang</span>
+                </button>
+              </div>
             </div>
           </div>
 

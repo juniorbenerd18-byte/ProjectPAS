@@ -280,3 +280,157 @@ CREATE TABLE IF NOT EXISTS event_registrations (
     status VARCHAR(30) DEFAULT 'terdaftar',
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- 18. GALERI / DOKUMENTASI KEGIATAN (PORTAL PUBLIK)
+CREATE TABLE IF NOT EXISTS gallery_photos (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title VARCHAR(200) NOT NULL DEFAULT '',
+    caption TEXT DEFAULT '',
+    image_url TEXT NOT NULL,
+    date DATE DEFAULT CURRENT_DATE,
+    category VARCHAR(80),
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 19. META APLIKASI (PENANDA MIGRASI & VERSI SKEMA)
+CREATE TABLE IF NOT EXISTS app_meta (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- =========================================================================
+-- 20. KOLOM TAMBAHAN (SINKRONISASI PENUH APLIKASI <-> CLOUD)
+--     Idempoten: aman dijalankan berulang kali.
+-- =========================================================================
+
+-- Branding & pengaturan portal organisasi
+ALTER TABLE org_profiles
+    ADD COLUMN IF NOT EXISTS app_name VARCHAR(80),
+    ADD COLUMN IF NOT EXISTS motto TEXT,
+    ADD COLUMN IF NOT EXISTS vision_photo_url TEXT,
+    ADD COLUMN IF NOT EXISTS hero_photo_url TEXT,
+    ADD COLUMN IF NOT EXISTS nip_pembina VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS nip_headmaster VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS nisn_ketua VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS ketua_photo_url TEXT,
+    ADD COLUMN IF NOT EXISTS ketua_period VARCHAR(50),
+    ADD COLUMN IF NOT EXISTS ketua_welcome_title VARCHAR(150),
+    ADD COLUMN IF NOT EXISTS ketua_speech TEXT,
+    ADD COLUMN IF NOT EXISTS monthly_due_amount NUMERIC(12,2) DEFAULT 15000,
+    ADD COLUMN IF NOT EXISTS due_due_day INT DEFAULT 25,
+    ADD COLUMN IF NOT EXISTS bank_name VARCHAR(80),
+    ADD COLUMN IF NOT EXISTS bank_account_number VARCHAR(60),
+    ADD COLUMN IF NOT EXISTS bank_account_holder VARCHAR(150),
+    ADD COLUMN IF NOT EXISTS is_registration_open BOOLEAN DEFAULT true,
+    ADD COLUMN IF NOT EXISTS registration_gform_url TEXT,
+    ADD COLUMN IF NOT EXISTS registration_open_date VARCHAR(60),
+    ADD COLUMN IF NOT EXISTS registration_close_date VARCHAR(60),
+    ADD COLUMN IF NOT EXISTS registration_notice TEXT,
+    ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+
+-- Kegiatan: rentang tanggal & judul program kerja
+ALTER TABLE events
+    ADD COLUMN IF NOT EXISTS end_date DATE,
+    ADD COLUMN IF NOT EXISTS start_datetime TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS end_datetime TIMESTAMPTZ,
+    ADD COLUMN IF NOT EXISTS work_program_title VARCHAR(200);
+
+-- Program kerja: nama divisi & jobdesk kepanitiaan
+ALTER TABLE work_programs
+    ADD COLUMN IF NOT EXISTS division_name VARCHAR(150),
+    ADD COLUMN IF NOT EXISTS tasks JSONB DEFAULT '[]'::jsonb;
+
+-- Kas: referensi ke iuran / kegiatan
+ALTER TABLE cash_transactions
+    ADD COLUMN IF NOT EXISTS reference_id VARCHAR(100);
+
+-- Presensi: snapshot identitas peserta
+ALTER TABLE attendances
+    ADD COLUMN IF NOT EXISTS target_title VARCHAR(200),
+    ADD COLUMN IF NOT EXISTS member_name VARCHAR(150),
+    ADD COLUMN IF NOT EXISTS nisn VARCHAR(20),
+    ADD COLUMN IF NOT EXISTS grade VARCHAR(10),
+    ADD COLUMN IF NOT EXISTS major VARCHAR(100);
+
+-- Iuran kas: snapshot identitas anggota
+ALTER TABLE member_dues
+    ADD COLUMN IF NOT EXISTS member_name VARCHAR(150),
+    ADD COLUMN IF NOT EXISTS nisn VARCHAR(20);
+
+-- Anggaran RAB: nama divisi
+ALTER TABLE budgets
+    ADD COLUMN IF NOT EXISTS division_name VARCHAR(150);
+
+-- Kompatibilitas: kolom yang diisi opsional oleh aplikasi
+ALTER TABLE events ALTER COLUMN qr_token DROP NOT NULL;
+ALTER TABLE meetings ALTER COLUMN qr_token DROP NOT NULL;
+ALTER TABLE event_registrations
+    ALTER COLUMN grade DROP NOT NULL,
+    ALTER COLUMN class_room DROP NOT NULL,
+    ALTER COLUMN major DROP NOT NULL,
+    ALTER COLUMN phone DROP NOT NULL;
+
+-- =========================================================================
+-- 21. HAK AKSES (ANON KEY DIPAKAI APLIKASI)
+-- =========================================================================
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON gallery_photos, app_meta TO anon, authenticated;
+
+-- =========================================================================
+-- 22. ROW LEVEL SECURITY (PERMISSIVE)
+--     Level keamanan aplikasi UKK: satu kata sandi bersama untuk pengurus.
+-- =========================================================================
+DO $$
+DECLARE
+    t TEXT;
+BEGIN
+    FOREACH t IN ARRAY ARRAY[
+        'announcements', 'aspirations', 'attendances', 'budgets', 'cash_transactions',
+        'divisions', 'documents', 'events', 'meetings', 'member_dues', 'members',
+        'org_profiles', 'positions', 'recruitments', 'work_programs',
+        'gallery_photos', 'event_registrations', 'app_meta'
+    ]
+    LOOP
+        EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.%I', 'Allow all for ' || t, t);
+        EXECUTE format(
+            'CREATE POLICY %I ON public.%I FOR ALL USING (true) WITH CHECK (true)',
+            'Allow all for ' || t, t
+        );
+    END LOOP;
+END $$;
+
+-- =========================================================================
+-- 23. REALTIME PUBLICATION (SINKRONISASI ANTAR PERANGKAT)
+-- =========================================================================
+DO $$
+DECLARE
+    t TEXT;
+BEGIN
+    FOREACH t IN ARRAY ARRAY[
+        'members', 'divisions', 'positions', 'org_profiles', 'work_programs', 'events',
+        'meetings', 'attendances', 'cash_transactions', 'member_dues', 'budgets',
+        'documents', 'announcements', 'aspirations', 'recruitments',
+        'event_registrations', 'gallery_photos'
+    ]
+    LOOP
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_publication_tables
+            WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = t
+        ) THEN
+            EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I', t);
+        END IF;
+    END LOOP;
+END $$;
+
+-- =========================================================================
+-- 24. AKUN ADMIN (GMAIL PEMILIK APLIKASI)
+-- =========================================================================
+UPDATE members
+   SET email = 'juniorbenerd18@gmail.com'
+ WHERE nisn = '0000000009'
+   AND role = 'admin';
+
+-- Segarkan cache skema PostgREST
+NOTIFY pgrst, 'reload schema';

@@ -273,7 +273,7 @@ export const initialMembers: Member[] = [
     id: 'mem-9',
     nisn: '0000000009',
     fullName: 'Admin IT Sekolah',
-    email: 'admin@smk.test',
+    email: 'juniorbenerd18@gmail.com',
     role: 'admin',
     grade: 'XI',
     classRoom: '-',

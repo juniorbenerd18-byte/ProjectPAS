@@ -16,6 +16,7 @@ import {
   Users,
   Trash2,
   Building2,
+  Edit3,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Meeting, EventItem } from '../../types';
@@ -82,19 +83,81 @@ export const KegiatanPresensiPage: React.FC = () => {
 
   // Event (Kegiatan) state & filter
   const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [confirmDeleteEvent, setConfirmDeleteEvent] = useState<EventItem | null>(null);
   const [initialEventPhoto, setInitialEventPhoto] = useState('');
   const [eventFilter, setEventFilter] = useState<'semua' | 'mendatang' | 'selesai'>('semua');
   const [eventSearch, setEventSearch] = useState('');
+
+  // Helper untuk default datetime-local string (YYYY-MM-DDTHH:mm)
+  const getDefaultStartDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T08:00`;
+  };
+
+  const getDefaultEndDateTime = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T12:00`;
+  };
+
   const [eventForm, setEventForm] = useState({
     title: '',
     description: '',
-    eventDate: new Date().toISOString().split('T')[0],
-    startTime: '08:00',
-    endTime: '12:00',
+    startDateTime: getDefaultStartDateTime(),
+    endDateTime: getDefaultEndDateTime(),
     location: 'SMK Negeri 1 Cerdas Bangsa',
     status: 'mendatang' as EventItem['status'],
   });
+
+  const handleOpenCreateEvent = () => {
+    setEditingEvent(null);
+    setEventForm({
+      title: '',
+      description: '',
+      startDateTime: getDefaultStartDateTime(),
+      endDateTime: getDefaultEndDateTime(),
+      location: 'SMK Negeri 1 Cerdas Bangsa',
+      status: 'mendatang',
+    });
+    setInitialEventPhoto('');
+    setIsAddEventModalOpen(true);
+  };
+
+  const handleOpenEditEvent = (evt: EventItem) => {
+    setEditingEvent(evt);
+
+    // Ambil tanggal mulai
+    let startDT = evt.startDateTime;
+    if (!startDT && evt.eventDate) {
+      const time = evt.startTime || '08:00';
+      startDT = `${evt.eventDate}T${time.length === 5 ? time : time.padStart(5, '0')}`;
+    }
+
+    // Ambil tanggal selesai
+    let endDT = evt.endDateTime;
+    if (!endDT) {
+      const date = evt.endDate || evt.eventDate || new Date().toISOString().split('T')[0];
+      const time = evt.endTime || '12:00';
+      endDT = `${date}T${time.length === 5 ? time : time.padStart(5, '0')}`;
+    }
+
+    setEventForm({
+      title: evt.title,
+      description: evt.description || '',
+      startDateTime: startDT || getDefaultStartDateTime(),
+      endDateTime: endDT || getDefaultEndDateTime(),
+      location: evt.location || 'SMK Negeri 1 Cerdas Bangsa',
+      status: evt.status,
+    });
+    setInitialEventPhoto(evt.documentationPhotos?.[0] || '');
+    setIsAddEventModalOpen(true);
+  };
 
   const handleEventSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,29 +166,69 @@ export const KegiatanPresensiPage: React.FC = () => {
       return;
     }
 
-    const cleanToken = `EVT-${eventForm.title
-      .replace(/[^a-zA-Z0-9]/g, '')
-      .slice(0, 8)
-      .toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    const startDatePart = eventForm.startDateTime
+      ? eventForm.startDateTime.split('T')[0]
+      : new Date().toISOString().split('T')[0];
+    const startTimePart = eventForm.startDateTime
+      ? (eventForm.startDateTime.split('T')[1] || '08:00').slice(0, 5)
+      : '08:00';
+    const endDatePart = eventForm.endDateTime
+      ? eventForm.endDateTime.split('T')[0]
+      : startDatePart;
+    const endTimePart = eventForm.endDateTime
+      ? (eventForm.endDateTime.split('T')[1] || '12:00').slice(0, 5)
+      : '12:00';
 
-    addEvent({
-      title: eventForm.title.trim(),
-      description: eventForm.description.trim(),
-      eventDate: eventForm.eventDate,
-      startTime: eventForm.startTime || '08:00',
-      endTime: eventForm.endTime || '12:00',
-      location: eventForm.location.trim() || 'SMK Negeri 1 Cerdas Bangsa',
-      status: eventForm.status,
-      documentationPhotos: initialEventPhoto ? [initialEventPhoto] : [],
-      qrToken: cleanToken,
-    });
+    if (editingEvent) {
+      // MODE EDIT KEGIATAN
+      const photos = [...(editingEvent.documentationPhotos || [])];
+      if (initialEventPhoto && !photos.includes(initialEventPhoto)) {
+        photos.unshift(initialEventPhoto);
+      }
+
+      updateEvent(editingEvent.id, {
+        title: eventForm.title.trim(),
+        description: eventForm.description.trim(),
+        eventDate: startDatePart,
+        endDate: endDatePart,
+        startTime: startTimePart,
+        endTime: endTimePart,
+        startDateTime: eventForm.startDateTime,
+        endDateTime: eventForm.endDateTime,
+        location: eventForm.location.trim() || 'SMK Negeri 1 Cerdas Bangsa',
+        status: eventForm.status,
+        documentationPhotos: photos,
+      });
+
+      setEditingEvent(null);
+    } else {
+      // MODE BUAT KEGIATAN BARU
+      const cleanToken = `EVT-${eventForm.title
+        .replace(/[^a-zA-Z0-9]/g, '')
+        .slice(0, 8)
+        .toUpperCase()}-${Date.now().toString().slice(-4)}`;
+
+      addEvent({
+        title: eventForm.title.trim(),
+        description: eventForm.description.trim(),
+        eventDate: startDatePart,
+        endDate: endDatePart,
+        startTime: startTimePart,
+        endTime: endTimePart,
+        startDateTime: eventForm.startDateTime,
+        endDateTime: eventForm.endDateTime,
+        location: eventForm.location.trim() || 'SMK Negeri 1 Cerdas Bangsa',
+        status: eventForm.status,
+        documentationPhotos: initialEventPhoto ? [initialEventPhoto] : [],
+        qrToken: cleanToken,
+      });
+    }
 
     setEventForm({
       title: '',
       description: '',
-      eventDate: new Date().toISOString().split('T')[0],
-      startTime: '08:00',
-      endTime: '12:00',
+      startDateTime: getDefaultStartDateTime(),
+      endDateTime: getDefaultEndDateTime(),
       location: 'SMK Negeri 1 Cerdas Bangsa',
       status: 'mendatang',
     });
@@ -461,7 +564,7 @@ export const KegiatanPresensiPage: React.FC = () => {
               </p>
             </div>
             <button
-              onClick={() => setIsAddEventModalOpen(true)}
+              onClick={handleOpenCreateEvent}
               className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
@@ -520,7 +623,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                 onClick={() => {
                   setEventSearch('');
                   setEventFilter('semua');
-                  setIsAddEventModalOpen(true);
+                  handleOpenCreateEvent();
                 }}
                 className="simo-btn-primary min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
               >
@@ -565,7 +668,9 @@ export const KegiatanPresensiPage: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />
                         <span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">
-                          {formatDateIndo(evt.eventDate)}
+                          {evt.endDate && evt.endDate !== evt.eventDate
+                            ? `${formatDateIndo(evt.eventDate)} - ${formatDateIndo(evt.endDate)}`
+                            : formatDateIndo(evt.eventDate)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -586,7 +691,16 @@ export const KegiatanPresensiPage: React.FC = () => {
                       <span>{evt.documentationPhotos?.length || 0} Foto</span>
                     </span>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditEvent(evt)}
+                        className="simo-btn-outline min-h-[34px] px-2.5 py-1 rounded-[8px] text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C]"
+                        title="Edit data kegiatan ini"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -709,7 +823,7 @@ export const KegiatanPresensiPage: React.FC = () => {
             <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
-                onClick={() => setIsAddEventModalOpen(true)}
+                onClick={handleOpenCreateEvent}
                 className="simo-btn-outline min-h-[44px] px-4 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0"
               >
                 <Plus className="w-4 h-4" />
@@ -740,7 +854,7 @@ export const KegiatanPresensiPage: React.FC = () => {
               <div className="flex items-center gap-3 flex-wrap justify-center">
                 <button
                   type="button"
-                  onClick={() => setIsAddEventModalOpen(true)}
+                  onClick={handleOpenCreateEvent}
                   className="simo-btn-outline min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
@@ -934,7 +1048,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                 type="button"
                 onClick={() => {
                   setIsAddPhotoModalOpen(false);
-                  setIsAddEventModalOpen(true);
+                  handleOpenCreateEvent();
                 }}
                 className="text-[12px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer"
               >
@@ -961,7 +1075,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setIsAddPhotoModalOpen(false);
-                    setIsAddEventModalOpen(true);
+                    handleOpenCreateEvent();
                   }}
                   className="simo-btn-primary px-3 py-1 text-[12px] rounded-lg font-bold"
                 >
@@ -1051,15 +1165,20 @@ export const KegiatanPresensiPage: React.FC = () => {
         </Modal>
       )}
 
-      {/* Modal Buat Kegiatan Baru */}
+      {/* Modal Buat / Edit Kegiatan */}
       <Modal
         isOpen={isAddEventModalOpen}
         onClose={() => {
           setIsAddEventModalOpen(false);
+          setEditingEvent(null);
           setInitialEventPhoto('');
         }}
-        title="Buat Kegiatan Baru"
-        subtitle="Jadwalkan agenda atau kegiatan acara baru OSIS"
+        title={editingEvent ? 'Edit Kegiatan' : 'Buat Kegiatan Baru'}
+        subtitle={
+          editingEvent
+            ? `Perbarui informasi, jadwal, dan lokasi kegiatan: ${editingEvent.title}`
+            : 'Jadwalkan agenda atau kegiatan acara baru OSIS'
+        }
       >
         <form onSubmit={handleEventSubmit} className="space-y-4">
           <div>
@@ -1079,16 +1198,37 @@ export const KegiatanPresensiPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Tanggal Pelaksanaan <span className="text-red-500">*</span>
+                Waktu Mulai (Tanggal, Bulan & Jam) <span className="text-red-500">*</span>
               </label>
               <input
-                type="date"
-                value={eventForm.eventDate}
-                onChange={(e) => setEventForm({ ...eventForm, eventDate: e.target.value })}
+                type="datetime-local"
+                value={eventForm.startDateTime}
+                onChange={(e) => setEventForm({ ...eventForm, startDateTime: e.target.value })}
                 className="simo-input min-h-[44px] text-[14px] w-full"
                 required
               />
+              <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                Atur tanggal, bulan, tahun, serta jam mulai
+              </p>
             </div>
+            <div>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Waktu Selesai (Tanggal, Bulan & Jam) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                value={eventForm.endDateTime}
+                onChange={(e) => setEventForm({ ...eventForm, endDateTime: e.target.value })}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+                required
+              />
+              <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                Atur tanggal, bulan, tahun, serta jam selesai
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
                 Status Kegiatan
@@ -1102,45 +1242,19 @@ export const KegiatanPresensiPage: React.FC = () => {
                 <option value="selesai">Selesai (Telah Terlaksana)</option>
               </select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Waktu Mulai
+                Lokasi Pelaksanaan <span className="text-red-500">*</span>
               </label>
               <input
-                type="time"
-                value={eventForm.startTime}
-                onChange={(e) => setEventForm({ ...eventForm, startTime: e.target.value })}
+                type="text"
+                value={eventForm.location}
+                onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+                placeholder="Contoh: Aula Utama SMK / Lapangan Basket"
                 className="simo-input min-h-[44px] text-[14px] w-full"
+                required
               />
             </div>
-            <div>
-              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Waktu Selesai
-              </label>
-              <input
-                type="time"
-                value={eventForm.endTime}
-                onChange={(e) => setEventForm({ ...eventForm, endTime: e.target.value })}
-                className="simo-input min-h-[44px] text-[14px] w-full"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-              Lokasi Pelaksanaan <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              value={eventForm.location}
-              onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-              placeholder="Contoh: Aula Utama SMK / Lapangan Basket"
-              className="simo-input min-h-[44px] text-[14px] w-full"
-              required
-            />
           </div>
 
           <div>
@@ -1157,10 +1271,14 @@ export const KegiatanPresensiPage: React.FC = () => {
           </div>
 
           <ImagePicker
-            label="Foto Dokumentasi Awal (Opsional)"
+            label={editingEvent ? "Foto Dokumentasi Utama (Opsional)" : "Foto Dokumentasi Awal (Opsional)"}
             value={initialEventPhoto}
             onChange={(url) => setInitialEventPhoto(url)}
-            helperText="Bisa langsung upload foto pertama untuk kegiatan ini (dapat ditambah lagi nanti)"
+            helperText={
+              editingEvent
+                ? "Foto dokumentasi kegiatan (dapat dikelola lebih lanjut di tab Dokumentasi)"
+                : "Bisa langsung upload foto pertama untuk kegiatan ini (dapat ditambah lagi nanti)"
+            }
             aspectRatio="video"
           />
 
@@ -1169,6 +1287,7 @@ export const KegiatanPresensiPage: React.FC = () => {
               type="button"
               onClick={() => {
                 setIsAddEventModalOpen(false);
+                setEditingEvent(null);
                 setInitialEventPhoto('');
               }}
               className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
@@ -1179,7 +1298,7 @@ export const KegiatanPresensiPage: React.FC = () => {
               type="submit"
               className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
             >
-              Simpan Kegiatan Baru
+              {editingEvent ? 'Simpan Perubahan' : 'Simpan Kegiatan Baru'}
             </button>
           </div>
         </form>

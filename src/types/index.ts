@@ -82,8 +82,11 @@ export interface EventItem {
   title: string;
   description: string;
   eventDate: string;
+  endDate?: string;
   startTime: string;
   endTime: string;
+  startDateTime?: string;
+  endDateTime?: string;
   location: string;
   status: 'mendatang' | 'selesai';
   documentationPhotos: string[];

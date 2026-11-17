@@ -39,7 +39,7 @@ import { PengumumanPage } from './pages/pengumuman/PengumumanPage';
 import { LaporanPusatPage } from './pages/laporan/LaporanPusatPage';
 
 const MainLayout: React.FC = () => {
-  const { activePage, setActivePage } = useApp();
+  const { activePage, setActivePage, isAuthenticated } = useApp();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Inisialisasi smooth inertia momentum scroll (sensasi scroll licin & halus)
@@ -47,6 +47,13 @@ const MainLayout: React.FC = () => {
     const cleanup = initSmoothScroll();
     return cleanup;
   }, []);
+
+  // Jika sudah punya sesi aktif, halaman login tidak ditampilkan lagi.
+  useEffect(() => {
+    if (isAuthenticated && activePage === 'login') {
+      setActivePage('dashboard');
+    }
+  }, [isAuthenticated, activePage, setActivePage]);
 
   const renderCurrentPage = () => {
     switch (activePage) {
@@ -134,6 +141,16 @@ const MainLayout: React.FC = () => {
     return (
       <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0E1B2C] text-[#1F3A5F] dark:text-[#FAF6EE] flex flex-col transition-colors duration-200">
         <PublicPortalPage />
+        <Toast />
+      </div>
+    );
+  }
+
+  // Route guard: halaman admin hanya bisa diakses dengan sesi yang valid.
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FAF6EE] dark:bg-[#0E1B2C] text-[#1F3A5F] dark:text-[#FAF6EE] flex flex-col transition-colors duration-200">
+        <LoginPage onBackToPublic={() => setActivePage('portal-publik')} />
         <Toast />
       </div>
     );

@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from 'react';
 import {
   UserRole,
   OrgProfile,
@@ -23,26 +30,57 @@ import {
 import { DEFAULT_GALLERY_PHOTOS } from '../components/public/GallerySection';
 import { formatAttendanceTime, normalizeMajor } from '../lib/utils';
 import {
+  isCloudConnected,
+  setSyncErrorHandler,
+  fetchAllFromCloud,
   fetchMembersFromCloud,
   addMemberToCloud,
   updateMemberInCloud,
   deleteMemberFromCloud,
-  fetchDivisionsFromCloud,
-  fetchMeetingsFromCloud,
-  fetchAnnouncementsFromCloud,
+  addDivisionToCloud,
+  updateDivisionInCloud,
+  deleteDivisionFromCloud,
+  addPositionToCloud,
+  deletePositionFromCloud,
+  saveOrgProfileToCloud,
+  addWorkProgramToCloud,
+  updateWorkProgramInCloud,
+  deleteWorkProgramFromCloud,
+  addEventToCloud,
+  updateEventInCloud,
+  deleteEventFromCloud,
+  addMeetingToCloud,
+  updateMeetingInCloud,
+  deleteMeetingFromCloud,
   recordAttendanceToCloud,
-  fetchRecruitmentsFromCloud,
+  updateAttendanceInCloud,
+  addCashTransactionToCloud,
+  deleteCashTransactionFromCloud,
+  addMemberDueToCloud,
+  updateMemberDueInCloud,
+  addBudgetToCloud,
+  updateBudgetInCloud,
+  deleteBudgetFromCloud,
+  addDocumentToCloud,
+  deleteDocumentFromCloud,
+  addAnnouncementToCloud,
+  deleteAnnouncementFromCloud,
   addRecruitmentToCloud,
   updateRecruitmentInCloud,
   deleteRecruitmentFromCloud,
-  fetchAspirationsFromCloud,
   addAspirationToCloud,
   updateAspirationInCloud,
   deleteAspirationFromCloud,
-  fetchWorkProgramsFromCloud,
-  addWorkProgramToCloud,
-  updateWorkProgramInCloud,
-  isCloudConnected,
+  addGalleryPhotoToCloud,
+  updateGalleryPhotoInCloud,
+  deleteGalleryPhotoFromCloud,
+  addEventRegistrationToCloud,
+  getAppMeta,
+  setAppMeta,
+  replaceCloudWithSnapshot,
+  subscribeToCloudChanges,
+  type CloudSnapshot,
+  type LocalSnapshot,
 } from '../lib/supabaseService';
 import {
   initialOrgProfile,
@@ -63,9 +101,30 @@ import {
   initialEventRegistrations,
 } from '../data/mockData';
 
+const DEFAULT_PASSWORD = 'osis2025';
+const SESSION_KEY = 'schoolorg_session';
+const MERGE_META_KEY = 'local_merge_v1';
+
 interface Toast {
   message: string;
   type: 'success' | 'error' | 'info';
+}
+
+interface StoredSession {
+  memberId: string;
+  nisn: string;
+  remember: boolean;
+}
+
+interface SyncState {
+  state: 'idle' | 'syncing' | 'ok' | 'error';
+  message?: string;
+  lastSyncedAt?: string;
+}
+
+interface LoginResult {
+  success: boolean;
+  message: string;
 }
 
 interface AppContextType {
@@ -75,25 +134,35 @@ interface AppContextType {
   setCurrentRole: (role: UserRole) => void;
   currentUser: Member;
   setCurrentUser: (member: Member) => void;
-  
+
+  // Auth & Session
+  isAuthenticated: boolean;
+  login: (identifier: string, password: string, remember?: boolean) => Promise<LoginResult>;
+  logout: () => void;
+
+  // Cloud Sync
+  cloudConnected: boolean;
+  syncState: SyncState;
+  syncNow: () => Promise<boolean>;
+
   // Data States
   orgProfile: OrgProfile;
   updateOrgProfile: (profile: Partial<OrgProfile>) => void;
-  
+
   divisions: Division[];
   addDivision: (div: Omit<Division, 'id'>) => void;
   updateDivision: (id: string, div: Partial<Division>) => void;
   deleteDivision: (id: string) => void;
-  
+
   positions: Position[];
   addPosition: (pos: Omit<Position, 'id'>) => void;
   deletePosition: (id: string) => void;
-  
+
   members: Member[];
   addMember: (member: Omit<Member, 'id'>) => void;
   updateMember: (id: string, member: Partial<Member>) => void;
   deleteMember: (id: string) => void;
-  
+
   workPrograms: WorkProgram[];
   addWorkProgram: (proker: Omit<WorkProgram, 'id' | 'createdAt'>) => void;
   updateWorkProgram: (id: string, proker: Partial<WorkProgram>) => void;
@@ -115,8 +184,15 @@ interface AppContextType {
   deleteMeeting: (id: string) => void;
 
   attendances: AttendanceRecord[];
-  recordAttendance: (record: Omit<AttendanceRecord, 'id' | 'checkInTime'>) => { success: boolean; message: string };
-  updateAttendanceStatus: (id: string, status: AttendanceRecord['status'], notes?: string) => void;
+  recordAttendance: (record: Omit<AttendanceRecord, 'id' | 'checkInTime'>) => {
+    success: boolean;
+    message: string;
+  };
+  updateAttendanceStatus: (
+    id: string,
+    status: AttendanceRecord['status'],
+    notes?: string
+  ) => void;
 
   cashTransactions: CashTransaction[];
   addCashTransaction: (trx: Omit<CashTransaction, 'id'>) => void;
@@ -139,38 +215,49 @@ interface AppContextType {
   addAnnouncement: (ann: Omit<Announcement, 'id' | 'date'>) => void;
   deleteAnnouncement: (id: string) => void;
 
-  // Public Portal Features (Aspirasi Siswa, Oprec, & Registrasi Event)
   aspirations: StudentAspiration[];
-  addAspiration: (asp: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>) => void;
+  addAspiration: (
+    asp: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>
+  ) => void;
   likeAspiration: (id: string) => void;
-  updateAspirationStatus: (id: string, status: StudentAspiration['status'], response?: string, respondedBy?: string) => void;
+  updateAspirationStatus: (
+    id: string,
+    status: StudentAspiration['status'],
+    response?: string,
+    respondedBy?: string
+  ) => void;
   deleteAspiration: (id: string) => void;
 
   recruitments: RecruitmentApplication[];
-  addRecruitment: (rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>) => RecruitmentApplication;
+  addRecruitment: (
+    rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>
+  ) => RecruitmentApplication;
   updateRecruitment: (id: string, partial: Partial<RecruitmentApplication>) => void;
   deleteRecruitment: (id: string) => void;
-  approveRecruitmentToMember: (recruitmentId: string, customDivisionId?: string, customPosition?: string) => void;
+  approveRecruitmentToMember: (
+    recruitmentId: string,
+    customDivisionId?: string,
+    customPosition?: string
+  ) => void;
 
   keanggotaanTab: 'direktori' | 'struktur' | 'pendaftar';
   setKeanggotaanTab: (tab: 'direktori' | 'struktur' | 'pendaftar') => void;
 
   eventRegistrations: EventRegistration[];
-  registerForEvent: (reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>) => EventRegistration;
+  registerForEvent: (
+    reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>
+  ) => EventRegistration;
 
-  // Galeri Dokumentasi Portal Publik
   galleryPhotos: GalleryItem[];
   addGalleryPhoto: (photo: Omit<GalleryItem, 'id'>) => void;
   updateGalleryPhoto: (id: string, photo: Partial<GalleryItem>) => void;
   deleteGalleryPhoto: (id: string) => void;
   resetGalleryPhotos: () => void;
 
-  // Theme & Appearance
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
 
-  // Helpers & Maintenance
   toast: Toast | null;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   resetAllData: () => void;
@@ -179,27 +266,89 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+// ==========================================
+// SESSION STORAGE HELPERS
+// ==========================================
+
+function readStoredSession(): StoredSession | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<StoredSession>;
+    if (parsed && typeof parsed.memberId === 'string' && parsed.memberId.length > 0) {
+      return {
+        memberId: parsed.memberId,
+        nisn: typeof parsed.nisn === 'string' ? parsed.nisn : '',
+        remember: parsed.remember !== false,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredSession(session: StoredSession) {
+  try {
+    const payload = JSON.stringify(session);
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    if (session.remember) {
+      localStorage.setItem(SESSION_KEY, payload);
+    } else {
+      sessionStorage.setItem(SESSION_KEY, payload);
+    }
+  } catch {
+    /* storage may be unavailable */
+  }
+}
+
+function clearStoredSession() {
+  try {
+    localStorage.removeItem(SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+// ==========================================
+// PROVIDER
+// ==========================================
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load state from localStorage or use initial data
   const loadStored = <T,>(key: string, initial: T): T => {
     try {
       const saved = localStorage.getItem(`schoolorg_${key}`);
-      return saved ? JSON.parse(saved) : initial;
+      return saved ? (JSON.parse(saved) as T) : initial;
     } catch {
       return initial;
     }
   };
 
-  const [activePage, setActivePage] = useState<string>(() => loadStored('activePage', 'portal-publik'));
-  const [keanggotaanTab, setKeanggotaanTab] = useState<'direktori' | 'struktur' | 'pendaftar'>('direktori');
+  const [activePage, setActivePage] = useState<string>(() =>
+    loadStored('activePage', 'portal-publik')
+  );
+  const [keanggotaanTab, setKeanggotaanTab] = useState<
+    'direktori' | 'struktur' | 'pendaftar'
+  >('direktori');
+  const [session, setSession] = useState<StoredSession | null>(() => readStoredSession());
   const [currentRole, setCurrentRole] = useState<UserRole>('ketua');
   const [toast, setToast] = useState<Toast | null>(null);
 
-  const [orgProfile, setOrgProfile] = useState<OrgProfile>(() => loadStored('orgProfile', initialOrgProfile));
-  const [divisions, setDivisions] = useState<Division[]>(() => loadStored('divisions', initialDivisions));
-  const [positions, setPositions] = useState<Position[]>(() => loadStored('positions', initialPositions));
+  const [orgProfile, setOrgProfile] = useState<OrgProfile>(() =>
+    loadStored('orgProfile', initialOrgProfile)
+  );
+  const [divisions, setDivisions] = useState<Division[]>(() =>
+    loadStored('divisions', initialDivisions)
+  );
+  const [positions, setPositions] = useState<Position[]>(() =>
+    loadStored('positions', initialPositions)
+  );
   const [members, setMembers] = useState<Member[]>(() => loadStored('members', initialMembers));
-  const [workPrograms, setWorkPrograms] = useState<WorkProgram[]>(() => loadStored('workPrograms', initialWorkPrograms));
+  const [workPrograms, setWorkPrograms] = useState<WorkProgram[]>(() =>
+    loadStored('workPrograms', initialWorkPrograms)
+  );
   const [events, setEvents] = useState<EventItem[]>(() => {
     try {
       const stored = loadStored<EventItem[]>('events', initialEvents);
@@ -214,7 +363,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return initialEvents;
     }
   });
-  const [meetings, setMeetings] = useState<Meeting[]>(() => loadStored('meetings', initialMeetings));
+  const [meetings, setMeetings] = useState<Meeting[]>(() =>
+    loadStored('meetings', initialMeetings)
+  );
   const [attendances, setAttendances] = useState<AttendanceRecord[]>(() => {
     try {
       const stored = loadStored<AttendanceRecord[]>('attendances', initialAttendances);
@@ -229,32 +380,93 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return initialAttendances;
     }
   });
-  const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(() => loadStored('cashTransactions', initialCashTransactions));
-  const [memberDues, setMemberDues] = useState<MemberDue[]>(() => loadStored('memberDues', initialMemberDues));
-  const [budgets, setBudgets] = useState<BudgetPlan[]>(() => loadStored('budgets', initialBudgets));
-  const [documents, setDocuments] = useState<DocumentItem[]>(() => loadStored('documents', initialDocuments));
-  const [announcements, setAnnouncements] = useState<Announcement[]>(() => loadStored('announcements', initialAnnouncements));
-  
-  // Public Portal States
-  const [aspirations, setAspirations] = useState<StudentAspiration[]>(() => loadStored('aspirations', initialAspirations));
-  const [recruitments, setRecruitments] = useState<RecruitmentApplication[]>(() => loadStored('recruitments', initialRecruitments));
-  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>(() => loadStored('eventRegistrations', initialEventRegistrations));
-  const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>(() => loadStored('galleryPhotos', DEFAULT_GALLERY_PHOTOS));
+  const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(() =>
+    loadStored('cashTransactions', initialCashTransactions)
+  );
+  const [memberDues, setMemberDues] = useState<MemberDue[]>(() =>
+    loadStored('memberDues', initialMemberDues)
+  );
+  const [budgets, setBudgets] = useState<BudgetPlan[]>(() =>
+    loadStored('budgets', initialBudgets)
+  );
+  const [documents, setDocuments] = useState<DocumentItem[]>(() =>
+    loadStored('documents', initialDocuments)
+  );
+  const [announcements, setAnnouncements] = useState<Announcement[]>(() =>
+    loadStored('announcements', initialAnnouncements)
+  );
 
-  // Determine current user based on active role (with resilient fallback to avoid crash if all members deleted)
-  const currentUser = members.find((m) => m.role === currentRole) || members[0] || initialMembers[0];
-  const setCurrentUser = (m: Member) => {
-    setCurrentRole(m.role);
-  };
+  const [aspirations, setAspirations] = useState<StudentAspiration[]>(() =>
+    loadStored('aspirations', initialAspirations)
+  );
+  const [recruitments, setRecruitments] = useState<RecruitmentApplication[]>(() =>
+    loadStored('recruitments', initialRecruitments)
+  );
+  const [eventRegistrations, setEventRegistrations] = useState<EventRegistration[]>(() =>
+    loadStored('eventRegistrations', initialEventRegistrations)
+  );
+  const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>(() =>
+    loadStored('galleryPhotos', DEFAULT_GALLERY_PHOTOS)
+  );
 
-  // Sync to localStorage safely with individual item guards to prevent QuotaExceededError crashes
+  const [syncState, setSyncState] = useState<SyncState>({
+    state: isCloudConnected() ? 'idle' : 'error',
+    message: isCloudConnected() ? undefined : 'Cloud Supabase belum dikonfigurasi.',
+  });
+
+  const cloudConnected = isCloudConnected();
+
+  // Detect "perangkat ini sudah punya data sebelum pembaruan sinkronisasi".
+  // Harus dibaca saat render pertama: efek penyimpanan lokal akan segera
+  // menulis `schoolorg_orgProfile` sehingga pengecekan yang terlambat akan
+  // menganggap perangkat baru sebagai perangkat lama.
+  const [hadLocalHistory] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('schoolorg_orgProfile') !== null;
+    } catch {
+      return false;
+    }
+  });
+
+  // ==========================================
+  // IDENTITY
+  // ==========================================
+
+  const currentUser: Member =
+    (session
+      ? members.find((m) => m.id === session.memberId) ||
+        members.find((m) => m.nisn && m.nisn === session.nisn)
+      : null) ||
+    members[0] ||
+    initialMembers[0];
+
+  const isAuthenticated = Boolean(
+    session &&
+      (members.find((m) => m.id === session.memberId) ||
+        members.find((m) => m.nisn && m.nisn === session.nisn))
+  );
+
+  // Keep the legacy `currentRole` value aligned with the signed-in member.
+  useEffect(() => {
+    if (isAuthenticated && currentUser && currentUser.role !== currentRole) {
+      setCurrentRole(currentUser.role);
+    }
+  }, [isAuthenticated, currentUser?.id, currentUser?.role, currentRole]);
+
+  // ==========================================
+  // LOCAL PERSISTENCE
+  // ==========================================
+
   useEffect(() => {
     try {
       const safeSave = (key: string, data: unknown) => {
         try {
           localStorage.setItem(`schoolorg_${key}`, JSON.stringify(data));
         } catch (e) {
-          console.warn(`Could not save schoolorg_${key} to localStorage (quota or permission):`, e);
+          console.warn(
+            `Could not save schoolorg_${key} to localStorage (quota or permission):`,
+            e
+          );
         }
       };
 
@@ -280,95 +492,562 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.warn('LocalStorage batch sync notice:', err);
     }
   }, [
-    activePage, orgProfile, divisions, positions, members, workPrograms, events,
-    meetings, attendances, cashTransactions, memberDues, budgets,
-    documents, announcements, aspirations, recruitments, eventRegistrations, galleryPhotos
+    activePage,
+    orgProfile,
+    divisions,
+    positions,
+    members,
+    workPrograms,
+    events,
+    meetings,
+    attendances,
+    cashTransactions,
+    memberDues,
+    budgets,
+    documents,
+    announcements,
+    aspirations,
+    recruitments,
+    eventRegistrations,
+    galleryPhotos,
   ]);
 
-  // Initial Real-time Cloud Sync from Supabase on application mount
-  useEffect(() => {
-    async function initCloudSync() {
-      if (!isCloudConnected()) return;
-      try {
-        const [
-          cloudMembers,
-          cloudDivisions,
-          cloudMeetings,
-          cloudAnnouncements,
-          cloudRecruitments,
-          cloudAspirations,
-          cloudWorkPrograms,
-        ] = await Promise.all([
-          fetchMembersFromCloud(),
-          fetchDivisionsFromCloud(),
-          fetchMeetingsFromCloud(),
-          fetchAnnouncementsFromCloud(),
-          fetchRecruitmentsFromCloud(),
-          fetchAspirationsFromCloud(),
-          fetchWorkProgramsFromCloud(),
-        ]);
-        if (cloudMembers && cloudMembers.length > 0) {
-          setMembers(cloudMembers);
-        }
-        if (cloudDivisions && cloudDivisions.length > 0) {
-          setDivisions(cloudDivisions);
-        }
-        if (cloudMeetings && cloudMeetings.length > 0) {
-          setMeetings(cloudMeetings);
-        }
-        if (cloudAnnouncements && cloudAnnouncements.length > 0) {
-          setAnnouncements(cloudAnnouncements);
-        }
-        if (cloudRecruitments && cloudRecruitments.length > 0) {
-          setRecruitments(cloudRecruitments);
-        }
-        if (cloudAspirations && cloudAspirations.length > 0) {
-          setAspirations(cloudAspirations);
-        }
-        if (cloudWorkPrograms && cloudWorkPrograms.length > 0) {
-          setWorkPrograms((prev) => {
-            return cloudWorkPrograms.map((p) => {
-              const localMatch = prev.find((lp) => lp.id === p.id);
-              return {
-                ...p,
-                tasks: localMatch?.tasks || [],
-              };
-            });
-          });
-        }
-      } catch (err) {
-        console.warn('Initial cloud sync notice:', err);
-      }
-    }
-    initCloudSync();
+  // ==========================================
+  // TOAST
+  // ==========================================
+
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    setToast({ message, type });
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3800);
   }, []);
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => {
-      setToast(null);
-    }, 3500);
-  };
+  // Report cloud failures to the UI instead of swallowing them.
+  useEffect(() => {
+    setSyncErrorHandler((message) => {
+      setSyncState((prev) => ({ ...prev, state: 'error', message }));
+      showToast(`Sinkronisasi cloud gagal — ${message}`, 'error');
+    });
+    return () => setSyncErrorHandler(null);
+  }, [showToast]);
+
+  // ==========================================
+  // CLOUD STATE APPLICATION
+  // ==========================================
+
+  const applySnapshot = useCallback((snapshot: CloudSnapshot) => {
+    if (snapshot.members) setMembers(snapshot.members);
+    if (snapshot.divisions) setDivisions(snapshot.divisions);
+    if (snapshot.positions) setPositions(snapshot.positions);
+    if (snapshot.workPrograms) setWorkPrograms(snapshot.workPrograms);
+    if (snapshot.events) setEvents(snapshot.events);
+    if (snapshot.meetings) setMeetings(snapshot.meetings);
+    if (snapshot.attendances) {
+      setAttendances(
+        snapshot.attendances.map((a) => ({
+          ...a,
+          checkInTime: formatAttendanceTime(a.checkInTime),
+          major: normalizeMajor(a.major),
+          notes: a.notes || 'Hadir',
+        }))
+      );
+    }
+    if (snapshot.cashTransactions) setCashTransactions(snapshot.cashTransactions);
+    if (snapshot.memberDues) setMemberDues(snapshot.memberDues);
+    if (snapshot.budgets) setBudgets(snapshot.budgets);
+    if (snapshot.documents) setDocuments(snapshot.documents);
+    if (snapshot.announcements) setAnnouncements(snapshot.announcements);
+    if (snapshot.aspirations) setAspirations(snapshot.aspirations);
+    if (snapshot.recruitments) setRecruitments(snapshot.recruitments);
+    if (snapshot.eventRegistrations) setEventRegistrations(snapshot.eventRegistrations);
+    if (snapshot.galleryPhotos) setGalleryPhotos(snapshot.galleryPhotos);
+
+    if (snapshot.orgProfile) {
+      setOrgProfile((prev) => {
+        const merged: OrgProfile = { ...prev };
+        (Object.keys(snapshot.orgProfile as OrgProfile) as (keyof OrgProfile)[]).forEach((key) => {
+          const value = (snapshot.orgProfile as OrgProfile)[key];
+          if (value === null || value === undefined) return;
+          if (Array.isArray(value) && value.length === 0) return;
+          (merged as unknown as Record<string, unknown>)[key as string] = value;
+        });
+        return merged;
+      });
+    }
+  }, []);
+
+  // Fill member.divisionName from the divisions list (cloud stores only the id).
+  useEffect(() => {
+    setMembers((prev) => {
+      let changed = false;
+      const next = prev.map((m) => {
+        if (!m.divisionId) return m;
+        const division = divisions.find((d) => d.id === m.divisionId);
+        if (!division || division.name === m.divisionName) return m;
+        changed = true;
+        return { ...m, divisionName: division.name };
+      });
+      return changed ? next : prev;
+    });
+  }, [divisions]);
+
+  // ==========================================
+  // BOOTSTRAP: PULL CLOUD + ONE-TIME PUSH
+  // ==========================================
+
+  const bootstrappedRef = useRef(false);
+  const syncingRef = useRef(false);
+  const pushLocalDataOnceRef = useRef<
+    ((snapshot: CloudSnapshot) => Promise<boolean>) | null
+  >(null);
+
+  const runSync = useCallback(
+    async (options?: { silent?: boolean; mergeLocal?: boolean }): Promise<boolean> => {
+      if (!isCloudConnected()) {
+        setSyncState({ state: 'error', message: 'Cloud Supabase belum dikonfigurasi.' });
+        return false;
+      }
+      if (syncingRef.current) return false;
+      syncingRef.current = true;
+      if (!options?.silent) {
+        setSyncState((prev) => ({ ...prev, state: 'syncing', message: 'Menyinkronkan data...' }));
+      }
+      try {
+        const snapshot = await fetchAllFromCloud();
+        applySnapshot(snapshot);
+
+        let mergeFailed = false;
+        if (options?.mergeLocal) {
+          mergeFailed = (await pushLocalDataOnceRef.current?.(snapshot)) ?? false;
+          if (!mergeFailed) {
+            const refreshed = await fetchAllFromCloud();
+            applySnapshot(refreshed);
+          }
+        }
+
+        const hasFailure =
+          mergeFailed ||
+          Object.entries(snapshot).some(
+            ([key, value]) => key !== 'orgProfile' && value === null
+          );
+
+        setSyncState({
+          state: hasFailure ? 'error' : 'ok',
+          message: hasFailure ? 'Sebagian data gagal dimuat dari cloud.' : undefined,
+          lastSyncedAt: new Date().toISOString(),
+        });
+        return !hasFailure;
+      } catch (err) {
+        setSyncState({
+          state: 'error',
+          message: err instanceof Error ? err.message : 'Sinkronisasi gagal.',
+        });
+        return false;
+      } finally {
+        syncingRef.current = false;
+      }
+    },
+    [applySnapshot]
+  );
+
+  /**
+   * One-time migration of this device's local data into the cloud.
+   * Only runs when the browser already had app data before this update, so a
+   * brand new device never overwrites the cloud with seed/demo values.
+   */
+  const pushLocalDataOnce = useCallback(
+    async (snapshot: CloudSnapshot): Promise<boolean> => {
+      // Perangkat baru (belum pernah menyimpan data) tidak boleh menimpa cloud.
+      if (!hadLocalHistory) return false;
+
+      // Pastikan perangkat ini benar-benar punya data untuk disumbangkan.
+      // Perangkat baru yang sudah pernah membuka aplikasi hanya berisi data
+      // hasil tarikan cloud (array kosong), jadi tidak boleh dianggap sumber.
+      const normalise = (value: unknown) => (value === null || value === undefined ? '' : value);
+      const profileFields: (keyof OrgProfile)[] = [
+        'logoUrl',
+        'heroPhotoUrl',
+        'visionPhotoUrl',
+        'ketuaPhotoUrl',
+        'ketuaName',
+        'ketuaPeriod',
+        'ketuaWelcomeTitle',
+        'ketuaSpeech',
+        'motto',
+        'appName',
+        'bankName',
+        'bankAccountNumber',
+        'bankAccountHolder',
+        'monthlyDueAmount',
+        'registrationGFormUrl',
+        'registrationNotice',
+        'isRegistrationOpen',
+      ];
+      const cloudProfile = snapshot.orgProfile;
+      const profileDiffers =
+        !cloudProfile ||
+        profileFields.some(
+          (field) => normalise(orgProfile[field]) !== normalise(cloudProfile[field])
+        );
+
+      // Hanya hitung sebagai kontribusi jika cloud memang belum punya datanya.
+      const cloudIsEmpty = (rows: unknown[] | null) => Array.isArray(rows) && rows.length === 0;
+      const cloudEventIds = new Set((snapshot.events ?? []).map((e) => e.id));
+      const hasLocalOnlyEvents = events.some((e) => !cloudEventIds.has(e.id));
+      const cloudDueKeys = new Set(
+        (snapshot.memberDues ?? []).map((d) => `${d.memberId}-${d.periodYear}-${d.periodMonth}`)
+      );
+      const hasLocalOnlyDues = memberDues.some(
+        (d) => !cloudDueKeys.has(`${d.memberId}-${d.periodYear}-${d.periodMonth}`)
+      );
+      const cloudAttendanceKeys = new Set(
+        (snapshot.attendances ?? []).map((a) => `${a.targetId}-${a.memberId}`)
+      );
+      const hasLocalOnlyAttendances = attendances.some(
+        (a) => !cloudAttendanceKeys.has(`${a.targetId}-${a.memberId}`)
+      );
+
+      const contributes =
+        (cloudIsEmpty(snapshot.positions) && positions.length > 0) ||
+        (cloudIsEmpty(snapshot.galleryPhotos) && galleryPhotos.length > 0) ||
+        (cloudIsEmpty(snapshot.documents) && documents.length > 0) ||
+        (cloudIsEmpty(snapshot.cashTransactions) && cashTransactions.length > 0) ||
+        (cloudIsEmpty(snapshot.budgets) && budgets.length > 0) ||
+        (cloudIsEmpty(snapshot.workPrograms) && workPrograms.length > 0) ||
+        (cloudIsEmpty(snapshot.eventRegistrations) && eventRegistrations.length > 0) ||
+        hasLocalOnlyEvents ||
+        hasLocalOnlyDues ||
+        hasLocalOnlyAttendances ||
+        profileDiffers;
+
+      if (!contributes) return false;
+
+      // Migrasi hanya sekali untuk seluruh organisasi.
+      const meta = await getAppMeta(MERGE_META_KEY);
+      if (meta) return false;
+
+      let failed = false;
+
+      // Profil (logo, hero, sambutan, pengaturan iuran) belum pernah tersimpan
+      // ke cloud pada versi sebelumnya.
+      if (profileDiffers && !(await saveOrgProfileToCloud(orgProfile))) failed = true;
+
+      // Tables that were never synced before: only upload when the cloud is empty.
+      const uploadIfCloudEmpty = async <T,>(
+        cloudRows: T[] | null,
+        localRows: T[],
+        uploader: (row: T) => Promise<boolean>
+      ) => {
+        if (!cloudRows || cloudRows.length > 0 || localRows.length === 0) return;
+        for (const row of localRows) {
+          if (!(await uploader(row))) failed = true;
+        }
+      };
+
+      await uploadIfCloudEmpty(snapshot.positions, positions, addPositionToCloud);
+      await uploadIfCloudEmpty(snapshot.galleryPhotos, galleryPhotos, addGalleryPhotoToCloud);
+      await uploadIfCloudEmpty(snapshot.documents, documents, addDocumentToCloud);
+      await uploadIfCloudEmpty(snapshot.cashTransactions, cashTransactions, addCashTransactionToCloud);
+      await uploadIfCloudEmpty(snapshot.budgets, budgets, addBudgetToCloud);
+      await uploadIfCloudEmpty(
+        snapshot.eventRegistrations,
+        eventRegistrations,
+        addEventRegistrationToCloud
+      );
+
+      // Work programs: union when cloud is empty (jobdesk tasks are stored too).
+      if (snapshot.workPrograms && snapshot.workPrograms.length === 0) {
+        for (const program of workPrograms) {
+          if (!(await addWorkProgramToCloud(program))) failed = true;
+        }
+      }
+
+      // Events: union by id so locally created activities are not lost.
+      if (snapshot.events) {
+        const cloudIds = new Set(snapshot.events.map((e) => e.id));
+        for (const event of events) {
+          if (cloudIds.has(event.id)) continue;
+          if (!(await addEventToCloud(event))) failed = true;
+        }
+      }
+
+      // Dues: cloud empty -> upload; otherwise union by member + period.
+      if (snapshot.memberDues) {
+        const cloudKeys = new Set(
+          snapshot.memberDues.map((d) => `${d.memberId}-${d.periodYear}-${d.periodMonth}`)
+        );
+        for (const due of memberDues) {
+          const key = `${due.memberId}-${due.periodYear}-${due.periodMonth}`;
+          if (cloudKeys.has(key)) continue;
+          if (!(await addMemberDueToCloud(due))) failed = true;
+        }
+      }
+
+      // Attendances: union by target + member.
+      if (snapshot.attendances) {
+        const cloudKeys = new Set(
+          snapshot.attendances.map((a) => `${a.targetId}-${a.memberId}`)
+        );
+        for (const record of attendances) {
+          const key = `${record.targetId}-${record.memberId}`;
+          if (cloudKeys.has(key)) continue;
+          if (!(await recordAttendanceToCloud(record))) failed = true;
+        }
+      }
+
+      if (!failed) {
+        await setAppMeta(MERGE_META_KEY, {
+          at: new Date().toISOString(),
+          tables: [
+            'org_profiles',
+            'positions',
+            'gallery_photos',
+            'documents',
+            'cash_transactions',
+            'budgets',
+            'event_registrations',
+            'work_programs',
+            'events',
+            'member_dues',
+            'attendances',
+          ],
+        });
+        showToast('Data lokal perangkat ini berhasil diunggah ke cloud.', 'success');
+      }
+
+      return failed;
+    },
+    [
+      hadLocalHistory,
+      orgProfile,
+      positions,
+      galleryPhotos,
+      documents,
+      cashTransactions,
+      budgets,
+      eventRegistrations,
+      workPrograms,
+      events,
+      memberDues,
+      attendances,
+      showToast,
+    ]
+  );
+
+  // Expose the one-time migration to runSync without a circular dependency.
+  useEffect(() => {
+    pushLocalDataOnceRef.current = pushLocalDataOnce;
+  }, [pushLocalDataOnce]);
+
+  useEffect(() => {
+    if (bootstrappedRef.current) return;
+    bootstrappedRef.current = true;
+    void runSync({ mergeLocal: true });
+  }, [runSync]);
+
+  // ==========================================
+  // REALTIME + FOCUS REFRESH
+  // ==========================================
+
+  const lastRefreshRef = useRef(0);
+  const realtimeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const scheduleRefresh = useCallback(() => {
+    if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+    realtimeTimer.current = setTimeout(() => {
+      void runSync({ silent: true });
+    }, 900);
+  }, [runSync]);
+
+  useEffect(() => {
+    if (!cloudConnected) return;
+    const unsubscribe = subscribeToCloudChanges(scheduleRefresh);
+    return () => {
+      unsubscribe();
+      if (realtimeTimer.current) clearTimeout(realtimeTimer.current);
+    };
+  }, [cloudConnected, scheduleRefresh]);
+
+  useEffect(() => {
+    if (!cloudConnected) return;
+    const onFocus = () => {
+      if (document.visibilityState === 'hidden') return;
+      const now = Date.now();
+      if (now - lastRefreshRef.current < 20000) return;
+      lastRefreshRef.current = now;
+      void runSync({ silent: true });
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
+  }, [cloudConnected, runSync]);
+
+  const syncNow = useCallback(async () => {
+    const ok = await runSync({ silent: false });
+    if (ok) {
+      showToast('Sinkronisasi cloud berhasil diperbarui.', 'success');
+    } else if (isCloudConnected()) {
+      showToast('Sinkronisasi selesai dengan beberapa kendala. Cek pesan error.', 'error');
+    }
+    return ok;
+  }, [runSync, showToast]);
+
+  // ==========================================
+  // AUTH
+  // ==========================================
+
+  const login = useCallback(
+    async (identifier: string, password: string, remember = true): Promise<LoginResult> => {
+      const cleanUser = identifier.trim();
+      const cleanPass = password.trim();
+
+      if (!cleanUser) {
+        return { success: false, message: 'Harap masukkan NISN atau email akun pengurus.' };
+      }
+      if (!cleanPass) {
+        return { success: false, message: 'Harap masukkan kata sandi.' };
+      }
+      if (cleanPass !== DEFAULT_PASSWORD) {
+        return { success: false, message: 'Kata sandi salah. Periksa kembali kata sandi Anda.' };
+      }
+
+      let pool: Member[] = members;
+      if (isCloudConnected()) {
+        const fresh = await fetchMembersFromCloud();
+        if (fresh && fresh.length > 0) {
+          pool = fresh;
+          setMembers(fresh);
+        }
+      }
+
+      const needle = cleanUser.toLowerCase();
+      const matched = pool.find(
+        (m) =>
+          (m.nisn || '').trim().toLowerCase() === needle ||
+          (m.email || '').trim().toLowerCase() === needle
+      );
+
+      if (!matched) {
+        return {
+          success: false,
+          message: `Akun "${cleanUser}" tidak terdaftar dalam database pengurus OSIS. Silakan periksa kembali NISN atau email Anda.`,
+        };
+      }
+
+      if (!matched.isActive || matched.status === 'alumni') {
+        return {
+          success: false,
+          message: 'Akun ini sudah tidak aktif (demisioner/alumni). Hubungi admin OSIS.',
+        };
+      }
+
+      const stored: StoredSession = {
+        memberId: matched.id,
+        nisn: matched.nisn,
+        remember,
+      };
+      setSession(stored);
+      writeStoredSession(stored);
+      setCurrentRole(matched.role);
+      setActivePage('dashboard');
+
+      return {
+        success: true,
+        message: `Berhasil masuk! Selamat datang, ${matched.fullName} (${matched.role
+          .replace('_', ' ')
+          .toUpperCase()}).`,
+      };
+    },
+    [members]
+  );
+
+  const logout = useCallback(() => {
+    clearStoredSession();
+    setSession(null);
+    setCurrentRole('ketua');
+    setActivePage('portal-publik');
+    showToast('Anda telah keluar dari sesi admin SMO.', 'info');
+  }, [showToast]);
+
+  // Legacy helper: set the signed-in member directly.
+  const setCurrentUser = useCallback((m: Member) => {
+    const stored: StoredSession = { memberId: m.id, nisn: m.nisn, remember: true };
+    setSession(stored);
+    writeStoredSession(stored);
+    setCurrentRole(m.role);
+  }, []);
+
+  // If the stored session points to a member that no longer exists, sign out.
+  useEffect(() => {
+    if (!session) return;
+    if (members.length === 0) return;
+    const exists = members.some(
+      (m) => m.id === session.memberId || (session.nisn && m.nisn === session.nisn)
+    );
+    if (!exists) {
+      clearStoredSession();
+      setSession(null);
+    }
+  }, [members, session]);
+
+  // ==========================================
+  // CLOUD WRITE HELPER
+  // ==========================================
+
+  const runCloudWrite = useCallback((operation: Promise<boolean> | null) => {
+    if (!operation) return;
+    operation
+      .then((ok) => {
+        if (!ok) {
+          setSyncState((prev) => ({
+            ...prev,
+            state: 'error',
+            message: 'Sebagian perubahan gagal tersimpan ke cloud.',
+          }));
+        }
+      })
+      .catch(() => {
+        setSyncState((prev) => ({
+          ...prev,
+          state: 'error',
+          message: 'Sebagian perubahan gagal tersimpan ke cloud.',
+        }));
+      });
+  }, []);
+
+  // ==========================================
+  // MUTATORS
+  // ==========================================
 
   const updateOrgProfile = (profile: Partial<OrgProfile>) => {
-    setOrgProfile((prev) => ({ ...prev, ...profile }));
+    const next: OrgProfile = { ...orgProfile, ...profile };
+    setOrgProfile(next);
+    runCloudWrite(saveOrgProfileToCloud(next));
     showToast('Profil organisasi berhasil diperbarui!');
   };
 
-  // Divisions CRUD
+  // Divisions
   const addDivision = (div: Omit<Division, 'id'>) => {
     const newDiv: Division = { ...div, id: `div-${Date.now()}` };
     setDivisions((prev) => [...prev, newDiv]);
+    runCloudWrite(addDivisionToCloud(newDiv));
     showToast(`Divisi ${newDiv.name} berhasil ditambahkan!`);
   };
 
   const updateDivision = (id: string, div: Partial<Division>) => {
     setDivisions((prev) => prev.map((d) => (d.id === id ? { ...d, ...div } : d)));
+    runCloudWrite(updateDivisionInCloud(id, div));
     showToast('Divisi berhasil diperbarui!');
   };
 
   const deleteDivision = (id: string) => {
     setDivisions((prev) => prev.filter((d) => d.id !== id));
+    runCloudWrite(deleteDivisionFromCloud(id));
     showToast('Divisi telah dihapus.', 'info');
   };
 
@@ -376,22 +1055,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addPosition = (pos: Omit<Position, 'id'>) => {
     const newPos: Position = { ...pos, id: `pos-${Date.now()}` };
     setPositions((prev) => [...prev, newPos]);
+    runCloudWrite(addPositionToCloud(newPos));
     showToast(`Jabatan ${newPos.name} ditambahkan!`);
   };
 
   const deletePosition = (id: string) => {
     setPositions((prev) => prev.filter((p) => p.id !== id));
+    runCloudWrite(deletePositionFromCloud(id));
     showToast('Jabatan dihapus.', 'info');
   };
 
-  // Members CRUD with Dual-Sync (Local + Supabase Cloud)
+  // Members
   const addMember = (member: Omit<Member, 'id'>) => {
     const newMember: Member = { ...member, id: `mem-${Date.now()}` };
     setMembers((prev) => [...prev, newMember]);
-    // Async push to Supabase Cloud
-    addMemberToCloud(newMember).catch(() => {});
+    runCloudWrite(addMemberToCloud(newMember));
 
-    // Generate initial dues for the member
     const newDue: MemberDue = {
       id: `due-${Date.now()}`,
       memberId: newMember.id,
@@ -399,36 +1078,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       nisn: newMember.nisn,
       periodMonth: new Date().getMonth() + 1,
       periodYear: new Date().getFullYear(),
-      amount: 15000,
+      amount: orgProfile.monthlyDueAmount ?? 15000,
       status: 'belum_lunas',
     };
     setMemberDues((prev) => [...prev, newDue]);
+    runCloudWrite(addMemberDueToCloud(newDue));
     showToast(`Anggota ${newMember.fullName} berhasil didaftarkan & disinkronkan ke Cloud!`);
   };
 
   const updateMember = (id: string, member: Partial<Member>) => {
     setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, ...member } : m)));
-    // Async update to Supabase Cloud
-    updateMemberInCloud(id, member).catch(() => {});
+    runCloudWrite(updateMemberInCloud(id, member));
     showToast('Data anggota berhasil diperbarui & disinkronkan ke Cloud!');
   };
 
   const deleteMember = (id: string) => {
     setMembers((prev) => prev.filter((m) => m.id !== id));
-    // Async delete from Supabase Cloud
-    deleteMemberFromCloud(id).catch(() => {});
-    // Cascade cleanup: hapus riwayat presensi & iuran terkait agar tidak menjadi data yatim (orphan)
+    runCloudWrite(deleteMemberFromCloud(id));
     setAttendances((prev) => prev.filter((a) => a.memberId !== id));
     setMemberDues((prev) => prev.filter((d) => d.memberId !== id));
     showToast('Anggota dan riwayat terkait telah dihapus.', 'info');
   };
 
-  // Theme State (Default to Clean White Light Mode)
+  // Theme
   const [theme, setThemeState] = useState<'light' | 'dark'>(() => {
     try {
       const saved = localStorage.getItem('schoolorg_theme_v3');
       if (saved === 'dark' || saved === 'light') return saved;
-      return 'light'; // Default: Clean White
+      return 'light';
     } catch {
       return 'light';
     }
@@ -447,13 +1124,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [theme]);
 
-  const setTheme = (t: 'light' | 'dark') => {
-    setThemeState(t);
-  };
-
-  const toggleTheme = () => {
-    setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
-  };
+  const setTheme = (t: 'light' | 'dark') => setThemeState(t);
+  const toggleTheme = () => setThemeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
 
   // Work Programs
   const addWorkProgram = (proker: Omit<WorkProgram, 'id' | 'createdAt'>) => {
@@ -464,76 +1136,101 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       tasks: proker.tasks || [],
     };
     setWorkPrograms((prev) => [...prev, newProker]);
-    addWorkProgramToCloud(newProker).catch(() => {});
+    runCloudWrite(addWorkProgramToCloud(newProker));
     showToast(`Program Kerja "${newProker.title}" berhasil diajukan!`);
   };
 
   const updateWorkProgram = (id: string, proker: Partial<WorkProgram>) => {
     setWorkPrograms((prev) => prev.map((p) => (p.id === id ? { ...p, ...proker } : p)));
-    updateWorkProgramInCloud(id, proker).catch(() => {});
+    runCloudWrite(updateWorkProgramInCloud(id, proker));
     showToast('Program kerja berhasil diperbarui!');
   };
 
   const deleteWorkProgram = (id: string) => {
     setWorkPrograms((prev) => prev.filter((p) => p.id !== id));
+    runCloudWrite(deleteWorkProgramFromCloud(id));
     showToast('Program kerja dihapus.', 'info');
   };
 
-  // Proker Tasks (Kepanitiaan & Jobdesk)
+  // Proker tasks
   const addProkerTask = (prokerId: string, task: Omit<ProkerTask, 'id'>) => {
+    const target = workPrograms.find((p) => p.id === prokerId);
+    if (!target) return;
     const newTask: ProkerTask = {
       ...task,
       id: `task-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     };
+    const nextTasks = [...(target.tasks || []), newTask];
+    const completedCount = nextTasks.filter((t) => t.isCompleted).length;
+    const autoProgress = Math.round((completedCount / nextTasks.length) * 100);
+
     setWorkPrograms((prev) =>
-      prev.map((p) => {
-        if (p.id !== prokerId) return p;
-        const currentTasks = p.tasks || [];
-        const nextTasks = [...currentTasks, newTask];
-        const completedCount = nextTasks.filter((t) => t.isCompleted).length;
-        const autoProgress = Math.round((completedCount / nextTasks.length) * 100);
-        return {
-          ...p,
-          tasks: nextTasks,
-          progressPercent: autoProgress,
-        };
+      prev.map((p) =>
+        p.id === prokerId
+          ? { ...p, tasks: nextTasks, progressPercent: autoProgress }
+          : p
+      )
+    );
+    runCloudWrite(
+      updateWorkProgramInCloud(prokerId, {
+        tasks: nextTasks,
+        progressPercent: autoProgress,
       })
     );
-    showToast(`Tugas baru berhasil ditambahkan!`);
+    showToast('Tugas baru berhasil ditambahkan!');
   };
 
   const toggleProkerTask = (prokerId: string, taskId: string) => {
+    const target = workPrograms.find((p) => p.id === prokerId);
+    if (!target) return;
+    const nextTasks = (target.tasks || []).map((t) =>
+      t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
+    );
+    const completedCount = nextTasks.filter((t) => t.isCompleted).length;
+    const autoProgress =
+      nextTasks.length > 0 ? Math.round((completedCount / nextTasks.length) * 100) : 0;
+    const nextStatus =
+      autoProgress === 100
+        ? 'selesai'
+        : autoProgress > 0 && target.status === 'disetujui'
+          ? 'berjalan'
+          : target.status;
+
     setWorkPrograms((prev) =>
-      prev.map((p) => {
-        if (p.id !== prokerId) return p;
-        const currentTasks = p.tasks || [];
-        const nextTasks = currentTasks.map((t) =>
-          t.id === taskId ? { ...t, isCompleted: !t.isCompleted } : t
-        );
-        const completedCount = nextTasks.filter((t) => t.isCompleted).length;
-        const autoProgress = nextTasks.length > 0 ? Math.round((completedCount / nextTasks.length) * 100) : p.progressPercent;
-        return {
-          ...p,
-          tasks: nextTasks,
-          progressPercent: autoProgress,
-          status: autoProgress === 100 ? 'selesai' : (autoProgress > 0 && p.status === 'disetujui' ? 'berjalan' : p.status),
-        };
+      prev.map((p) =>
+        p.id === prokerId
+          ? { ...p, tasks: nextTasks, progressPercent: autoProgress, status: nextStatus }
+          : p
+      )
+    );
+    runCloudWrite(
+      updateWorkProgramInCloud(prokerId, {
+        tasks: nextTasks,
+        progressPercent: autoProgress,
+        status: nextStatus,
       })
     );
   };
 
   const deleteProkerTask = (prokerId: string, taskId: string) => {
+    const target = workPrograms.find((p) => p.id === prokerId);
+    if (!target) return;
+    const nextTasks = (target.tasks || []).filter((t) => t.id !== taskId);
+    const completedCount = nextTasks.filter((t) => t.isCompleted).length;
+    const autoProgress =
+      nextTasks.length > 0 ? Math.round((completedCount / nextTasks.length) * 100) : 0;
+
     setWorkPrograms((prev) =>
-      prev.map((p) => {
-        if (p.id !== prokerId) return p;
-        const nextTasks = (p.tasks || []).filter((t) => t.id !== taskId);
-        const completedCount = nextTasks.filter((t) => t.isCompleted).length;
-        const autoProgress = nextTasks.length > 0 ? Math.round((completedCount / nextTasks.length) * 100) : 0;
-        return {
-          ...p,
-          tasks: nextTasks,
-          progressPercent: autoProgress,
-        };
+      prev.map((p) =>
+        p.id === prokerId
+          ? { ...p, tasks: nextTasks, progressPercent: autoProgress }
+          : p
+      )
+    );
+    runCloudWrite(
+      updateWorkProgramInCloud(prokerId, {
+        tasks: nextTasks,
+        progressPercent: autoProgress,
       })
     );
     showToast('Tugas kepanitiaan dihapus.', 'info');
@@ -543,46 +1240,47 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addEvent = (evt: Omit<EventItem, 'id'>) => {
     const newEvt: EventItem = { ...evt, id: `evt-${Date.now()}` };
     setEvents((prev) => [...prev, newEvt]);
+    runCloudWrite(addEventToCloud(newEvt));
     showToast(`Kegiatan "${newEvt.title}" berhasil dijadwalkan!`);
   };
 
   const updateEvent = (id: string, evt: Partial<EventItem>) => {
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, ...evt } : e)));
+    runCloudWrite(updateEventInCloud(id, evt));
     showToast('Kegiatan berhasil diperbarui!');
   };
 
   const deleteEvent = (id: string) => {
     setEvents((prev) => prev.filter((e) => e.id !== id));
+    runCloudWrite(deleteEventFromCloud(id));
     showToast('Kegiatan dihapus.', 'info');
   };
 
   const addEventPhoto = (eventId: string, photoUrl: string) => {
     if (!photoUrl) return;
+    const target = events.find((e) => e.id === eventId);
+    if (!target) return;
+    const nextPhotos = [...(target.documentationPhotos || []), photoUrl];
     setEvents((prev) =>
-      prev.map((e) =>
-        e.id === eventId
-          ? { ...e, documentationPhotos: [...(e.documentationPhotos || []), photoUrl] }
-          : e
-      )
+      prev.map((e) => (e.id === eventId ? { ...e, documentationPhotos: nextPhotos } : e))
     );
+    runCloudWrite(updateEventInCloud(eventId, { documentationPhotos: nextPhotos }));
     showToast('Foto dokumentasi berhasil ditambahkan!');
   };
 
   const removeEventPhoto = (eventId: string, photoIndexOrUrl: number | string) => {
+    const target = events.find((e) => e.id === eventId);
+    if (!target) return;
+    const photos = target.documentationPhotos || [];
+    const nextPhotos =
+      typeof photoIndexOrUrl === 'number'
+        ? photos.filter((_, i) => i !== photoIndexOrUrl)
+        : photos.filter((p) => p !== photoIndexOrUrl);
+
     setEvents((prev) =>
-      prev.map((e) => {
-        if (e.id !== eventId) return e;
-        const photos = e.documentationPhotos || [];
-        const updated =
-          typeof photoIndexOrUrl === 'number'
-            ? photos.filter((_, i) => i !== photoIndexOrUrl)
-            : photos.filter((p) => p !== photoIndexOrUrl);
-        return {
-          ...e,
-          documentationPhotos: updated,
-        };
-      })
+      prev.map((e) => (e.id === eventId ? { ...e, documentationPhotos: nextPhotos } : e))
     );
+    runCloudWrite(updateEventInCloud(eventId, { documentationPhotos: nextPhotos }));
     showToast('Foto dokumentasi telah dihapus.', 'info');
   };
 
@@ -590,16 +1288,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addMeeting = (meet: Omit<Meeting, 'id'>) => {
     const newMeet: Meeting = { ...meet, id: `meet-${Date.now()}` };
     setMeetings((prev) => [...prev, newMeet]);
+    runCloudWrite(addMeetingToCloud(newMeet));
     showToast(`Rapat "${newMeet.title}" dijadwalkan!`);
   };
 
   const updateMeeting = (id: string, meet: Partial<Meeting>) => {
     setMeetings((prev) => prev.map((m) => (m.id === id ? { ...m, ...meet } : m)));
+    runCloudWrite(updateMeetingInCloud(id, meet));
     showToast('Data rapat berhasil diperbarui!');
   };
 
   const deleteMeeting = (id: string) => {
     setMeetings((prev) => prev.filter((m) => m.id !== id));
+    runCloudWrite(deleteMeetingFromCloud(id));
     showToast('Rapat dihapus.', 'info');
   };
 
@@ -622,66 +1323,90 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notes: record.notes || 'Hadir',
     };
     setAttendances((prev) => [newAtt, ...prev]);
-    // Async push to Supabase Cloud
-    recordAttendanceToCloud(newAtt).catch(() => {});
+    runCloudWrite(recordAttendanceToCloud(newAtt));
     showToast(`Presensi berhasil: ${newAtt.memberName} (${newAtt.status.toUpperCase()})`);
     return { success: true, message: 'Presensi berhasil dicatat!' };
   };
 
-  const updateAttendanceStatus = (id: string, status: AttendanceRecord['status'], notes?: string) => {
+  const updateAttendanceStatus = (
+    id: string,
+    status: AttendanceRecord['status'],
+    notes?: string
+  ) => {
+    const current = attendances.find((a) => a.id === id);
+    const nextNotes = notes !== undefined ? notes : current?.notes;
     setAttendances((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status, notes: notes !== undefined ? notes : a.notes } : a))
+      prev.map((a) => (a.id === id ? { ...a, status, notes: nextNotes } : a))
     );
+    runCloudWrite(updateAttendanceInCloud(id, { status, notes: nextNotes }));
     showToast('Status presensi diperbarui!');
   };
 
-  // Cash Transactions
+  // Cash
   const addCashTransaction = (trx: Omit<CashTransaction, 'id'>) => {
     const newTrx: CashTransaction = { ...trx, id: `trx-${Date.now()}` };
     setCashTransactions((prev) => [newTrx, ...prev]);
-    showToast(`Transaksi ${trx.type} sebesar Rp ${trx.amount.toLocaleString()} berhasil dicatat!`);
+    runCloudWrite(addCashTransactionToCloud(newTrx));
+    showToast(
+      `Transaksi ${trx.type} sebesar Rp ${trx.amount.toLocaleString()} berhasil dicatat!`
+    );
   };
 
   const deleteCashTransaction = (id: string) => {
     setCashTransactions((prev) => prev.filter((t) => t.id !== id));
+    runCloudWrite(deleteCashTransactionFromCloud(id));
     showToast('Catatan transaksi dihapus.', 'info');
   };
 
-  // Member Dues
-  const updateMemberDueStatus = (id: string, status: MemberDue['status'], verifiedBy?: string) => {
+  // Member dues
+  const updateMemberDueStatus = (
+    id: string,
+    status: MemberDue['status'],
+    verifiedBy?: string
+  ) => {
+    const due = memberDues.find((d) => d.id === id);
+    const nextVerifiedBy =
+      verifiedBy || (status === 'lunas' ? currentUser.fullName : undefined);
+    const nextVerifiedAt = status === 'lunas' ? new Date().toISOString() : undefined;
+
     setMemberDues((prev) =>
       prev.map((d) =>
         d.id === id
-          ? {
-              ...d,
-              status,
-              verifiedBy: verifiedBy || (status === 'lunas' ? currentUser.fullName : undefined),
-              verifiedAt: status === 'lunas' ? new Date().toISOString() : undefined,
-            }
+          ? { ...d, status, verifiedBy: nextVerifiedBy, verifiedAt: nextVerifiedAt }
           : d
       )
     );
-    if (status === 'lunas') {
-      const due = memberDues.find((d) => d.id === id);
-      if (due) {
-        // Automatically log into cash transactions
-        addCashTransaction({
-          type: 'pemasukan',
-          category: 'iuran_kas',
-          amount: due.amount,
-          transactionDate: new Date().toISOString().split('T')[0],
-          description: `Iuran Kas ${due.memberName} (${due.periodMonth}/${due.periodYear})`,
-          recordedBy: currentUser.fullName,
-          referenceId: due.id,
-        });
-      }
+    runCloudWrite(
+      updateMemberDueInCloud(id, {
+        status,
+        verifiedBy: nextVerifiedBy,
+        verifiedAt: nextVerifiedAt,
+      })
+    );
+
+    if (status === 'lunas' && due) {
+      addCashTransaction({
+        type: 'pemasukan',
+        category: 'iuran_kas',
+        amount: due.amount,
+        transactionDate: new Date().toISOString().split('T')[0],
+        description: `Iuran Kas ${due.memberName} (${due.periodMonth}/${due.periodYear})`,
+        recordedBy: currentUser.fullName,
+        referenceId: due.id,
+      });
     }
     showToast(`Status iuran kas diperbarui: ${status.replace('_', ' ').toUpperCase()}`);
   };
 
   const uploadMemberDueProof = (id: string, proofUrl: string) => {
+    const paidAt = new Date().toISOString().split('T')[0];
     setMemberDues((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, proofUrl, status: 'menunggu_verifikasi', paidAt: new Date().toISOString().split('T')[0] } : d))
+      prev.map((d) =>
+        d.id === id ? { ...d, proofUrl, status: 'menunggu_verifikasi', paidAt } : d
+      )
+    );
+    runCloudWrite(
+      updateMemberDueInCloud(id, { proofUrl, status: 'menunggu_verifikasi', paidAt })
     );
     showToast('Bukti transfer berhasil diunggah! Menunggu verifikasi Bendahara.');
   };
@@ -690,16 +1415,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addBudget = (b: Omit<BudgetPlan, 'id'>) => {
     const newB: BudgetPlan = { ...b, id: `bud-${Date.now()}` };
     setBudgets((prev) => [...prev, newB]);
+    runCloudWrite(addBudgetToCloud(newB));
     showToast('Anggaran RAB berhasil ditambahkan!');
   };
 
   const updateBudget = (id: string, b: Partial<BudgetPlan>) => {
     setBudgets((prev) => prev.map((item) => (item.id === id ? { ...item, ...b } : item)));
+    runCloudWrite(updateBudgetInCloud(id, b));
     showToast('Anggaran RAB berhasil diperbarui!');
   };
 
   const deleteBudget = (id: string) => {
     setBudgets((prev) => prev.filter((b) => b.id !== id));
+    runCloudWrite(deleteBudgetFromCloud(id));
     showToast('Anggaran dihapus.', 'info');
   };
 
@@ -707,11 +1435,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addDocument = (doc: Omit<DocumentItem, 'id'>) => {
     const newDoc: DocumentItem = { ...doc, id: `doc-${Date.now()}` };
     setDocuments((prev) => [newDoc, ...prev]);
+    runCloudWrite(addDocumentToCloud(newDoc));
     showToast(`Dokumen "${newDoc.title}" berhasil diarsipkan!`);
   };
 
   const deleteDocument = (id: string) => {
     setDocuments((prev) => prev.filter((d) => d.id !== id));
+    runCloudWrite(deleteDocumentFromCloud(id));
     showToast('Dokumen dihapus.', 'info');
   };
 
@@ -723,15 +1453,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       date: new Date().toISOString().split('T')[0],
     };
     setAnnouncements((prev) => [newAnn, ...prev]);
+    runCloudWrite(addAnnouncementToCloud(newAnn));
     showToast('Pengumuman baru telah diterbitkan!');
   };
 
   const deleteAnnouncement = (id: string) => {
     setAnnouncements((prev) => prev.filter((a) => a.id !== id));
+    runCloudWrite(deleteAnnouncementFromCloud(id));
     showToast('Pengumuman dihapus.', 'info');
   };
 
-  // Public Portal Actions: Aspirasi Siswa
+  // Aspirations
   const addAspiration = (asp: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>) => {
     const newAsp: StudentAspiration = {
       ...asp,
@@ -741,21 +1473,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       likes: 1,
     };
     setAspirations((prev) => [newAsp, ...prev]);
-    addAspirationToCloud(newAsp).catch(() => {});
+    runCloudWrite(addAspirationToCloud(newAsp));
     showToast('Aspirasi Anda berhasil dikirim dan akan ditinjau oleh Pengurus OSIS!', 'success');
   };
 
   const likeAspiration = (id: string) => {
+    const target = aspirations.find((a) => a.id === id);
+    if (!target) return;
+    const nextLikes = target.likes + 1;
     setAspirations((prev) =>
-      prev.map((a) => {
-        if (a.id === id) {
-          const updated = { ...a, likes: a.likes + 1 };
-          updateAspirationInCloud(id, { likes: updated.likes }).catch(() => {});
-          return updated;
-        }
-        return a;
-      })
+      prev.map((a) => (a.id === id ? { ...a, likes: nextLikes } : a))
     );
+    runCloudWrite(updateAspirationInCloud(id, { likes: nextLikes }));
     showToast('Dukungan aspirasi berhasil ditambahkan!');
   };
 
@@ -766,23 +1495,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     respondedBy?: string
   ) => {
     const responder = respondedBy || currentUser.fullName;
+    const target = aspirations.find((a) => a.id === id);
+    const nextResponse = response !== undefined ? response : target?.response;
+
     setAspirations((prev) =>
-      prev.map((a) => {
-        if (a.id === id) {
-          const updated = {
-            ...a,
-            status,
-            response: response !== undefined ? response : a.response,
-            respondedBy: responder,
-          };
-          updateAspirationInCloud(id, {
-            status,
-            response: updated.response,
-            respondedBy: responder,
-          }).catch(() => {});
-          return updated;
-        }
-        return a;
+      prev.map((a) =>
+        a.id === id
+          ? { ...a, status, response: nextResponse, respondedBy: responder }
+          : a
+      )
+    );
+    runCloudWrite(
+      updateAspirationInCloud(id, {
+        status,
+        response: nextResponse,
+        respondedBy: responder,
       })
     );
     showToast(`Status aspirasi diperbarui menjadi: ${status.toUpperCase()}`);
@@ -790,11 +1517,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteAspiration = (id: string) => {
     setAspirations((prev) => prev.filter((a) => a.id !== id));
-    deleteAspirationFromCloud(id).catch(() => {});
+    runCloudWrite(deleteAspirationFromCloud(id));
     showToast('Pesan ide & aspirasi berhasil dihapus.', 'info');
   };
 
-  // Public Portal Actions: Open Recruitment
+  // Recruitment
   const addRecruitment = (
     rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>
   ): RecruitmentApplication => {
@@ -807,22 +1534,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       status: 'menunggu',
     };
     setRecruitments((prev) => [newRec, ...prev]);
-    addRecruitmentToCloud(newRec).catch(() => {});
-    showToast(`Pendaftaran Oprec berhasil! No. Registrasi: ${newRec.registrationNumber}`, 'success');
+    runCloudWrite(addRecruitmentToCloud(newRec));
+    showToast(
+      `Pendaftaran Oprec berhasil! No. Registrasi: ${newRec.registrationNumber}`,
+      'success'
+    );
     return newRec;
   };
 
   const updateRecruitment = (id: string, partial: Partial<RecruitmentApplication>) => {
-    setRecruitments((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, ...partial } : r))
-    );
-    updateRecruitmentInCloud(id, partial).catch(() => {});
+    setRecruitments((prev) => prev.map((r) => (r.id === id ? { ...r, ...partial } : r)));
+    runCloudWrite(updateRecruitmentInCloud(id, partial));
     showToast('Status pendaftaran calon anggota diperbarui!');
   };
 
   const deleteRecruitment = (id: string) => {
     setRecruitments((prev) => prev.filter((r) => r.id !== id));
-    deleteRecruitmentFromCloud(id).catch(() => {});
+    runCloudWrite(deleteRecruitmentFromCloud(id));
     showToast('Data pendaftaran berhasil dihapus');
   };
 
@@ -864,7 +1592,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       divisionName: targetDivision?.name || 'BPH',
       position: customPosition || 'Anggota Sekbid',
       phone: rec.phone,
-      avatarUrl: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
+      avatarUrl:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       isActive: true,
       status: 'aktif',
       joinDate: new Date().toISOString().split('T')[0],
@@ -872,14 +1601,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     addMember(newMember);
-    setRecruitments((prev) =>
-      prev.map((r) => (r.id === recruitmentId ? { ...r, status: 'diterima' } : r))
+    updateRecruitment(recruitmentId, { status: 'diterima' });
+    showToast(
+      `Selamat! ${rec.fullName} resmi diterima sebagai anggota dan KTA telah diterbitkan!`,
+      'success'
     );
-    updateRecruitmentInCloud(recruitmentId, { status: 'diterima' }).catch(() => {});
-    showToast(`Selamat! ${rec.fullName} resmi diterima sebagai anggota dan KTA telah diterbitkan!`, 'success');
   };
 
-  // Public Portal Actions: Event Registrations
+  // Event registrations
   const registerForEvent = (
     reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>
   ): EventRegistration => {
@@ -888,84 +1617,159 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...reg,
       id: `evtr-${Date.now()}`,
       ticketCode: `TKT-${randomCode}`,
-      registeredAt: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }),
+      registeredAt: new Date().toLocaleString('id-ID', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      }),
     };
     setEventRegistrations((prev) => [newReg, ...prev]);
+    runCloudWrite(addEventRegistrationToCloud(newReg));
     showToast(`Tiket pendaftaran ${newReg.ticketCode} berhasil diterbitkan!`, 'success');
     return newReg;
   };
 
-  // Galeri Dokumentasi Portal Publik CRUD
+  // Gallery
   const addGalleryPhoto = (photo: Omit<GalleryItem, 'id'>) => {
-    const newPhoto: GalleryItem = {
-      ...photo,
-      id: `g-${Date.now()}`,
-    };
+    const newPhoto: GalleryItem = { ...photo, id: `g-${Date.now()}` };
     setGalleryPhotos((prev) => [newPhoto, ...prev]);
+    runCloudWrite(addGalleryPhotoToCloud(newPhoto));
     showToast('Foto dokumentasi baru berhasil ditambahkan!');
   };
 
   const updateGalleryPhoto = (id: string, photo: Partial<GalleryItem>) => {
-    setGalleryPhotos((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...photo } : p))
-    );
+    setGalleryPhotos((prev) => prev.map((p) => (p.id === id ? { ...p, ...photo } : p)));
+    runCloudWrite(updateGalleryPhotoInCloud(id, photo));
     showToast('Foto dokumentasi berhasil diperbarui!');
   };
 
   const deleteGalleryPhoto = (id: string) => {
     setGalleryPhotos((prev) => prev.filter((p) => p.id !== id));
+    runCloudWrite(deleteGalleryPhotoFromCloud(id));
     showToast('Foto dokumentasi telah dihapus.', 'info');
   };
 
   const resetGalleryPhotos = () => {
+    const previous = galleryPhotos;
     setGalleryPhotos(DEFAULT_GALLERY_PHOTOS);
+    runCloudWrite(
+      (async () => {
+        for (const photo of previous) {
+          await deleteGalleryPhotoFromCloud(photo.id);
+        }
+        for (const photo of DEFAULT_GALLERY_PHOTOS) {
+          await addGalleryPhotoToCloud(photo);
+        }
+        return true;
+      })()
+    );
     showToast('Galeri foto telah direset ke dokumentasi bawaan.');
   };
 
-  // Reset Data to Factory Initial
+  // ==========================================
+  // RESET / IMPORT (ADMIN ONLY)
+  // ==========================================
+
+  const buildSnapshot = (overrides: Partial<LocalSnapshot> = {}): LocalSnapshot => ({
+    orgProfile,
+    divisions,
+    positions,
+    members,
+    workPrograms,
+    events,
+    meetings,
+    attendances,
+    cashTransactions,
+    memberDues,
+    budgets,
+    documents,
+    announcements,
+    aspirations,
+    recruitments,
+    eventRegistrations,
+    galleryPhotos,
+    ...overrides,
+  });
+
   const resetAllData = () => {
-    localStorage.clear();
-    setOrgProfile(initialOrgProfile);
-    setDivisions(initialDivisions);
-    setPositions(initialPositions);
-    setMembers(initialMembers);
-    setWorkPrograms(initialWorkPrograms);
-    setEvents(initialEvents);
-    setMeetings(initialMeetings);
-    setAttendances(initialAttendances);
-    setCashTransactions(initialCashTransactions);
-    setMemberDues(initialMemberDues);
-    setBudgets(initialBudgets);
-    setDocuments(initialDocuments);
-    setAnnouncements(initialAnnouncements);
-    setAspirations(initialAspirations);
-    setRecruitments(initialRecruitments);
-    setEventRegistrations(initialEventRegistrations);
-    setGalleryPhotos(DEFAULT_GALLERY_PHOTOS);
+    const snapshot: LocalSnapshot = {
+      orgProfile: initialOrgProfile,
+      divisions: initialDivisions,
+      positions: initialPositions,
+      members: initialMembers,
+      workPrograms: initialWorkPrograms,
+      events: initialEvents,
+      meetings: initialMeetings,
+      attendances: initialAttendances,
+      cashTransactions: initialCashTransactions,
+      memberDues: initialMemberDues,
+      budgets: initialBudgets,
+      documents: initialDocuments,
+      announcements: initialAnnouncements,
+      aspirations: initialAspirations,
+      recruitments: initialRecruitments,
+      eventRegistrations: initialEventRegistrations,
+      galleryPhotos: DEFAULT_GALLERY_PHOTOS,
+    };
+
+    setOrgProfile(snapshot.orgProfile);
+    setDivisions(snapshot.divisions);
+    setPositions(snapshot.positions);
+    setMembers(snapshot.members);
+    setWorkPrograms(snapshot.workPrograms);
+    setEvents(snapshot.events);
+    setMeetings(snapshot.meetings);
+    setAttendances(snapshot.attendances);
+    setCashTransactions(snapshot.cashTransactions);
+    setMemberDues(snapshot.memberDues);
+    setBudgets(snapshot.budgets);
+    setDocuments(snapshot.documents);
+    setAnnouncements(snapshot.announcements);
+    setAspirations(snapshot.aspirations);
+    setRecruitments(snapshot.recruitments);
+    setEventRegistrations(snapshot.eventRegistrations);
+    setGalleryPhotos(snapshot.galleryPhotos);
+
+    if (isCloudConnected()) {
+      setSyncState({ state: 'syncing', message: 'Mengosongkan & memuat ulang data cloud...' });
+      void replaceCloudWithSnapshot(snapshot).then((ok) => {
+        setSyncState({
+          state: ok ? 'ok' : 'error',
+          message: ok ? undefined : 'Reset cloud gagal sebagian.',
+          lastSyncedAt: new Date().toISOString(),
+        });
+      });
+    }
+
     showToast('Data berhasil di-reset ke nilai default UKK!', 'info');
   };
 
-  // Import Data from JSON Backup
   const importAllData = (jsonData: string): boolean => {
     try {
-      const parsed = JSON.parse(jsonData);
-      if (parsed.orgProfile) setOrgProfile(parsed.orgProfile);
-      if (parsed.divisions) setDivisions(parsed.divisions);
-      if (parsed.positions) setPositions(parsed.positions);
-      if (parsed.members) setMembers(parsed.members);
-      if (parsed.workPrograms) setWorkPrograms(parsed.workPrograms);
-      if (parsed.events) setEvents(parsed.events);
-      if (parsed.meetings) setMeetings(parsed.meetings);
-      if (parsed.attendances) setAttendances(parsed.attendances);
-      if (parsed.cashTransactions) setCashTransactions(parsed.cashTransactions);
-      if (parsed.memberDues) setMemberDues(parsed.memberDues);
-      if (parsed.budgets) setBudgets(parsed.budgets);
-      if (parsed.documents) setDocuments(parsed.documents);
-      if (parsed.announcements) setAnnouncements(parsed.announcements);
-      if (parsed.aspirations) setAspirations(parsed.aspirations);
-      if (parsed.recruitments) setRecruitments(parsed.recruitments);
-      if (parsed.eventRegistrations) setEventRegistrations(parsed.eventRegistrations);
-      if (parsed.galleryPhotos) setGalleryPhotos(parsed.galleryPhotos);
+      const parsed = JSON.parse(jsonData) as Partial<LocalSnapshot>;
+      const next = buildSnapshot(parsed);
+
+      setOrgProfile(next.orgProfile);
+      setDivisions(next.divisions);
+      setPositions(next.positions);
+      setMembers(next.members);
+      setWorkPrograms(next.workPrograms);
+      setEvents(next.events);
+      setMeetings(next.meetings);
+      setAttendances(next.attendances);
+      setCashTransactions(next.cashTransactions);
+      setMemberDues(next.memberDues);
+      setBudgets(next.budgets);
+      setDocuments(next.documents);
+      setAnnouncements(next.announcements);
+      setAspirations(next.aspirations);
+      setRecruitments(next.recruitments);
+      setEventRegistrations(next.eventRegistrations);
+      setGalleryPhotos(next.galleryPhotos);
+
+      if (isCloudConnected()) {
+        void replaceCloudWithSnapshot(next);
+      }
+
       showToast('Seluruh data berhasil dipulihkan dari cadangan!', 'success');
       return true;
     } catch (e) {
@@ -984,6 +1788,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCurrentRole,
         currentUser,
         setCurrentUser,
+        isAuthenticated,
+        login,
+        logout,
+        cloudConnected,
+        syncState,
+        syncNow,
         orgProfile,
         updateOrgProfile,
         divisions,

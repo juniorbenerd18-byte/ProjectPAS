@@ -2,50 +2,19 @@ import React, { useState } from 'react';
 import {
   Menu,
   Bell,
-  UserCheck,
-  ChevronDown,
-  Sparkles,
-  Check,
   Sun,
   Moon,
   Globe,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { UserRole } from '../../types';
 
 interface NavbarProps {
   onOpenSidebar: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
-  const { currentRole, setCurrentRole, currentUser, announcements, setActivePage, theme, toggleTheme, orgProfile, members } = useApp();
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const { currentRole, currentUser, announcements, setActivePage, theme, toggleTheme, orgProfile } = useApp();
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
-
-  // Helper untuk mendapatkan nama dan kelas pengurus secara dinamis & tersinkronisasi
-  const getRoleDesc = (role: UserRole, fallbackDesc: string) => {
-    if (role === 'pembina') return orgProfile.pembinaName || fallbackDesc;
-    if (role === 'admin') return fallbackDesc;
-    const member = members.find((m) => m.role === role);
-    if (!member) return fallbackDesc;
-    const classInfo = member.classRoom ? ` (${member.grade ? `${member.grade} ` : ''}${member.classRoom})` : '';
-    return `${member.fullName}${classInfo}`;
-  };
-
-  const availableRoles: { role: UserRole; label: string; desc: string }[] = [
-    { role: 'ketua', label: 'Ketua Umum OSIS', desc: getRoleDesc('ketua', 'Zevin (XI RPL 1)') },
-    { role: 'sekretaris', label: 'Sekretaris Umum', desc: getRoleDesc('sekretaris', 'Anisa Rahmawati (XI TKJ 2)') },
-    { role: 'bendahara', label: 'Bendahara Umum', desc: getRoleDesc('bendahara', 'Rizky Alamsyah (XI AKL 1)') },
-    { role: 'koordinator_sekbid', label: 'Koordinator Sekbid TIK', desc: getRoleDesc('koordinator_sekbid', 'Dimas Anggoro (XI RPL 2)') },
-    { role: 'anggota', label: 'Anggota Siswa', desc: getRoleDesc('anggota', 'Siti Aulia Nur (X DKV 1)') },
-    { role: 'pembina', label: 'Pembina OSIS (Guru)', desc: orgProfile.pembinaName || 'Drs. H. Bambang Sudiro, M.Pd.' },
-    { role: 'admin', label: 'Super Admin Sistem', desc: 'Administrator IT Sekolah' },
-  ];
-
-  const handleRoleSelect = (role: UserRole) => {
-    setCurrentRole(role);
-    setShowRoleMenu(false);
-  };
 
   const unreadCount = announcements.length;
 
@@ -98,7 +67,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
           <button
             onClick={() => {
               setShowNotificationMenu(!showNotificationMenu);
-              setShowRoleMenu(false);
             }}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center text-[#5A6472] hover:text-[#1F3A5F] dark:text-[#9AA8B8] dark:hover:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] rounded-[12px] relative cursor-pointer transition-colors"
             title="Pengumuman Organisasi"
@@ -155,70 +123,21 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
           )}
         </div>
 
-        {/* Role Switcher / User Menu */}
-        <div className="relative">
-          <button
-            onClick={() => {
-              setShowRoleMenu(!showRoleMenu);
-              setShowNotificationMenu(false);
-            }}
-            className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] hover:bg-[#FAF6EE] dark:hover:bg-[#213B5C] transition-colors cursor-pointer"
-            aria-label="Pilih profil peran pengurus"
-          >
-            <img
-              src={currentUser.avatarUrl}
-              alt={currentUser.fullName}
-              className="w-7 h-7 rounded-[8px] object-cover border border-[#E6DFD0]"
-            />
-            <div className="hidden sm:block text-left">
-              <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-none truncate max-w-[120px]">
-                {currentUser.fullName}
-              </p>
-              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-semibold mt-0.5 capitalize">
-                {currentRole.replace('_', ' ')}
-              </p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] shrink-0" strokeWidth={2} />
-          </button>
-
-          {showRoleMenu && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowRoleMenu(false)} />
-              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-xs sm:w-72 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
-                <div className="px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
-                  <div className="flex items-center gap-1.5 text-[#1F3A5F] dark:text-[#FAF6EE]">
-                    <Sparkles className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
-                    <span className="text-[14px] font-extrabold">Pilih Peran Pengurus</span>
-                  </div>
-                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
-                    Ganti akun peran untuk melihat hak akses
-                  </p>
-                </div>
-                <div className="p-2 space-y-1 max-h-64 overflow-y-auto">
-                  {availableRoles.map((r) => {
-                    const isSelected = currentRole === r.role;
-                    return (
-                      <button
-                        key={r.role}
-                        onClick={() => handleRoleSelect(r.role)}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[10px] text-left transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-[#E4EAF2] dark:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE]'
-                            : 'hover:bg-[#FAF6EE] dark:hover:bg-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE]'
-                        }`}
-                      >
-                        <div>
-                          <p className="text-[14px] font-bold">{r.label}</p>
-                          <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-normal mt-0.5">{r.desc}</p>
-                        </div>
-                        {isSelected && <Check className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" strokeWidth={2} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </>
-          )}
+        {/* User Profile Info */}
+        <div className="flex items-center gap-2.5 px-3 min-h-[44px] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] bg-[#FFFDF8] dark:bg-[#17293E] select-none">
+          <img
+            src={currentUser.avatarUrl}
+            alt={currentUser.fullName}
+            className="w-7 h-7 rounded-[8px] object-cover border border-[#E6DFD0]"
+          />
+          <div className="hidden sm:block text-left">
+            <p className="text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] leading-none truncate max-w-[120px]">
+              {currentUser.fullName}
+            </p>
+            <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-semibold mt-0.5 capitalize">
+              {currentRole.replace('_', ' ')}
+            </p>
+          </div>
         </div>
       </div>
     </header>

@@ -10,7 +10,6 @@ import { AboutSection } from '../../components/public/AboutSection';
 import { EventsSection } from '../../components/public/EventsSection';
 import { GallerySection } from '../../components/public/GallerySection';
 import { BoardSection, BoardMember } from '../../components/public/BoardSection';
-import { AnnouncementsSection, AnnouncementItem } from '../../components/public/AnnouncementsSection';
 import { TestimonialsSection, TestimonialItem } from '../../components/public/TestimonialsSection';
 import { CtaSection } from '../../components/public/CtaSection';
 import { PublicFooter } from '../../components/public/PublicFooter';
@@ -181,28 +180,6 @@ export const PublicPortalPage: React.FC = () => {
     }));
   }, [events]);
 
-  // 5. Sinkronisasi Pengumuman Publik
-  const publicAnnouncements: AnnouncementItem[] | undefined = useMemo(() => {
-    if (announcements && announcements.length > 0) {
-      return announcements
-        .filter(
-          (a) =>
-            a.targetRole === 'semua' ||
-            a.targetRole === 'anggota' ||
-            a.targetRole === 'publik'
-        )
-        .map((a) => ({
-          id: a.id,
-          title: a.title,
-          content: a.content,
-          date: a.date,
-          category: a.priority === 'penting' ? 'Pemberitahuan Utama' : 'Pengumuman',
-          author: a.author,
-        }));
-    }
-    return undefined; // Akan memakai DEFAULT_ANNOUNCEMENTS di dalam komponen
-  }, [announcements]);
-
   // Handler interaksi tombol (Secret 5x gesture to Login Page)
   const handleAdminLogin = () => {
     setActivePage('login');
@@ -269,10 +246,7 @@ export const PublicPortalPage: React.FC = () => {
         {/* 7. Galeri / Dokumentasi Kegiatan Lalu (Latar: Putih) */}
         <GallerySection photos={galleryPhotos} />
 
-        {/* 9. Pengumuman Publik (Latar: Putih) */}
-        <AnnouncementsSection announcements={publicAnnouncements} />
-
-        {/* 10. Kontak & Kotak Ide Terpadu (Latar: Biru Muda #EFF6FF) */}
+        {/* 8. Kontak & Kotak Ide Terpadu (Latar: Biru Muda #EFF6FF) */}
         <CtaSection organization={organizationData} />
 
         {/* 11. Kata Anggota / Testimoni: Cerita Nyata dari Kami (Latar: Putih) */}

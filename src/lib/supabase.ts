@@ -108,3 +108,27 @@ export const readLocalImageAsDataUrl = (file: File): Promise<string> => {
     reader.readAsDataURL(file);
   });
 };
+
+/**
+ * Compress image aggressively for cloud storage.
+ * Target: < 200KB (suitable for Supabase text column).
+ * Used when uploading images that need to sync across devices.
+ */
+export const compressImageForCloud = async (dataUrl: string): Promise<string> => {
+  if (!dataUrl.startsWith('data:image/')) return dataUrl;
+
+  // Try progressively lower quality until size is acceptable
+  const TARGET_SIZE = 200 * 1024; // 200KB in bytes
+  const qualities = [0.65, 0.5, 0.35, 0.2];
+  const maxDim = 800;
+
+  for (const q of qualities) {
+    const compressed = await compressImage(dataUrl, maxDim, maxDim, q);
+    // Estimate byte size: base64 is ~4/3 of binary size
+    const byteSize = (compressed.length * 3) / 4;
+    if (byteSize <= TARGET_SIZE) return compressed;
+  }
+
+  // Last resort: very small thumbnail
+  return compressImage(dataUrl, 400, 400, 0.15);
+};

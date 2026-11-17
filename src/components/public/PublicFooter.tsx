@@ -134,15 +134,6 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
               </li>
               <li>
                 <a
-                  href="#pengumuman"
-                  onClick={(e) => scrollToSection(e, 'pengumuman')}
-                  className="hover:text-white transition-colors"
-                >
-                  Pengumuman Resmi
-                </a>
-              </li>
-              <li>
-                <a
                   href="#kontak"
                   onClick={(e) => scrollToSection(e, 'kontak')}
                   className="hover:text-white transition-colors"

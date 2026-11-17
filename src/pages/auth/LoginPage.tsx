@@ -8,152 +8,57 @@ import {
   ArrowLeft,
   Sun,
   Moon,
-  Sparkles,
   AlertCircle,
+  CloudOff,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { UserRole } from '../../types';
 
 interface LoginPageProps {
   onBackToPublic: () => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
-  const {
-    members,
-    setCurrentUser,
-    setCurrentRole,
-    setActivePage,
-    showToast,
-    theme,
-    toggleTheme,
-    orgProfile,
-  } = useApp();
+  const { login, showToast, theme, toggleTheme, orgProfile, cloudConnected } = useApp();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState<UserRole>('ketua');
   const [errorAlert, setErrorAlert] = useState<string | null>(null);
 
-  // Quick Account Presets for seamless testing
-  const demoAccounts: {
-    role: UserRole;
-    name: string;
-    identifier: string;
-    label: string;
-    badgeColor: string;
-  }[] = [
-    {
-      role: 'ketua',
-      name: members.find((m) => m.role === 'ketua')?.fullName || 'Zevin',
-      identifier: members.find((m) => m.role === 'ketua')?.nisn || '0071234501',
-      label: 'Ketua Umum',
-      badgeColor: 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544]',
-    },
-    {
-      role: 'sekretaris',
-      name: members.find((m) => m.role === 'sekretaris')?.fullName || 'Anisa Rahmawati',
-      identifier: members.find((m) => m.role === 'sekretaris')?.nisn || '0071234502',
-      label: 'Sekretaris',
-      badgeColor: 'bg-[#E4EAF2] text-[#1F3A5F] border-[#1F3A5F]/20',
-    },
-    {
-      role: 'bendahara',
-      name: members.find((m) => m.role === 'bendahara')?.fullName || 'Rizky Alamsyah',
-      identifier: members.find((m) => m.role === 'bendahara')?.nisn || '0071234503',
-      label: 'Bendahara',
-      badgeColor: 'bg-[#E4EAF2] text-[#1F3A5F] border-[#1F3A5F]/20',
-    },
-    {
-      role: 'pembina',
-      name: members.find((m) => m.role === 'pembina')?.fullName || orgProfile.pembinaName || 'Drs. H. Bambang Sudiro',
-      identifier: members.find((m) => m.role === 'pembina')?.email || 'pembina@smk.test',
-      label: 'Pembina Guru',
-      badgeColor: 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544]',
-    },
-    {
-      role: 'admin',
-      name: members.find((m) => m.role === 'admin')?.fullName || 'Admin IT Sekolah',
-      identifier: members.find((m) => m.role === 'admin')?.email || 'admin@smk.test',
-      label: 'Super Admin',
-      badgeColor: 'bg-[#1F3A5F] text-[#FAF6EE] border-[#162B46]',
-    },
-  ];
-
-  const handleSelectPreset = (preset: typeof demoAccounts[0]) => {
-    setSelectedPreset(preset.role);
-    setUsername(preset.identifier);
-    setPassword('osis2025');
-    setErrorAlert(null);
-    showToast(`Akun ${preset.label} (${preset.name}) terpilih.`, 'info');
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorAlert(null);
 
-    const cleanUser = username.trim();
-    const cleanPass = password.trim();
-
-    if (!cleanUser) {
+    if (!username.trim()) {
       setErrorAlert('Harap masukkan NISN atau email akun pengurus.');
       showToast('Harap masukkan NISN atau email.', 'error');
       return;
     }
 
-    if (!cleanPass) {
+    if (!password.trim()) {
       setErrorAlert('Harap masukkan kata sandi.');
       showToast('Harap masukkan kata sandi.', 'error');
       return;
     }
 
-    // Validasi Kata Sandi — tidak menampilkan password di pesan error
-    if (cleanPass !== 'osis2025') {
-      setErrorAlert('Kata sandi salah. Periksa kembali kata sandi Anda.');
-      showToast('Kata sandi tidak sesuai.', 'error');
-      return;
-    }
-
     setIsLoading(true);
-
-    setTimeout(() => {
-      // Cari anggota berdasarkan NISN atau email di database
-      const matched = members.find(
-        (m) =>
-          m.nisn.toLowerCase() === cleanUser.toLowerCase() ||
-          m.email.toLowerCase() === cleanUser.toLowerCase()
-      );
-
-      // Jika tidak ditemukan di database → tolak login
-      if (!matched) {
-        setIsLoading(false);
-        setErrorAlert(
-          `Akun "${cleanUser}" tidak terdaftar dalam database pengurus OSIS. Silakan periksa kembali NISN atau email Anda.`
-        );
-        showToast('Akun tidak ditemukan!', 'error');
+    try {
+      const result = await login(username, password, rememberMe);
+      if (!result.success) {
+        setErrorAlert(result.message);
+        showToast('Gagal masuk. Periksa kembali data Anda.', 'error');
         return;
       }
-
-      // Cek apakah akun aktif
-      if (!matched.isActive || matched.status === 'alumni') {
-        setIsLoading(false);
-        setErrorAlert('Akun ini sudah tidak aktif (demisioner/alumni). Hubungi admin OSIS.');
-        showToast('Akun tidak aktif.', 'error');
-        return;
-      }
-
-      setCurrentUser(matched);
-      setCurrentRole(matched.role);
+      showToast(result.message, 'success');
+    } catch (err) {
+      console.error(err);
+      setErrorAlert('Terjadi kendala saat memverifikasi akun. Coba lagi.');
+      showToast('Gagal memverifikasi akun.', 'error');
+    } finally {
       setIsLoading(false);
-      showToast(
-        `Berhasil masuk! Selamat datang, ${matched.fullName} (${matched.role.replace('_', ' ').toUpperCase()}).`,
-        'success'
-      );
-      setActivePage('dashboard');
-    }, 400);
+    }
   };
 
   return (
@@ -221,6 +126,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-4 pt-5">
+            {!cloudConnected && (
+              <div className="p-3.5 rounded-[12px] bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 flex items-start gap-2.5 text-amber-700 dark:text-amber-300 text-[13px]">
+                <CloudOff className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-semibold leading-relaxed">
+                  Koneksi cloud belum aktif. Login memakai data yang tersimpan di perangkat ini.
+                </span>
+              </div>
+            )}
             {/* Error Alert Box */}
             {errorAlert && (
               <div className="p-3.5 rounded-[12px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 flex items-start gap-2.5 text-red-700 dark:text-red-300 text-[13px] animate-fadeIn">

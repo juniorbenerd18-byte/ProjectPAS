@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activePage, setActivePage, orgProfile, aspirations, recruitments, showToast, currentRole } = useApp();
+  const { activePage, setActivePage, orgProfile, aspirations, recruitments, currentRole, logout } = useApp();
 
   const pendingAspirationsCount = aspirations ? aspirations.filter((a) => a.status === 'diterima' || a.status === 'diproses').length : 0;
   const pendingRecruitmentsCount = recruitments ? recruitments.filter((r) => r.status === 'menunggu' || r.status === 'lolos_berkas').length : 0;
@@ -211,8 +211,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
           <button
             onClick={() => {
-              setActivePage('portal-publik');
-              showToast('Anda telah keluar dari sesi admin SIMO.', 'info');
+              logout();
+              onClose();
             }}
             className="w-full min-h-[44px] flex items-center gap-3.5 px-4 py-2.5 rounded-[12px] text-[14px] font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors cursor-pointer"
           >
