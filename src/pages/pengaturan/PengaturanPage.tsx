@@ -56,12 +56,37 @@ export const PengaturanPage: React.FC = () => {
     deleteGalleryPhoto,
     resetGalleryPhotos,
     currentRole,
+    setActivePage,
     showToast,
   } = useApp();
 
   const canResetData = currentRole === 'admin' || currentRole === 'pembina';
+  const canAccessSettings = currentRole === 'admin' || currentRole === 'ketua' || currentRole === 'sekretaris' || currentRole === 'pembina';
 
-  const [activeTab, setActiveTab] = useState<'profil' | 'portal' | 'tampilan' | 'data'>('profil');
+  // Guard: redirect ke dashboard jika role tidak diizinkan
+  if (!canAccessSettings) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-5 text-center p-6">
+        <div className="w-16 h-16 rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 flex items-center justify-center">
+          <Lock className="w-8 h-8 text-[#1F3A5F] dark:text-[#FAF6EE]" />
+        </div>
+        <div>
+          <h2 className="text-xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] mb-2">Akses Dibatasi</h2>
+          <p className="text-[15px] text-[#5A6472] dark:text-[#9AA8B8] max-w-sm">
+            Halaman pengaturan hanya dapat diakses oleh <strong>Admin, Ketua OSIS, Sekretaris,</strong> dan <strong>Pembina OSIS</strong>.
+          </p>
+        </div>
+        <button
+          onClick={() => setActivePage('dashboard')}
+          className="simo-btn-primary min-h-[44px] px-6 rounded-[12px] text-[14px] font-bold cursor-pointer"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
+    );
+  }
+
+  const [activeTab, setActiveTab] = useState<'profil' | 'portal' | 'data'>('profil');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   // Data Ketua OSIS aktif (otomatis tersinkronisasi dari data keanggotaan)
@@ -309,17 +334,6 @@ export const PengaturanPage: React.FC = () => {
         >
           <ImageIcon className="w-4 h-4" />
           <span>Foto &amp; Konten Portal</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('tampilan')}
-          className={`min-h-[40px] flex items-center gap-2 px-4 py-2 rounded-[10px] whitespace-nowrap transition-all cursor-pointer ${
-            activeTab === 'tampilan'
-              ? 'bg-[#1F3A5F] text-[#FAF6EE]'
-              : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
-          }`}
-        >
-          <Palette className="w-4 h-4" />
-          <span>Preferensi Tampilan &amp; Mode</span>
         </button>
         <button
           onClick={() => setActiveTab('data')}
@@ -829,110 +843,6 @@ export const PengaturanPage: React.FC = () => {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ======================================================== */}
-      {/* TAB 3: PREFERENSI TAMPILAN & MODE SISTEM                */}
-      {/* ======================================================== */}
-      {activeTab === 'tampilan' && (
-        <div className="space-y-6">
-          {/* Theme Selector */}
-          <div className="simo-card p-6 space-y-5">
-            <div>
-              <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
-                <Palette className="w-5 h-5 text-[#1F3A5F] dark:text-[#F2B544]" />
-                <span>Mode Tampilan Aplikasi (Theme Appearance)</span>
-              </h3>
-              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
-                Pilih antara mode terang yang hangat atau mode gelap bernuansa biru tua
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Light Mode Card */}
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                className={`p-5 rounded-[16px] border text-left transition-all cursor-pointer relative ${
-                  theme === 'light'
-                    ? 'border-[#1F3A5F] bg-[#E4EAF2]/50 ring-2 ring-[#1F3A5F]'
-                    : 'border-[#E6DFD0] dark:border-[#283D56] hover:bg-[#FAF6EE] bg-[#FFFDF8] dark:bg-[#17293E]'
-                }`}
-              >
-                {theme === 'light' && (
-                  <span className="absolute top-4 right-4 text-[#1F3A5F]">
-                    <CheckCircle2 className="w-5 h-5 fill-[#1F3A5F] text-white" />
-                  </span>
-                )}
-                <div className="w-10 h-10 rounded-[12px] bg-[#FAF6EE] text-[#1F3A5F] flex items-center justify-center mb-3 border border-[#E6DFD0]">
-                  <Sun className="w-5 h-5 text-[#F2B544]" />
-                </div>
-                <h4 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mode Terang (Light Mode)</h4>
-                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
-                  Tampilan krem hangat (#FAF6EE), kontras tinggi, sangat cocok untuk pencetakan laporan dan penggunaan siang hari.
-                </p>
-              </button>
-
-              {/* Dark Mode Card */}
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                className={`p-5 rounded-[16px] border text-left transition-all cursor-pointer relative ${
-                  theme === 'dark'
-                    ? 'border-[#F2B544] bg-[#1F3A5F]/40 ring-2 ring-[#F2B544]'
-                    : 'border-[#E6DFD0] dark:border-[#283D56] hover:bg-[#FAF6EE] bg-[#FFFDF8] dark:bg-[#17293E]'
-                }`}
-              >
-                {theme === 'dark' && (
-                  <span className="absolute top-4 right-4 text-[#F2B544]">
-                    <CheckCircle2 className="w-5 h-5 fill-[#F2B544] text-[#1F3A5F]" />
-                  </span>
-                )}
-                <div className="w-10 h-10 rounded-[12px] bg-[#0E1B2C] text-[#FAF6EE] flex items-center justify-center mb-3 border border-[#283D56]">
-                  <Moon className="w-5 h-5 text-[#F2B544]" />
-                </div>
-                <h4 className="text-[16px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mode Gelap (Dark Mode)</h4>
-                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 leading-relaxed">
-                  Tampilan bernuansa biru tua sangat gelap (#0E1B2C), mengurangi silau mata saat presentasi UKK di proyektor.
-                </p>
-              </button>
-            </div>
-          </div>
-
-          {/* Cloudflare Pages Deployment Guide */}
-          <div className="simo-card p-6 space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-[10px] bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE] flex items-center justify-center">
-                <Cloud className="w-4 h-4" />
-              </div>
-              <div>
-                <h3 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Panduan Deployment ke Cloudflare Pages</h3>
-                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Hosting cloud performa tinggi dan aman untuk sistem organisasi</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-[14px]">
-              <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56]">
-                <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">1. Build Command</p>
-                <code className="text-[13px] font-mono bg-[#FFFDF8] dark:bg-[#17293E] px-2.5 py-1.5 rounded-[8px] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#F2B544] block mt-1.5 font-bold">
-                  npm run build
-                </code>
-              </div>
-              <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56]">
-                <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">2. Output Directory</p>
-                <code className="text-[13px] font-mono bg-[#FFFDF8] dark:bg-[#17293E] px-2.5 py-1.5 rounded-[8px] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#F2B544] block mt-1.5 font-bold">
-                  dist
-                </code>
-              </div>
-              <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56]">
-                <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">3. Node Version</p>
-                <code className="text-[13px] font-mono bg-[#FFFDF8] dark:bg-[#17293E] px-2.5 py-1.5 rounded-[8px] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#F2B544] block mt-1.5 font-bold">
-                  NODE_VERSION: 20+
-                </code>
-              </div>
             </div>
           </div>
         </div>

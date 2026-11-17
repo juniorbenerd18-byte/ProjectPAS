@@ -20,11 +20,14 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activePage, setActivePage, orgProfile, workPrograms, aspirations, recruitments, showToast } = useApp();
+  const { activePage, setActivePage, orgProfile, workPrograms, aspirations, recruitments, showToast, currentRole } = useApp();
 
   const pendingProkerCount = workPrograms.filter((p) => p.status === 'diajukan').length;
   const pendingAspirationsCount = aspirations ? aspirations.filter((a) => a.status === 'diterima' || a.status === 'diproses').length : 0;
   const pendingRecruitmentsCount = recruitments ? recruitments.filter((r) => r.status === 'menunggu' || r.status === 'lolos_berkas').length : 0;
+
+  // Role yang boleh akses Pengaturan
+  const canAccessPengaturan = currentRole === 'admin' || currentRole === 'ketua' || currentRole === 'sekretaris' || currentRole === 'pembina';
 
   const handleNavClick = (pageId: string) => {
     setActivePage(pageId);
@@ -188,6 +191,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
         {/* Bottom: Pengaturan + Info */}
         <div className="shrink-0 border-t border-[#E6DFD0] dark:border-[#283D56] p-3.5 space-y-1.5">
+          {canAccessPengaturan && (
           <button
             onClick={() => handleNavClick('pengaturan')}
             className={`w-full min-h-[48px] flex items-center gap-3.5 px-4 py-3 rounded-[14px] text-[15px] font-bold transition-colors cursor-pointer ${
@@ -204,6 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
             />
             <span className="whitespace-nowrap select-none">Pengaturan</span>
           </button>
+          )}
 
           <button
             onClick={() => {

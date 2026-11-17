@@ -34,7 +34,8 @@ export const PublicPortalPage: React.FC = () => {
       ? ` (${ketuaMember.grade ? `${ketuaMember.grade} ` : ''}${ketuaMember.classRoom})`
       : '';
     const ketuaName = ketuaMember ? `${ketuaMember.fullName}${ketuaClass}` : (orgProfile.ketuaName || 'Zevin');
-    const ketuaPhoto = orgProfile.ketuaPhotoUrl || ketuaMember?.avatarUrl || '/ketua-osis.png';
+    // Prioritas: foto dari data keanggotaan (avatarUrl) → foto yang di-upload di pengaturan → fallback
+    const ketuaPhoto = ketuaMember?.avatarUrl || orgProfile.ketuaPhotoUrl || '/ketua-osis.png';
 
     return {
       ...portalData.organization,
