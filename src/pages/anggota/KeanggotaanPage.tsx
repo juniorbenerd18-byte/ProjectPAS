@@ -355,44 +355,50 @@ export const KeanggotaanPage: React.FC = () => {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] gap-1 self-start sm:self-auto shrink-0 flex-wrap">
+        <div className="grid grid-cols-3 gap-1 p-1 sm:flex sm:gap-1.5 sm:p-1.5 w-full sm:w-auto bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[14px] shrink-0">
           <button
             onClick={() => setActiveTab('direktori')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[38px] sm:min-h-[40px] px-1.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'direktori'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>Direktori ({members.length})</span>
+            <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">Direktori ({members.length})</span>
           </button>
           <button
             onClick={() => setActiveTab('pendaftar')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[38px] sm:min-h-[40px] px-1.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'pendaftar'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <UserPlus className="w-4 h-4" />
-            <span>Pendaftar Oprec ({recruitments.length})</span>
+            <UserPlus className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Pendaftar Oprec</span>
+              <span className="sm:hidden">Pendaftar</span> ({recruitments.length})
+            </span>
             {pendingRecruitmentsCount > 0 && (
-              <span className="px-2 py-0.5 text-xs rounded-full bg-[#F2B544] text-[#1F3A5F] font-extrabold">
+              <span className="px-1.5 py-0.2 text-[10px] sm:text-xs rounded-full bg-[#F2B544] text-[#1F3A5F] font-extrabold shrink-0">
                 {pendingRecruitmentsCount}
               </span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('struktur')}
-            className={`min-h-[40px] px-3.5 py-1.5 text-[14px] font-bold rounded-[10px] transition-all flex items-center gap-2 cursor-pointer ${
+            className={`min-h-[38px] sm:min-h-[40px] px-1.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
               activeTab === 'struktur'
                 ? 'bg-[#1F3A5F] text-[#FAF6EE]'
                 : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
             }`}
           >
-            <Layers className="w-4 h-4" />
-            <span>Bagan Struktur</span>
+            <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Bagan Struktur</span>
+              <span className="sm:hidden">Struktur</span>
+            </span>
           </button>
         </div>
       </div>
