@@ -324,11 +324,50 @@ h1, h2, h3, h4, h5, h6 {
   border-color: var(--simo-blue-primary) !important;
 }
 
-/* Print utilities */
+/* Print utilities - Real Official Document Print Styles */
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 15mm;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #printable-disposisi,
+  #printable-disposisi * {
+    visibility: visible !important;
+  }
+
+  #printable-disposisi {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    z-index: 9999999 !important;
+  }
+
   .no-print {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
