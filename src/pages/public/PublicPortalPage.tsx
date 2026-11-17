@@ -57,8 +57,8 @@ export const PublicPortalPage: React.FC = () => {
     return {
       ...portalData.organization,
       // Override with admin-editable fields from orgProfile (stored in localStorage)
-      appName: orgProfile.appName || 'SIMO',
-      shortName: orgProfile.appName || 'SIMO',
+      appName: orgProfile.appName || 'SMO',
+      shortName: orgProfile.appName || 'SMO',
       schoolName: orgProfile.schoolName || portalData.organization.schoolName,
       name: orgProfile.name || portalData.organization.name,
       academicYear: orgProfile.academicYear || portalData.organization.academicYear,
@@ -133,7 +133,7 @@ export const PublicPortalPage: React.FC = () => {
   const memberTestimonials: TestimonialItem[] = useMemo(() => {
     const quotesByRole: Record<string, string> = {
       ketua:
-        'Melalui SIMO, seluruh alur kerja kepengurusan OSIS mulai dari perencanaan proker, absensi presensi wajah, hingga keterbukaan anggaran dapat diakses secara transparan dan akuntabel oleh seluruh warga sekolah.',
+        'Melalui SMO, seluruh alur kerja kepengurusan OSIS mulai dari perencanaan proker, absensi presensi wajah, hingga keterbukaan anggaran dapat diakses secara transparan dan akuntabel oleh seluruh warga sekolah.',
       sekretaris:
         'Sistem pengarsipan surat digital dan notulensi rapat di SIMO membuat tata kelola administrasi organisasi jauh lebih tertib, cepat, dan tidak ada lagi dokumen penting yang tercecer.',
       bendahara:
