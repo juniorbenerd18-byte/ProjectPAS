@@ -270,7 +270,12 @@ function memberPayload(member: Member): Record<string, any> {
 
 export async function addMemberToCloud(member: Member): Promise<boolean> {
   knownMemberIds.add(stringToUuid(member.id));
-  return upsertRows('members', [memberPayload(member)], 'Gagal menyimpan anggota');
+  let avatar = member.avatarUrl;
+  if (avatar?.startsWith('data:image/')) {
+    const uploaded = await uploadImageToStorage(avatar, `avatars/${stringToUuid(member.id)}.png`);
+    avatar = uploaded || (await compressImageForCloud(avatar));
+  }
+  return upsertRows('members', [{ ...memberPayload(member), avatar_url: avatar }], 'Gagal menyimpan anggota');
 }
 
 export async function updateMemberInCloud(
@@ -287,7 +292,14 @@ export async function updateMemberInCloud(
   if (partial.major !== undefined) payload.major = partial.major;
   if (partial.position !== undefined) payload.position = partial.position;
   if (partial.phone !== undefined) payload.phone = partial.phone;
-  if (partial.avatarUrl !== undefined) payload.avatar_url = partial.avatarUrl;
+  if (partial.avatarUrl !== undefined) {
+    let avatar = partial.avatarUrl;
+    if (avatar?.startsWith('data:image/')) {
+      const uploaded = await uploadImageToStorage(avatar, `avatars/${stringToUuid(id)}.png`);
+      avatar = uploaded || (await compressImageForCloud(avatar));
+    }
+    payload.avatar_url = avatar;
+  }
   if (partial.status !== undefined) payload.status = partial.status;
   if (partial.isActive !== undefined) payload.is_active = partial.isActive;
   if (partial.generation !== undefined) payload.generation = partial.generation;
@@ -526,26 +538,39 @@ function orgProfilePayload(profile: OrgProfile): Record<string, any> {
 export async function saveOrgProfileToCloud(profile: OrgProfile): Promise<boolean> {
   if (!supabase) return false;
   try {
+    // Pastikan kita gunakan ID baris yang ada di database agar tidak salah ID
+    if (!orgProfileRowId) {
+      const { data: existing } = await supabase
+        .from('org_profiles')
+        .select('id')
+        .order('created_at', { ascending: true })
+        .limit(1);
+      if (existing && existing.length > 0) {
+        orgProfileRowId = existing[0].id;
+      }
+    }
+
     const payload = orgProfilePayload(profile);
 
-    // Compress base64 images before storing to Supabase to avoid payload size issues.
-    // If image is already a URL (http/https), leave it as-is.
-    const compressIfBase64 = async (url: string | null | undefined) => {
+    // Upload base64 ke Supabase Storage (smo-images) agar menjadi CDN URL permanen & ringan
+    const uploadIfBase64 = async (url: string | null | undefined, path: string) => {
       if (!url || !url.startsWith('data:image/')) return url ?? null;
+      const uploaded = await uploadImageToStorage(url, path);
+      if (uploaded) return uploaded;
       return compressImageForCloud(url);
     };
 
     if (payload.logo_url?.startsWith('data:')) {
-      payload.logo_url = await compressIfBase64(payload.logo_url);
+      payload.logo_url = await uploadIfBase64(payload.logo_url, `logos/logo-${Date.now()}.png`);
     }
     if (payload.hero_photo_url?.startsWith('data:')) {
-      payload.hero_photo_url = await compressIfBase64(payload.hero_photo_url);
+      payload.hero_photo_url = await uploadIfBase64(payload.hero_photo_url, `profile/hero-${Date.now()}.png`);
     }
     if (payload.ketua_photo_url?.startsWith('data:')) {
-      payload.ketua_photo_url = await compressIfBase64(payload.ketua_photo_url);
+      payload.ketua_photo_url = await uploadIfBase64(payload.ketua_photo_url, `profile/ketua-${Date.now()}.png`);
     }
     if (payload.vision_photo_url?.startsWith('data:')) {
-      payload.vision_photo_url = await compressIfBase64(payload.vision_photo_url);
+      payload.vision_photo_url = await uploadIfBase64(payload.vision_photo_url, `profile/vision-${Date.now()}.png`);
     }
 
     const { data, error } = await supabase
@@ -703,8 +728,26 @@ function eventPayload(e: EventItem): Record<string, any> {
   };
 }
 
+async function processDocumentationPhotos(photos: string[] | undefined, eventId: string): Promise<string[]> {
+  if (!photos || photos.length === 0) return [];
+  return Promise.all(
+    photos.map(async (photo, idx) => {
+      if (typeof photo === 'string' && photo.startsWith('data:image/')) {
+        const uploaded = await uploadImageToStorage(
+          photo,
+          `events/${stringToUuid(eventId)}/doc-${Date.now()}-${idx}.png`
+        );
+        return uploaded || (await compressImageForCloud(photo));
+      }
+      return photo;
+    })
+  );
+}
+
 export async function addEventToCloud(e: EventItem): Promise<boolean> {
-  return upsertRows('events', [eventPayload(e)], 'Gagal menyimpan kegiatan');
+  const photos = await processDocumentationPhotos(e.documentationPhotos, e.id);
+  const payload = { ...eventPayload(e), documentation_photos: photos };
+  return upsertRows('events', [payload], 'Gagal menyimpan kegiatan');
 }
 
 export async function updateEventInCloud(
@@ -722,8 +765,9 @@ export async function updateEventInCloud(
   if (partial.endDateTime !== undefined) payload.end_datetime = partial.endDateTime || null;
   if (partial.location !== undefined) payload.location = partial.location;
   if (partial.status !== undefined) payload.status = partial.status;
-  if (partial.documentationPhotos !== undefined)
-    payload.documentation_photos = partial.documentationPhotos;
+  if (partial.documentationPhotos !== undefined) {
+    payload.documentation_photos = await processDocumentationPhotos(partial.documentationPhotos, id);
+  }
   if (partial.qrToken !== undefined) payload.qr_token = partial.qrToken || null;
   if (partial.workProgramId !== undefined)
     payload.work_program_id = fkWorkProgram(partial.workProgramId);
@@ -1337,22 +1381,43 @@ export async function fetchGalleryPhotosFromCloud(): Promise<GalleryItem[] | nul
   });
 }
 
+export function parseToIsoDate(dateStr: string | undefined): string {
+  if (!dateStr) return new Date().toISOString().split('T')[0];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  const months: Record<string, string> = {
+    januari: '01', februari: '02', maret: '03', april: '04', mei: '05', juni: '06',
+    juli: '07', agustus: '08', september: '09', oktober: '10', november: '11', desember: '12'
+  };
+  const parts = dateStr.toLowerCase().split(/\s+/);
+  if (parts.length === 2) {
+    const m = months[parts[0]];
+    const y = parts[1];
+    if (m && /^\d{4}$/.test(y)) return `${y}-${m}-01`;
+  }
+  const parsed = Date.parse(dateStr);
+  if (!isNaN(parsed)) return new Date(parsed).toISOString().split('T')[0];
+  return new Date().toISOString().split('T')[0];
+}
+
 function galleryPayload(g: GalleryItem): Record<string, any> {
   return {
     id: stringToUuid(g.id),
     title: g.title || '',
     caption: g.caption || '',
     image_url: g.imageUrl,
-    date: g.date || new Date().toISOString().split('T')[0],
+    date: parseToIsoDate(g.date),
     category: g.category || null,
   };
 }
 
 export async function addGalleryPhotoToCloud(g: GalleryItem): Promise<boolean> {
-  // Compress base64 images before storing to cloud
   let imageUrl = g.imageUrl;
   if (imageUrl?.startsWith('data:image/')) {
-    imageUrl = await compressImageForCloud(imageUrl);
+    const uploaded = await uploadImageToStorage(
+      imageUrl,
+      `gallery/${Date.now()}-${stringToUuid(g.id).slice(0, 8)}.png`
+    );
+    imageUrl = uploaded || (await compressImageForCloud(imageUrl));
   }
   return upsertRows('gallery_photos', [{ ...galleryPayload(g), image_url: imageUrl }], 'Gagal menyimpan foto galeri');
 }
@@ -1364,8 +1429,18 @@ export async function updateGalleryPhotoInCloud(
   const payload: Record<string, any> = {};
   if (partial.title !== undefined) payload.title = partial.title;
   if (partial.caption !== undefined) payload.caption = partial.caption;
-  if (partial.imageUrl !== undefined) payload.image_url = partial.imageUrl;
-  if (partial.date !== undefined) payload.date = partial.date;
+  if (partial.imageUrl !== undefined) {
+    let img = partial.imageUrl;
+    if (img?.startsWith('data:image/')) {
+      const uploaded = await uploadImageToStorage(
+        img,
+        `gallery/${Date.now()}-${stringToUuid(id).slice(0, 8)}.png`
+      );
+      img = uploaded || (await compressImageForCloud(img));
+    }
+    payload.image_url = img;
+  }
+  if (partial.date !== undefined) payload.date = parseToIsoDate(partial.date);
   if (partial.category !== undefined) payload.category = partial.category || null;
   return updateRow('gallery_photos', id, payload, 'Gagal memperbarui foto galeri');
 }
@@ -1746,7 +1821,11 @@ export async function uploadImageToStorage(
 
     const { error } = await supabase.storage
       .from(STORAGE_BUCKET)
-      .upload(path, file, { upsert: true, cacheControl: '3600' });
+      .upload(path, file, {
+        upsert: true,
+        cacheControl: '3600',
+        contentType: file.type || 'image/jpeg',
+      });
 
     if (error) {
       notifyError('Gagal mengunggah gambar ke cloud', error);

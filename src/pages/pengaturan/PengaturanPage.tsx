@@ -475,6 +475,7 @@ export const PengaturanPage: React.FC = () => {
                       onChange={(url) => setProfileForm({ ...profileForm, logoUrl: url })}
                       helperText=""
                       aspectRatio="square"
+                      storageFolder="logos"
                     />
                   </div>
                   <div className="flex-1 w-full space-y-2">
@@ -682,6 +683,7 @@ export const PengaturanPage: React.FC = () => {
                   onChange={(url) => setHeroPhotoUrl(url)}
                   helperText="Pilih foto kegiatan siswa / organisasi bernuansa lanskap (rasio 16:9 atau 4:3) resolusi jernih."
                   aspectRatio="video"
+                  storageFolder="portal"
                 />
 
                 <div>
@@ -1109,6 +1111,7 @@ export const PengaturanPage: React.FC = () => {
               onChange={(url) => setPhotoForm({ ...photoForm, imageUrl: url })}
               helperText="Pilih foto dokumentasi dari komputer (JPG/PNG/WEBP). Rekomendasi rasio 4:3 atau 16:9."
               aspectRatio="video"
+              storageFolder="gallery"
             />
           </div>
 

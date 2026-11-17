@@ -166,6 +166,7 @@ export const DokumentasiKegiatan: React.FC = () => {
             onChange={(url) => setNewPhotoUrl(url)}
             helperText="Pilih foto dokumentasi format JPG, PNG, atau WebP dari komputer Anda"
             aspectRatio="video"
+            storageFolder="documentation"
           />
 
           <div className="flex justify-end gap-2 pt-2 border-t border-slate-100 dark:border-[#283D56]">

@@ -261,6 +261,7 @@ export const DataAnggota: React.FC = () => {
             onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
             helperText="Pilih foto seragam sekolah atau formal dari komputer Anda"
             aspectRatio="square"
+            storageFolder="avatars"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

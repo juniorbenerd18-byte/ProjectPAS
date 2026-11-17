@@ -910,6 +910,7 @@ export const KeanggotaanPage: React.FC = () => {
             onChange={(url) => setFormData({ ...formData, avatarUrl: url })}
             helperText="Pilih berkas foto seragam dari folder komputer Anda (JPG, PNG, WebP)"
             aspectRatio="square"
+            storageFolder="avatars"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

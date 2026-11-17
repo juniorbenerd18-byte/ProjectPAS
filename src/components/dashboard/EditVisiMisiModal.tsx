@@ -325,6 +325,7 @@ export const EditVisiMisiModal: React.FC<EditVisiMisiModalProps> = ({
                     onChange={(newVal) => setPhotoUrl(newVal)}
                     helperText="Mendukung format JPG, PNG, WebP dari komputer Anda"
                     aspectRatio="video"
+                    storageFolder="visimisi"
                   />
                 </div>
 

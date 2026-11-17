@@ -1091,6 +1091,7 @@ export const KegiatanPresensiPage: React.FC = () => {
             onChange={(url) => setNewPhotoUrl(url)}
             helperText="Format: JPG, PNG, WebP (otomatis dikompres & dioptimasi)"
             aspectRatio="video"
+            storageFolder="events"
           />
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
@@ -1280,6 +1281,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                 : "Bisa langsung upload foto pertama untuk kegiatan ini (dapat ditambah lagi nanti)"
             }
             aspectRatio="video"
+            storageFolder="events"
           />
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">

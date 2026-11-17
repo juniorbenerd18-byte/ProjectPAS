@@ -1,6 +1,7 @@
 ﻿import React, { useRef, useState } from 'react';
 import { Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 import { readLocalImageAsDataUrl } from '../../lib/supabase';
+import { uploadImageToStorage, isCloudConnected } from '../../lib/supabaseService';
 
 interface ImagePickerProps {
   label?: string;
@@ -9,6 +10,7 @@ interface ImagePickerProps {
   helperText?: string;
   aspectRatio?: 'square' | 'video' | 'card';
   className?: string;
+  storageFolder?: string;
 }
 
 export const ImagePicker: React.FC<ImagePickerProps> = ({
@@ -18,6 +20,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
   helperText = 'Format: JPG, PNG, WebP (otomatis dioptimasi)',
   aspectRatio = 'square',
   className = '',
+  storageFolder = 'uploads',
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -30,7 +33,21 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
       setErrorNotice(null);
       try {
         const dataUrl = await readLocalImageAsDataUrl(file);
-        onChange(dataUrl);
+
+        // Upload langsung ke Supabase Storage (smo-images) agar menjadi CDN URL permanen
+        let finalUrl = dataUrl;
+        if (isCloudConnected()) {
+          const cleanName = (file.name || 'image.jpg').replace(/[^a-zA-Z0-9.-]/g, '_');
+          const ext = file.type.split('/')[1] || 'jpg';
+          const fileName = cleanName.endsWith(`.${ext}`) ? cleanName : `${cleanName}.${ext}`;
+          const storagePath = `${storageFolder}/${Date.now()}-${fileName}`;
+          const cloudUrl = await uploadImageToStorage(dataUrl, storagePath);
+          if (cloudUrl) {
+            finalUrl = cloudUrl;
+          }
+        }
+
+        onChange(finalUrl);
       } catch (err) {
         console.error('Failed to read image file:', err);
         setErrorNotice('Gagal membaca gambar. Pastikan format file sesuai.');
@@ -63,8 +80,8 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
           className={`w-full border-2 border-dashed border-[#1F3A5F]/30 dark:border-[#283D56] bg-[#FAF6EE]/50 dark:bg-[#17293E]/50 rounded-xl p-4 flex flex-col items-center justify-center text-center ${aspectClass}`}
         >
           <Loader2 className="w-8 h-8 text-[#1F3A5F] dark:text-[#F2B544] animate-spin mb-2" />
-          <p className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mengoptimasi Gambar...</p>
-          <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">Memproses kompresi otomatis agar ringan</p>
+          <p className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mengunggah & Mengoptimasi Gambar...</p>
+          <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">Menyimpan ke Cloud Storage agar sinkron di semua perangkat</p>
         </div>
       ) : value ? (
         <div className="relative group w-full rounded-xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] bg-slate-100 dark:bg-[#17293E] shadow-xs">
