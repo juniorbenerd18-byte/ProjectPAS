@@ -66,7 +66,7 @@ export const PengaturanPage: React.FC = () => {
 
   // Form states for Foto & Profil Ketua OSIS
   const [ketuaForm, setKetuaForm] = useState({
-    name: orgProfile.ketuaName || 'Agustin Rahmadani',
+    name: orgProfile.ketuaName || 'Zevin',
     photoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
     period: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
     welcomeTitle: orgProfile.ketuaWelcomeTitle || `Menjadi Wadah Inovasi Untuk ${orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa'} Unggul.`,
@@ -643,7 +643,7 @@ export const PengaturanPage: React.FC = () => {
                     <div className="inline-flex items-center justify-center gap-1 text-[#F2B544] mb-0.5">
                       <Sparkles className="w-3 h-3" />
                       <span className="font-extrabold text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] truncate">
-                        {ketuaForm.name || 'Agustin Rahmadani'}
+                        {ketuaForm.name || 'Zevin'}
                       </span>
                     </div>
                     <p className="text-[10px] font-bold tracking-wider text-[#5A6472] dark:text-[#9AA8B8] uppercase truncate">
@@ -686,7 +686,7 @@ export const PengaturanPage: React.FC = () => {
                       type="text"
                       value={ketuaForm.name}
                       onChange={(e) => setKetuaForm({ ...ketuaForm, name: e.target.value })}
-                      placeholder="Agustin Rahmadani"
+                      placeholder="Zevin"
                       className="simo-input min-h-[44px] text-[14px] w-full"
                       required
                     />

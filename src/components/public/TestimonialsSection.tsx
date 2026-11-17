@@ -15,35 +15,51 @@ export interface TestimonialItem {
 const DUMMY_TESTIMONIALS: TestimonialItem[] = [
   {
     id: 't-1',
-    name: 'Bagas Wicaksono',
-    roleOrClass: 'Angkatan 2024 / Divisi TIK',
+    name: 'Zevin',
+    roleOrClass: 'Ketua Umum OSIS • XI RPL 1',
     avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
     content:
-      'Bergabung di SIMO mengajarkan saya bagaimana mengelola alur kerja tim secara profesional, mulai dari perencanaan proker hingga publikasi dokumentasi secara terbuka.',
+      'Melalui SIMO, seluruh alur kerja kepengurusan OSIS mulai dari perencanaan proker, absensi presensi wajah, hingga keterbukaan anggaran dapat diakses secara transparan dan akuntabel oleh seluruh warga sekolah.',
   },
   {
     id: 't-2',
-    name: 'Clara Salsabila',
-    roleOrClass: 'Angkatan 2025 / Divisi Humas',
+    name: 'Anisa Rahmawati',
+    roleOrClass: 'Sekretaris Umum • XI TKJ 2',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
     content:
-      'Transparansi program kerja di organisasi ini membuat seluruh anggota merasa dihargai dan memiliki ruang yang sama untuk berpendapat serta berkontribusi nyata.',
+      'Sistem pengarsipan surat digital dan notulensi rapat di SIMO membuat tata kelola administrasi organisasi jauh lebih tertib, cepat, dan tidak ada lagi dokumen penting yang tercecer.',
   },
   {
     id: 't-3',
-    name: 'Raffi Pratama',
-    roleOrClass: 'Angkatan 2024 / Sekbid Seni',
+    name: 'Rizky Alamsyah',
+    roleOrClass: 'Bendahara Umum • XI AKL 1',
     avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80',
     content:
-      'Penyelenggaraan pentas seni sekolah menjadi jauh lebih rapi karena sistem koordinasi jadwal dan pembagian tugas terdokumentasi dengan sangat jelas.',
+      'Transparansi arus kas dan iuran anggota yang tercatat otomatis memudahkan pertanggungjawaban dana kegiatan. Semua pengurus dan siswa bisa meninjau realisasi anggaran secara terbuka.',
   },
   {
     id: 't-4',
-    name: 'Zahra Amelia',
-    roleOrClass: 'Angkatan 2025 / Sekbid Kewirausahaan',
+    name: 'Dimas Anggoro',
+    roleOrClass: 'Koordinator Sekbid TIK • XI RPL 2',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    content:
+      'Penerapan absensi biometrik scan wajah dan koordinasi divisi berbasis web ini membuktikan bahwa siswa SMK mampu menciptakan inovasi digital yang berdampak nyata.',
+  },
+  {
+    id: 't-5',
+    name: 'Siti Aulia Nur',
+    roleOrClass: 'Anggota Siswa • X DKV 1',
     avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop&q=80',
     content:
-      'Pengalaman menyusun bazar dan laporan pertanggungjawaban di organisasi ini menjadi bekal berharga untuk persiapan masuk dunia kerja kejuruan.',
+      'Sebagai anggota baru, saya merasa sangat dirangkul dan transparan. Jadwal kegiatan dan pembagian peran selalu jelas, memberi ruang yang nyaman untuk belajar kepemimpinan.',
+  },
+  {
+    id: 't-6',
+    name: 'Bima Satria',
+    roleOrClass: 'Koordinator Sekbid Bela Negara • XI TKRO 1',
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
+    content:
+      'Koordinasi gladi upacara dan latihan baris-berbaris jadi lebih disiplin karena kehadiran setiap perwakilan terpantau langsung lewat sistem presensi cerdas SIMO.',
   },
 ];
 

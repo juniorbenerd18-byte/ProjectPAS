@@ -50,7 +50,7 @@ const getDivisionIcon = (code: string) => {
 };
 
 const DEFAULT_DIVISIONS: PortalDivision[] = [
-  { code: 'BPH', name: 'Badan Pengurus Harian', description: 'Kebijakan umum, administrasi, dan koordinasi terpadu.', leaderName: 'Fajar Pratama', color: 'blue' },
+  { code: 'BPH', name: 'Badan Pengurus Harian', description: 'Kebijakan umum, administrasi, dan koordinasi terpadu.', leaderName: 'Zevin', color: 'blue' },
   { code: 'SEKBID-1', name: 'Ketaqwaan & Nilai Moral', description: 'Pembinaan keagamaan dan toleransi sekolah.', leaderName: 'Siti Rahma', color: 'blue' },
   { code: 'SEKBID-2', name: 'Bela Negara & Kedisiplinan', description: 'Kepemimpinan dan kepramukaan siswa.', leaderName: 'Dimas Wicaksono', color: 'blue' },
   { code: 'SEKBID-3', name: 'Kewirausahaan Siswa', description: 'Ekonomi kreatif dan kemandirian vokasi.', leaderName: 'Nadia Safitri', color: 'blue' },

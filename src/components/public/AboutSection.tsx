@@ -14,7 +14,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({
   onLearnMoreClick,
 }) => {
   const ketuaPhoto = organization.ketuaPhotoUrl || '/ketua-osis.png';
-  const ketuaName = organization.ketuaName || 'Agustin Rahmadani';
+  const ketuaName = organization.ketuaName || 'Zevin';
   const ketuaPeriod = organization.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026';
   const welcomeTitle = organization.ketuaWelcomeTitle;
   const handleScrollToBoard = () => {

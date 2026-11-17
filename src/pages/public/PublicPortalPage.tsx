@@ -11,7 +11,7 @@ import { EventsSection } from '../../components/public/EventsSection';
 import { GallerySection } from '../../components/public/GallerySection';
 import { BoardSection, BoardMember } from '../../components/public/BoardSection';
 import { AnnouncementsSection, AnnouncementItem } from '../../components/public/AnnouncementsSection';
-import { TestimonialsSection } from '../../components/public/TestimonialsSection';
+import { TestimonialsSection, TestimonialItem } from '../../components/public/TestimonialsSection';
 import { CtaSection } from '../../components/public/CtaSection';
 import { PublicFooter } from '../../components/public/PublicFooter';
 import { PublicEventCardData } from '../../components/public/PublicEventCard';
@@ -28,43 +28,49 @@ export const PublicPortalPage: React.FC = () => {
   } = useApp();
 
   // 1. Data Organisasi Terpadu — merge admin-editable orgProfile fields over static portalData
-  const organizationData = useMemo(() => ({
-    ...portalData.organization,
-    // Override with admin-editable fields from orgProfile (stored in localStorage)
-    appName: orgProfile.appName || 'SIMO',
-    shortName: orgProfile.appName || 'SIMO',
-    schoolName: orgProfile.schoolName || portalData.organization.schoolName,
-    name: orgProfile.name || portalData.organization.name,
-    academicYear: orgProfile.academicYear || portalData.organization.academicYear,
-    logoUrl: orgProfile.logoUrl || portalData.organization.logoUrl,
-    vision: orgProfile.vision || portalData.organization.vision,
-    missions: orgProfile.mission?.length
-      ? orgProfile.mission
-      : portalData.organization.missions,
-    visionPhotoUrl:
-      orgProfile.visionPhotoUrl ||
-      portalData.organization.visionPhotoUrl ||
-      undefined,
-    ketuaName: orgProfile.ketuaName || 'Agustin Rahmadani',
-    ketuaPhotoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
-    ketuaPeriod: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
-    ketuaWelcomeTitle: orgProfile.ketuaWelcomeTitle,
-    ketuaSpeech: orgProfile.ketuaSpeech,
-    isRegistrationOpen:
-      orgProfile.isRegistrationOpen !== undefined
-        ? orgProfile.isRegistrationOpen
-        : true,
-    registrationGFormUrl:
-      orgProfile.registrationGFormUrl ||
-      'https://forms.gle/contohFormPendaftaranOSIS',
-    registrationOpenDate:
-      orgProfile.registrationOpenDate || '01 November 2026',
-    registrationCloseDate:
-      orgProfile.registrationCloseDate || '20 November 2026',
-    registrationNotice:
-      orgProfile.registrationNotice ||
-      'Pendaftaran akan dibuka kembali pada periode berikutnya.',
-  }), [orgProfile]);
+  const organizationData = useMemo(() => {
+    const ketuaMember = members.find((m) => m.role === 'ketua');
+    const ketuaName = ketuaMember?.fullName || orgProfile.ketuaName || 'Zevin';
+    const ketuaPhoto = ketuaMember?.avatarUrl || orgProfile.ketuaPhotoUrl || '/ketua-osis.png';
+
+    return {
+      ...portalData.organization,
+      // Override with admin-editable fields from orgProfile (stored in localStorage)
+      appName: orgProfile.appName || 'SIMO',
+      shortName: orgProfile.appName || 'SIMO',
+      schoolName: orgProfile.schoolName || portalData.organization.schoolName,
+      name: orgProfile.name || portalData.organization.name,
+      academicYear: orgProfile.academicYear || portalData.organization.academicYear,
+      logoUrl: orgProfile.logoUrl || portalData.organization.logoUrl,
+      vision: orgProfile.vision || portalData.organization.vision,
+      missions: orgProfile.mission?.length
+        ? orgProfile.mission
+        : portalData.organization.missions,
+      visionPhotoUrl:
+        orgProfile.visionPhotoUrl ||
+        portalData.organization.visionPhotoUrl ||
+        undefined,
+      ketuaName,
+      ketuaPhotoUrl: ketuaPhoto,
+      ketuaPeriod: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
+      ketuaWelcomeTitle: orgProfile.ketuaWelcomeTitle,
+      ketuaSpeech: orgProfile.ketuaSpeech,
+      isRegistrationOpen:
+        orgProfile.isRegistrationOpen !== undefined
+          ? orgProfile.isRegistrationOpen
+          : true,
+      registrationGFormUrl:
+        orgProfile.registrationGFormUrl ||
+        'https://forms.gle/contohFormPendaftaranOSIS',
+      registrationOpenDate:
+        orgProfile.registrationOpenDate || '01 November 2026',
+      registrationCloseDate:
+        orgProfile.registrationCloseDate || '20 November 2026',
+      registrationNotice:
+        orgProfile.registrationNotice ||
+        'Pendaftaran akan dibuka kembali pada periode berikutnya.',
+    };
+  }, [orgProfile, members]);
 
   // 2. Statistik Agregat untuk Hero Card (Tanpa data pribadi / transaksi)
   const activeMembersCount = useMemo(() => {
@@ -94,6 +100,42 @@ export const PublicPortalPage: React.FC = () => {
         role: sm.role,
         photoUrl: adminMatch?.avatarUrl || sm.photoUrl,
         division: sm.divisionCode,
+      };
+    });
+  }, [members]);
+
+  // 3b. Sinkronisasi Testimoni Nyata dari Anggota Aktif OSIS (KATA ANGGOTA)
+  const memberTestimonials: TestimonialItem[] = useMemo(() => {
+    const quotesByRole: Record<string, string> = {
+      ketua:
+        'Melalui SIMO, seluruh alur kerja kepengurusan OSIS mulai dari perencanaan proker, absensi presensi wajah, hingga keterbukaan anggaran dapat diakses secara transparan dan akuntabel oleh seluruh warga sekolah.',
+      sekretaris:
+        'Sistem pengarsipan surat digital dan notulensi rapat di SIMO membuat tata kelola administrasi organisasi jauh lebih tertib, cepat, dan tidak ada lagi dokumen penting yang tercecer.',
+      bendahara:
+        'Transparansi arus kas dan iuran anggota yang tercatat otomatis memudahkan pertanggungjawaban dana kegiatan. Semua pengurus dan siswa bisa meninjau realisasi anggaran secara terbuka.',
+      koordinator_sekbid:
+        'Penerapan absensi biometrik scan wajah dan koordinasi divisi berbasis web ini membuktikan bahwa siswa SMK mampu menciptakan inovasi digital yang berdampak nyata.',
+      anggota:
+        'Sebagai anggota baru, saya merasa sangat dirangkul dan transparan. Jadwal kegiatan dan pembagian peran selalu jelas, memberi ruang yang nyaman untuk belajar kepemimpinan.',
+    };
+
+    const activeList = members.filter((m) => m.status === 'aktif' || m.isActive !== false);
+
+    return activeList.map((m, idx) => {
+      const defaultQuote =
+        quotesByRole[m.role] ||
+        'Pengalaman berorganisasi di OSIS menjadi wadah luar biasa untuk mengasah keterampilan kerja sama tim, tanggung jawab, dan kedewasaan berorganisasi.';
+
+      const roleOrClass = m.position
+        ? `${m.position}${m.classRoom ? ` • ${m.classRoom}` : ''}`
+        : `${m.grade || ''} ${m.classRoom || ''} • ${m.divisionName || 'OSIS'}`.trim();
+
+      return {
+        id: `t-${m.id || idx}`,
+        name: m.fullName,
+        roleOrClass: roleOrClass || 'Anggota OSIS',
+        avatarUrl: m.avatarUrl,
+        content: defaultQuote,
       };
     });
   }, [members]);
@@ -226,7 +268,7 @@ export const PublicPortalPage: React.FC = () => {
         <CtaSection organization={organizationData} />
 
         {/* 11. Kata Anggota / Testimoni: Cerita Nyata dari Kami (Latar: Putih) */}
-        <TestimonialsSection />
+        <TestimonialsSection testimonials={memberTestimonials} />
       </main>
 
       {/* 12. Footer (Latar: Biru Gelap #1E3A8A) */}

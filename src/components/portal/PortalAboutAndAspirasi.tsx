@@ -122,11 +122,11 @@ export const PortalAboutAndAspirasi: React.FC<PortalAboutAndAspirasiProps> = ({
   const ketuaMember =
     members.find((m) => m.role === 'ketua') ||
     members.find((m) => m.position?.toLowerCase().includes('ketua umum')) ||
-    members.find((m) => m.fullName.toLowerCase().includes('fajar'));
+    members.find((m) => m.fullName.toLowerCase().includes('zevin'));
   const ketuaPhoto =
     ketuaMember?.avatarUrl ||
     'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&auto=format&fit=crop&q=80';
-  const ketuaName = ketuaMember?.fullName || 'Fajar Pratama';
+  const ketuaName = ketuaMember?.fullName || organization.ketuaName || 'Zevin';
   const ketuaClass = ketuaMember
     ? `${ketuaMember.grade || 'XI'} ${ketuaMember.major || 'Rekayasa Perangkat Lunak 1'}`
     : 'XI Rekayasa Perangkat Lunak 1';

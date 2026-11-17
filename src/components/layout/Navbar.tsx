@@ -18,17 +18,27 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
-  const { currentRole, setCurrentRole, currentUser, announcements, setActivePage, theme, toggleTheme, orgProfile } = useApp();
+  const { currentRole, setCurrentRole, currentUser, announcements, setActivePage, theme, toggleTheme, orgProfile, members } = useApp();
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [showNotificationMenu, setShowNotificationMenu] = useState(false);
 
+  // Helper untuk mendapatkan nama dan kelas pengurus secara dinamis & tersinkronisasi
+  const getRoleDesc = (role: UserRole, fallbackDesc: string) => {
+    if (role === 'pembina') return orgProfile.pembinaName || fallbackDesc;
+    if (role === 'admin') return fallbackDesc;
+    const member = members.find((m) => m.role === role);
+    if (!member) return fallbackDesc;
+    const classInfo = member.classRoom ? ` (${member.grade ? `${member.grade} ` : ''}${member.classRoom})` : '';
+    return `${member.fullName}${classInfo}`;
+  };
+
   const availableRoles: { role: UserRole; label: string; desc: string }[] = [
-    { role: 'ketua', label: 'Ketua Umum OSIS', desc: 'Fajar Pratama (XI RPL 1)' },
-    { role: 'sekretaris', label: 'Sekretaris Umum', desc: 'Anisa Rahmawati (XI TKJ 2)' },
-    { role: 'bendahara', label: 'Bendahara Umum', desc: 'Rizky Alamsyah (XI AKL 1)' },
-    { role: 'koordinator_sekbid', label: 'Koordinator Sekbid TIK', desc: 'Dimas Anggoro (XI RPL 2)' },
-    { role: 'anggota', label: 'Anggota Siswa', desc: 'Siti Aulia Nur (X DKV 1)' },
-    { role: 'pembina', label: 'Pembina OSIS (Guru)', desc: 'Drs. H. Bambang Sudiro, M.Pd.' },
+    { role: 'ketua', label: 'Ketua Umum OSIS', desc: getRoleDesc('ketua', 'Zevin (XI RPL 1)') },
+    { role: 'sekretaris', label: 'Sekretaris Umum', desc: getRoleDesc('sekretaris', 'Anisa Rahmawati (XI TKJ 2)') },
+    { role: 'bendahara', label: 'Bendahara Umum', desc: getRoleDesc('bendahara', 'Rizky Alamsyah (XI AKL 1)') },
+    { role: 'koordinator_sekbid', label: 'Koordinator Sekbid TIK', desc: getRoleDesc('koordinator_sekbid', 'Dimas Anggoro (XI RPL 2)') },
+    { role: 'anggota', label: 'Anggota Siswa', desc: getRoleDesc('anggota', 'Siti Aulia Nur (X DKV 1)') },
+    { role: 'pembina', label: 'Pembina OSIS (Guru)', desc: orgProfile.pembinaName || 'Drs. H. Bambang Sudiro, M.Pd.' },
     { role: 'admin', label: 'Super Admin Sistem', desc: 'Administrator IT Sekolah' },
   ];
 

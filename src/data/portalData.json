@@ -57,7 +57,7 @@
       "code": "BPH",
       "name": "Badan Pengurus Harian",
       "description": "Pengarah kebijakan umum, koordinasi lintas sekbid, administrasi persuratan, dan tata kelola perbendaharaan.",
-      "leaderName": "Fajar Pratama",
+      "leaderName": "Zevin",
       "color": "blue"
     },
     {
@@ -387,7 +387,7 @@
       "status": "Direncanakan",
       "startDate": "15 Des 2025",
       "endDate": "18 Des 2025",
-      "picName": "Fajar Pratama",
+      "picName": "Zevin",
       "picRole": "Ketua Umum OSIS",
       "picAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80",
       "progress": 10,
@@ -577,7 +577,7 @@
   "structureMembers": [
     {
       "id": "mem-01",
-      "fullName": "Fajar Pratama",
+      "fullName": "Zevin",
       "role": "Ketua Umum OSIS",
       "divisionCode": "BPH",
       "divisionName": "Badan Pengurus Harian",

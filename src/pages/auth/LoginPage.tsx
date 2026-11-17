@@ -48,28 +48,28 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
   }[] = [
     {
       role: 'ketua',
-      name: 'Fajar Pratama',
+      name: members.find((m) => m.role === 'ketua')?.fullName || 'Zevin',
       identifier: '0081234501',
       label: 'Ketua Umum',
       badgeColor: 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544]',
     },
     {
       role: 'sekretaris',
-      name: 'Anisa Rahmawati',
+      name: members.find((m) => m.role === 'sekretaris')?.fullName || 'Anisa Rahmawati',
       identifier: '0071234502',
       label: 'Sekretaris',
       badgeColor: 'bg-[#E4EAF2] text-[#1F3A5F] border-[#1F3A5F]/20',
     },
     {
       role: 'bendahara',
-      name: 'Rizky Alamsyah',
+      name: members.find((m) => m.role === 'bendahara')?.fullName || 'Rizky Alamsyah',
       identifier: '0071234503',
       label: 'Bendahara',
       badgeColor: 'bg-[#E4EAF2] text-[#1F3A5F] border-[#1F3A5F]/20',
     },
     {
       role: 'pembina',
-      name: 'Drs. H. Bambang Sudiro',
+      name: orgProfile.pembinaName || 'Drs. H. Bambang Sudiro',
       identifier: 'pembina@smk.test',
       label: 'Pembina Guru',
       badgeColor: 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544]',
