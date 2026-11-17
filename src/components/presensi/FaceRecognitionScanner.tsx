@@ -100,6 +100,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   const detectionLoopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isProcessingRef = useRef<boolean>(false);
   const isCooldownRef = useRef<boolean>(false);
+  // Build token: setiap build baru dapat token unik; build lama yang masih berjalan
+  // akan memeriksa token setelah setiap operasi async dan membatalkan diri jika sudah usang.
+  const buildTokenRef = useRef<number>(0);
 
   // Keep ref in sync
   useEffect(() => {
@@ -152,14 +155,22 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   const buildFaceMatcher = useCallback(async () => {
     if (!modelsLoaded) return;
 
+    // Dapatkan token unik untuk build ini. Build lama akan membatalkan diri
+    // jika token berubah (artinya ada build baru yang lebih baru dimulai).
+    const myToken = ++buildTokenRef.current;
+
+    // Langsung bersihkan matcher lama agar tidak ada wajah usang yang terdeteksi
+    // selama proses rebuild berlangsung.
+    faceMatcherRef.current = null;
+
     // Only process members who have a data: URL (photo uploaded from device)
     const membersWithPhoto = members.filter(
       (m) => m.avatarUrl && (m.avatarUrl.startsWith('data:') || m.avatarUrl.startsWith('blob:'))
     );
 
     if (membersWithPhoto.length === 0) {
-      faceMatcherRef.current = null;
       setRegisteredCount(0);
+      setIsBuilding(false);
       return;
     }
 
@@ -167,6 +178,10 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
     const labeledDescriptors: faceapi.LabeledFaceDescriptors[] = [];
 
     for (const member of membersWithPhoto) {
+      // Batalkan build ini jika sudah ada build yang lebih baru
+      if (myToken !== buildTokenRef.current) {
+        return;
+      }
       try {
         // Create an image element from the data URL
         const img = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -177,10 +192,16 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
           el.src = member.avatarUrl!;
         });
 
+        // Cek lagi setelah operasi async (image load)
+        if (myToken !== buildTokenRef.current) return;
+
         const detection = await faceapi
           .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 }))
           .withFaceLandmarks()
           .withFaceDescriptor();
+
+        // Cek lagi setelah operasi async (face detection)
+        if (myToken !== buildTokenRef.current) return;
 
         if (detection) {
           labeledDescriptors.push(
@@ -193,6 +214,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         console.warn(`Could not process photo for ${member.fullName}:`, err);
       }
     }
+
+    // Cek final sebelum set matcher — pastikan ini masih build yang valid
+    if (myToken !== buildTokenRef.current) return;
 
     if (labeledDescriptors.length > 0) {
       // threshold: Euclidean distance 0.0 (same) to 1.0+ (different)
