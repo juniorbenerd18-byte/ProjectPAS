@@ -12,7 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { UserRole, Member } from '../../types';
+import { UserRole } from '../../types';
 
 interface LoginPageProps {
   onBackToPublic: () => void;
@@ -110,9 +110,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
       return;
     }
 
-    // Validasi Kata Sandi Pengurus (Default resmi: osis2025)
+    // Validasi Kata Sandi — tidak menampilkan password di pesan error
     if (cleanPass !== 'osis2025') {
-      setErrorAlert('Kata sandi salah! Kata sandi default pengurus adalah: osis2025');
+      setErrorAlert('Kata sandi salah. Periksa kembali kata sandi Anda.');
       showToast('Kata sandi tidak sesuai.', 'error');
       return;
     }
@@ -120,21 +120,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
     setIsLoading(true);
 
     setTimeout(() => {
-      // Cari anggota berdasarkan NISN, email, atau preset akun demo
+      // Cari anggota berdasarkan NISN atau email di database
       const matched = members.find(
         (m) =>
           m.nisn.toLowerCase() === cleanUser.toLowerCase() ||
-          m.email.toLowerCase() === cleanUser.toLowerCase() ||
-          (cleanUser === 'admin@smk.test' && m.role === 'admin') ||
-          (cleanUser === 'pembina@smk.test' && m.role === 'pembina')
+          m.email.toLowerCase() === cleanUser.toLowerCase()
       );
 
-      // Cek apakah user cocok dengan salah satu preset demo
-      const matchedPreset = demoAccounts.find(
-        (acc) => acc.identifier.toLowerCase() === cleanUser.toLowerCase()
-      );
-
-      if (!matched && !matchedPreset) {
+      // Jika tidak ditemukan di database → tolak login
+      if (!matched) {
         setIsLoading(false);
         setErrorAlert(
           `Akun "${cleanUser}" tidak terdaftar dalam database pengurus OSIS. Silakan periksa kembali NISN atau email Anda.`
@@ -143,31 +137,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
         return;
       }
 
-      const targetMember: Member = matched || {
-        id: `mem-${matchedPreset ? matchedPreset.role : 'custom'}`,
-        nisn: cleanUser,
-        fullName: matchedPreset ? matchedPreset.name : 'Pengurus OSIS',
-        email: cleanUser.includes('@') ? cleanUser : `${cleanUser}@smk.test`,
-        role: matchedPreset ? matchedPreset.role : selectedPreset,
-        grade: 'XI',
-        classRoom: 'RPL 1',
-        major: 'Rekayasa Perangkat Lunak',
-        divisionId: 'div-bph',
-        divisionName: 'Badan Pengurus Harian (BPH)',
-        position: matchedPreset ? matchedPreset.label : 'Pengurus',
-        phone: '081234567890',
-        avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-        isActive: true,
-        status: 'aktif',
-        joinDate: '2024-07-15',
-        generation: 'Angkatan 2024/2025',
-      };
+      // Cek apakah akun aktif
+      if (!matched.isActive || matched.status === 'alumni') {
+        setIsLoading(false);
+        setErrorAlert('Akun ini sudah tidak aktif (demisioner/alumni). Hubungi admin OSIS.');
+        showToast('Akun tidak aktif.', 'error');
+        return;
+      }
 
-      setCurrentUser(targetMember);
-      setCurrentRole(targetMember.role);
+      setCurrentUser(matched);
+      setCurrentRole(matched.role);
       setIsLoading(false);
       showToast(
-        `Berhasil masuk! Selamat datang, ${targetMember.fullName} (${targetMember.role.replace('_', ' ').toUpperCase()}).`,
+        `Berhasil masuk! Selamat datang, ${matched.fullName} (${matched.role.replace('_', ' ').toUpperCase()}).`,
         'success'
       );
       setActivePage('dashboard');

@@ -107,6 +107,7 @@ interface AppContextType {
   updateEvent: (id: string, evt: Partial<EventItem>) => void;
   deleteEvent: (id: string) => void;
   addEventPhoto: (eventId: string, photoUrl: string) => void;
+  removeEventPhoto: (eventId: string, photoIndex: number) => void;
 
   meetings: Meeting[];
   addMeeting: (meet: Omit<Meeting, 'id'>) => void;
@@ -531,6 +532,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Foto dokumentasi berhasil ditambahkan!');
   };
 
+  const removeEventPhoto = (eventId: string, photoIndex: number) => {
+    setEvents((prev) =>
+      prev.map((e) =>
+        e.id === eventId
+          ? { ...e, documentationPhotos: e.documentationPhotos.filter((_, i) => i !== photoIndex) }
+          : e
+      )
+    );
+    showToast('Foto dokumentasi telah dihapus.', 'info');
+  };
+
   // Meetings
   const addMeeting = (meet: Omit<Meeting, 'id'>) => {
     const newMeet: Meeting = { ...meet, id: `meet-${Date.now()}` };
@@ -948,6 +960,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateEvent,
         deleteEvent,
         addEventPhoto,
+        removeEventPhoto,
         meetings,
         addMeeting,
         updateMeeting,
