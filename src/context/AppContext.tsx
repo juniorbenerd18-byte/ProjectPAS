@@ -107,7 +107,7 @@ interface AppContextType {
   updateEvent: (id: string, evt: Partial<EventItem>) => void;
   deleteEvent: (id: string) => void;
   addEventPhoto: (eventId: string, photoUrl: string) => void;
-  removeEventPhoto: (eventId: string, photoIndex: number) => void;
+  removeEventPhoto: (eventId: string, photoIndexOrUrl: number | string) => void;
 
   meetings: Meeting[];
   addMeeting: (meet: Omit<Meeting, 'id'>) => void;
@@ -199,16 +199,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [positions, setPositions] = useState<Position[]>(() => loadStored('positions', initialPositions));
   const [members, setMembers] = useState<Member[]>(() => loadStored('members', initialMembers));
   const [workPrograms, setWorkPrograms] = useState<WorkProgram[]>(() => loadStored('workPrograms', initialWorkPrograms));
-  const [events, setEvents] = useState<EventItem[]>(() => loadStored('events', initialEvents));
+  const [events, setEvents] = useState<EventItem[]>(() => {
+    try {
+      const stored = loadStored<EventItem[]>('events', initialEvents);
+      if (!Array.isArray(stored)) return initialEvents;
+      return stored.map((e) => ({
+        ...e,
+        documentationPhotos: Array.isArray(e.documentationPhotos)
+          ? e.documentationPhotos.filter((p) => typeof p === 'string' && p.length > 0)
+          : [],
+      }));
+    } catch {
+      return initialEvents;
+    }
+  });
   const [meetings, setMeetings] = useState<Meeting[]>(() => loadStored('meetings', initialMeetings));
   const [attendances, setAttendances] = useState<AttendanceRecord[]>(() => {
-    const stored = loadStored<AttendanceRecord[]>('attendances', initialAttendances);
-    return stored.map((a) => ({
-      ...a,
-      checkInTime: formatAttendanceTime(a.checkInTime),
-      major: normalizeMajor(a.major),
-      notes: a.notes || 'Hadir',
-    }));
+    try {
+      const stored = loadStored<AttendanceRecord[]>('attendances', initialAttendances);
+      const arr = Array.isArray(stored) ? stored : initialAttendances;
+      return arr.map((a) => ({
+        ...a,
+        checkInTime: formatAttendanceTime(a.checkInTime),
+        major: normalizeMajor(a.major),
+        notes: a.notes || 'Hadir',
+      }));
+    } catch {
+      return initialAttendances;
+    }
   });
   const [cashTransactions, setCashTransactions] = useState<CashTransaction[]>(() => loadStored('cashTransactions', initialCashTransactions));
   const [memberDues, setMemberDues] = useState<MemberDue[]>(() => loadStored('memberDues', initialMemberDues));
@@ -228,26 +246,38 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCurrentRole(m.role);
   };
 
-  // Sync to localStorage
+  // Sync to localStorage safely with individual item guards to prevent QuotaExceededError crashes
   useEffect(() => {
-    localStorage.setItem('schoolorg_activePage', JSON.stringify(activePage));
-    localStorage.setItem('schoolorg_orgProfile', JSON.stringify(orgProfile));
-    localStorage.setItem('schoolorg_divisions', JSON.stringify(divisions));
-    localStorage.setItem('schoolorg_positions', JSON.stringify(positions));
-    localStorage.setItem('schoolorg_members', JSON.stringify(members));
-    localStorage.setItem('schoolorg_workPrograms', JSON.stringify(workPrograms));
-    localStorage.setItem('schoolorg_events', JSON.stringify(events));
-    localStorage.setItem('schoolorg_meetings', JSON.stringify(meetings));
-    localStorage.setItem('schoolorg_attendances', JSON.stringify(attendances));
-    localStorage.setItem('schoolorg_cashTransactions', JSON.stringify(cashTransactions));
-    localStorage.setItem('schoolorg_memberDues', JSON.stringify(memberDues));
-    localStorage.setItem('schoolorg_budgets', JSON.stringify(budgets));
-    localStorage.setItem('schoolorg_documents', JSON.stringify(documents));
-    localStorage.setItem('schoolorg_announcements', JSON.stringify(announcements));
-    localStorage.setItem('schoolorg_aspirations', JSON.stringify(aspirations));
-    localStorage.setItem('schoolorg_recruitments', JSON.stringify(recruitments));
-    localStorage.setItem('schoolorg_eventRegistrations', JSON.stringify(eventRegistrations));
-    localStorage.setItem('schoolorg_galleryPhotos', JSON.stringify(galleryPhotos));
+    try {
+      const safeSave = (key: string, data: unknown) => {
+        try {
+          localStorage.setItem(`schoolorg_${key}`, JSON.stringify(data));
+        } catch (e) {
+          console.warn(`Could not save schoolorg_${key} to localStorage (quota or permission):`, e);
+        }
+      };
+
+      safeSave('activePage', activePage);
+      safeSave('orgProfile', orgProfile);
+      safeSave('divisions', divisions);
+      safeSave('positions', positions);
+      safeSave('members', members);
+      safeSave('workPrograms', workPrograms);
+      safeSave('events', events);
+      safeSave('meetings', meetings);
+      safeSave('attendances', attendances);
+      safeSave('cashTransactions', cashTransactions);
+      safeSave('memberDues', memberDues);
+      safeSave('budgets', budgets);
+      safeSave('documents', documents);
+      safeSave('announcements', announcements);
+      safeSave('aspirations', aspirations);
+      safeSave('recruitments', recruitments);
+      safeSave('eventRegistrations', eventRegistrations);
+      safeSave('galleryPhotos', galleryPhotos);
+    } catch (err) {
+      console.warn('LocalStorage batch sync notice:', err);
+    }
   }, [
     activePage, orgProfile, divisions, positions, members, workPrograms, events,
     meetings, attendances, cashTransactions, memberDues, budgets,
@@ -526,19 +556,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addEventPhoto = (eventId: string, photoUrl: string) => {
+    if (!photoUrl) return;
     setEvents((prev) =>
-      prev.map((e) => (e.id === eventId ? { ...e, documentationPhotos: [...e.documentationPhotos, photoUrl] } : e))
+      prev.map((e) =>
+        e.id === eventId
+          ? { ...e, documentationPhotos: [...(e.documentationPhotos || []), photoUrl] }
+          : e
+      )
     );
     showToast('Foto dokumentasi berhasil ditambahkan!');
   };
 
-  const removeEventPhoto = (eventId: string, photoIndex: number) => {
+  const removeEventPhoto = (eventId: string, photoIndexOrUrl: number | string) => {
     setEvents((prev) =>
-      prev.map((e) =>
-        e.id === eventId
-          ? { ...e, documentationPhotos: e.documentationPhotos.filter((_, i) => i !== photoIndex) }
-          : e
-      )
+      prev.map((e) => {
+        if (e.id !== eventId) return e;
+        const photos = e.documentationPhotos || [];
+        const updated =
+          typeof photoIndexOrUrl === 'number'
+            ? photos.filter((_, i) => i !== photoIndexOrUrl)
+            : photos.filter((p) => p !== photoIndexOrUrl);
+        return {
+          ...e,
+          documentationPhotos: updated,
+        };
+      })
     );
     showToast('Foto dokumentasi telah dihapus.', 'info');
   };

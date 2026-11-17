@@ -23,8 +23,10 @@ export const DokumentasiKegiatan: React.FC = () => {
 
   const handleUploadPhoto = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedEventId && newPhotoUrl) {
-      addEventPhoto(selectedEventId, newPhotoUrl);
+    if (!newPhotoUrl) return;
+    const targetId = selectedEventId || events[0]?.id;
+    if (targetId) {
+      addEventPhoto(targetId, newPhotoUrl);
       setNewPhotoUrl('');
       setIsModalOpen(false);
     }
@@ -39,7 +41,7 @@ export const DokumentasiKegiatan: React.FC = () => {
 
   // Flatten semua foto dari semua kegiatan beserta info kegiatan & index asli
   const allPhotos = events.flatMap((evt) =>
-    evt.documentationPhotos.map((photo, index) => ({
+    (evt.documentationPhotos || []).map((photo, index) => ({
       id: `${evt.id}-${index}`,
       url: photo,
       eventId: evt.id,
@@ -121,7 +123,7 @@ export const DokumentasiKegiatan: React.FC = () => {
                       title: item.eventTitle,
                     });
                   }}
-                  className="absolute top-2 right-2 p-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer shadow-md z-10"
+                  className="absolute top-2 right-2 p-1.5 bg-red-600/90 hover:bg-red-600 text-white rounded-lg opacity-100 transition-opacity cursor-pointer shadow-md z-10"
                   title="Hapus foto ini"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

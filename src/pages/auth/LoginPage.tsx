@@ -325,7 +325,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onBackToPublic }) => {
 
       {/* Page Footer */}
       <div className="w-full max-w-md mx-auto text-center py-2 text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">
-        &copy; 2026 SIMO • Sistem Manajemen Organisasi OSIS Terpadu
+        &copy; 2026 SMO • Sistem Manajemen Organisasi OSIS Terpadu
       </div>
     </div>
   );

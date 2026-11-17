@@ -1,5 +1,5 @@
-﻿import React, { useRef } from 'react';
-import { Upload, Image as ImageIcon, X } from 'lucide-react';
+﻿import React, { useRef, useState } from 'react';
+import { Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 import { readLocalImageAsDataUrl } from '../../lib/supabase';
 
 interface ImagePickerProps {
@@ -15,20 +15,30 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
   label = 'Pilih Foto dari Komputer',
   value,
   onChange,
-  helperText = 'Format: JPG, PNG, WebP (maks. 5MB)',
+  helperText = 'Format: JPG, PNG, WebP (otomatis dioptimasi)',
   aspectRatio = 'square',
   className = '',
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [errorNotice, setErrorNotice] = useState<string | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setIsProcessing(true);
+      setErrorNotice(null);
       try {
         const dataUrl = await readLocalImageAsDataUrl(file);
         onChange(dataUrl);
       } catch (err) {
         console.error('Failed to read image file:', err);
+        setErrorNotice('Gagal membaca gambar. Pastikan format file sesuai.');
+      } finally {
+        setIsProcessing(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       }
     }
   };
@@ -42,20 +52,32 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
 
   return (
     <div className={`space-y-1.5 ${className}`}>
-      {label && <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">{label}</label>}
-      
-      {value ? (
-        <div className="relative group w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-sm">
+      {label && (
+        <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+          {label}
+        </label>
+      )}
+
+      {isProcessing ? (
+        <div
+          className={`w-full border-2 border-dashed border-[#1F3A5F]/30 dark:border-[#283D56] bg-[#FAF6EE]/50 dark:bg-[#17293E]/50 rounded-xl p-4 flex flex-col items-center justify-center text-center ${aspectClass}`}
+        >
+          <Loader2 className="w-8 h-8 text-[#1F3A5F] dark:text-[#F2B544] animate-spin mb-2" />
+          <p className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Mengoptimasi Gambar...</p>
+          <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">Memproses kompresi otomatis agar ringan</p>
+        </div>
+      ) : value ? (
+        <div className="relative group w-full rounded-xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] bg-slate-100 dark:bg-[#17293E] shadow-xs">
           <img
             src={value}
             alt="Preview"
             className={`w-full object-cover ${aspectClass}`}
           />
-          <div className="absolute inset-0 bg-slate-900/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <div className="absolute inset-0 bg-[#0E1B2C]/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 bg-white text-slate-800 text-xs font-medium rounded-lg shadow hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1.5 bg-white text-[#1F3A5F] text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Upload className="w-3.5 h-3.5" />
               Ganti Foto
@@ -63,7 +85,7 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
             <button
               type="button"
               onClick={() => onChange('')}
-              className="p-1.5 bg-rose-600 text-white rounded-lg shadow hover:bg-rose-700 transition-colors cursor-pointer"
+              className="p-1.5 bg-red-600 text-white rounded-lg shadow-sm hover:bg-red-700 transition-colors cursor-pointer"
               title="Hapus foto"
             >
               <X className="w-4 h-4" />
@@ -73,13 +95,13 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
       ) : (
         <div
           onClick={() => fileInputRef.current?.click()}
-          className={`w-full border-2 border-dashed border-slate-300 hover:border-indigo-500 hover:bg-indigo-50/30 transition-all rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer ${aspectClass}`}
+          className={`w-full border-2 border-dashed border-[#E6DFD0] dark:border-[#283D56] hover:border-[#1F3A5F] dark:hover:border-[#F2B544] hover:bg-[#FAF6EE] dark:hover:bg-[#17293E] transition-all rounded-xl p-4 flex flex-col items-center justify-center text-center cursor-pointer ${aspectClass}`}
         >
-          <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mb-2 group-hover:bg-indigo-100 group-hover:text-indigo-600 transition-colors">
+          <div className="w-10 h-10 rounded-full bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center justify-center mb-2 transition-colors">
             <ImageIcon className="w-5 h-5" />
           </div>
-          <p className="text-xs font-semibold text-slate-700">Pilih Berkas Lokal</p>
-          <p className="text-[11px] text-slate-400 mt-0.5">Klik untuk browse file di komputer</p>
+          <p className="text-xs font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Pilih Berkas Lokal</p>
+          <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">Klik untuk browse file di komputer / HP</p>
         </div>
       )}
 
@@ -90,7 +112,10 @@ export const ImagePicker: React.FC<ImagePickerProps> = ({
         onChange={handleFileChange}
         className="hidden"
       />
-      {helperText && <p className="text-[11px] text-slate-400">{helperText}</p>}
+      {errorNotice && <p className="text-[11px] text-red-500 font-medium">{errorNotice}</p>}
+      {helperText && !errorNotice && (
+        <p className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8]">{helperText}</p>
+      )}
     </div>
   );
 };

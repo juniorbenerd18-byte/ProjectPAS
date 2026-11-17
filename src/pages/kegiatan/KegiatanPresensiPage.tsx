@@ -50,7 +50,9 @@ export const KegiatanPresensiPage: React.FC = () => {
     deleteProkerTask,
     addMeeting,
     updateMeeting,
+    addEvent,
     addEventPhoto,
+    removeEventPhoto,
     currentRole,
     showToast,
     orgProfile,
@@ -93,6 +95,21 @@ export const KegiatanPresensiPage: React.FC = () => {
   const [selectedEventId, setSelectedEventId] = useState<string>(events[0]?.id || '');
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [lightboxPhoto, setLightboxPhoto] = useState<string | null>(null);
+  const [confirmDeletePhoto, setConfirmDeletePhoto] = useState<{
+    eventId: string;
+    photoIndex: number;
+    eventTitle: string;
+    photoUrl: string;
+  } | null>(null);
+
+  const handleOpenAddPhoto = () => {
+    const validId = events.some((e) => e.id === selectedEventId)
+      ? selectedEventId
+      : events[0]?.id || '';
+    setSelectedEventId(validId);
+    setNewPhotoUrl('');
+    setIsAddPhotoModalOpen(true);
+  };
 
   // Proker Committee Task Management State
   const [expandedProkerId, setExpandedProkerId] = useState<string | null>('proker-1');
@@ -246,9 +263,11 @@ export const KegiatanPresensiPage: React.FC = () => {
 
   // All photos
   const allPhotos = events.flatMap((evt) =>
-    evt.documentationPhotos.map((photo, index) => ({
-      id: `${evt.id}-${index}`,
+    (evt.documentationPhotos || []).map((photo, index) => ({
+      id: `${evt.id}-${index}-${photo.slice(-10)}`,
       url: photo,
+      eventId: evt.id,
+      photoIndex: index,
       eventTitle: evt.title,
       eventDate: evt.eventDate,
       location: evt.location,
@@ -786,11 +805,18 @@ export const KegiatanPresensiPage: React.FC = () => {
         <div className="space-y-6">
           <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Galeri Foto Dokumentasi Kegiatan</h3>
-              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Pilih foto dari komputer lokal untuk mendokumentasikan kegiatan</p>
+              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                <span>Galeri Foto Dokumentasi Kegiatan</span>
+                <span className="text-[12px] font-bold px-2.5 py-0.5 rounded-full bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/60 dark:text-[#E4EAF2]">
+                  {allPhotos.length} Foto
+                </span>
+              </h3>
+              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">
+                Pilih foto dari komputer lokal untuk dokumentasi kegiatan atau hapus foto yang tidak diperlukan
+              </p>
             </div>
             <button
-              onClick={() => setIsAddPhotoModalOpen(true)}
+              onClick={handleOpenAddPhoto}
               className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" />
@@ -798,27 +824,74 @@ export const KegiatanPresensiPage: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-            {allPhotos.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setLightboxPhoto(item.url)}
-                className="group relative bg-[#FFFDF8] dark:bg-[#17293E] rounded-[16px] overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] cursor-pointer aspect-4/3"
-              >
-                <img
-                  src={item.url}
-                  alt={item.eventTitle}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#1F3A5F]/90 via-[#1F3A5F]/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end text-[#FAF6EE]">
-                  <span className="text-[12px] font-bold text-[#F2B544]">{item.eventDate}</span>
-                  <p className="text-[14px] font-bold leading-tight mt-1 line-clamp-2">
-                    {item.eventTitle}
-                  </p>
-                </div>
+          {allPhotos.length === 0 ? (
+            <div className="simo-card p-10 sm:p-14 text-center flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 flex items-center justify-center mb-3 text-[#1F3A5F] dark:text-[#FAF6EE]">
+                <Camera className="w-8 h-8" />
               </div>
-            ))}
-          </div>
+              <h4 className="text-[16px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                Belum Ada Foto Dokumentasi
+              </h4>
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] max-w-md mt-1 mb-5">
+                Dokumentasi foto kegiatan OSIS masih kosong. Klik tombol di bawah untuk mengunggah foto baru dari penyimpanan komputer atau HP Anda.
+              </p>
+              <button
+                type="button"
+                onClick={handleOpenAddPhoto}
+                className="simo-btn-primary min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Upload Foto Sekarang</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {allPhotos.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setLightboxPhoto(item.url)}
+                  className="group relative bg-[#FFFDF8] dark:bg-[#17293E] rounded-[16px] overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] cursor-pointer aspect-4/3 shadow-2xs hover:shadow-md transition-all"
+                >
+                  <img
+                    src={item.url}
+                    alt={item.eventTitle}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+
+                  {/* Tombol Hapus Foto - Pojok Kanan Atas */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setConfirmDeletePhoto({
+                        eventId: item.eventId,
+                        photoIndex: item.photoIndex,
+                        eventTitle: item.eventTitle,
+                        photoUrl: item.url,
+                      });
+                    }}
+                    className="absolute top-2.5 right-2.5 p-2 rounded-xl bg-red-600/90 hover:bg-red-600 text-white shadow-md transition-all cursor-pointer z-10 opacity-90 hover:opacity-100 hover:scale-105 active:scale-95 flex items-center justify-center"
+                    title="Hapus foto dokumentasi ini"
+                    aria-label="Hapus foto dokumentasi"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+
+                  {/* Info Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1F3A5F]/95 via-[#1F3A5F]/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end text-[#FAF6EE] pointer-events-none">
+                    <span className="text-[12px] font-bold text-[#F2B544]">{item.eventDate}</span>
+                    <p className="text-[14px] font-bold leading-tight mt-1 line-clamp-2">
+                      {item.eventTitle}
+                    </p>
+                    <p className="text-[12px] text-[#FAF6EE]/80 mt-1 flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#F2B544]" />
+                      <span>{item.location}</span>
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -993,48 +1066,85 @@ export const KegiatanPresensiPage: React.FC = () => {
       {/* Modal Add Photo */}
       <Modal
         isOpen={isAddPhotoModalOpen}
-        onClose={() => setIsAddPhotoModalOpen(false)}
+        onClose={() => {
+          setIsAddPhotoModalOpen(false);
+          setNewPhotoUrl('');
+        }}
         title="Upload Foto Dokumentasi dari Komputer"
         subtitle="Pilih foto dokumentasi dari penyimpanan komputer atau HP Anda"
       >
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (selectedEventId && newPhotoUrl) {
-              addEventPhoto(selectedEventId, newPhotoUrl);
-              setNewPhotoUrl('');
-              setIsAddPhotoModalOpen(false);
+            if (!newPhotoUrl) return;
+
+            let targetEventId = selectedEventId;
+            if (!targetEventId || !events.some((ev) => ev.id === targetEventId)) {
+              if (events.length > 0) {
+                targetEventId = events[0].id;
+              } else {
+                // Buat event dokumentasi default jika belum ada kegiatan terdaftar
+                addEvent({
+                  title: 'Dokumentasi Umum Kegiatan OSIS',
+                  description: 'Arsip visual foto kegiatan dan aktivitas pengurus OSIS',
+                  eventDate: new Date().toISOString().split('T')[0],
+                  startTime: '08:00',
+                  endTime: '15:00',
+                  location: 'SMK Negeri 1 Cerdas Bangsa',
+                  status: 'selesai',
+                  documentationPhotos: [newPhotoUrl],
+                  qrToken: `EVT-DOK-${Date.now().toString().slice(-4)}`,
+                });
+                setNewPhotoUrl('');
+                setIsAddPhotoModalOpen(false);
+                return;
+              }
             }
+
+            addEventPhoto(targetEventId, newPhotoUrl);
+            setNewPhotoUrl('');
+            setIsAddPhotoModalOpen(false);
           }}
           className="space-y-4"
         >
           <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Pilih Kegiatan Terkait</label>
-            <select
-              value={selectedEventId}
-              onChange={(e) => setSelectedEventId(e.target.value)}
-              className="simo-input min-h-[44px] text-[14px] w-full"
-            >
-              {events.map((evt) => (
-                <option key={evt.id} value={evt.id}>
-                  {evt.title} ({evt.eventDate})
-                </option>
-              ))}
-            </select>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Pilih Kegiatan Terkait
+            </label>
+            {events.length > 0 ? (
+              <select
+                value={selectedEventId || events[0]?.id || ''}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+              >
+                {events.map((evt) => (
+                  <option key={evt.id} value={evt.id}>
+                    {evt.title} ({evt.eventDate})
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] italic bg-[#FAF6EE] dark:bg-[#17293E] p-3 rounded-xl border border-[#E6DFD0] dark:border-[#283D56]">
+                Foto akan otomatis dimasukkan ke dalam arsip dokumentasi kegiatan umum OSIS.
+              </p>
+            )}
           </div>
 
           <ImagePicker
             label="Pilih Foto Berkas Lokal (Komputer / HP)"
             value={newPhotoUrl}
             onChange={(url) => setNewPhotoUrl(url)}
-            helperText="Format: JPG, PNG, WebP (maks 5MB)"
+            helperText="Format: JPG, PNG, WebP (otomatis dikompres & dioptimasi)"
             aspectRatio="video"
           />
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
             <button
               type="button"
-              onClick={() => setIsAddPhotoModalOpen(false)}
+              onClick={() => {
+                setIsAddPhotoModalOpen(false);
+                setNewPhotoUrl('');
+              }}
               className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
             >
               Batal
@@ -1148,17 +1258,114 @@ export const KegiatanPresensiPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* Lightbox Modal */}
+      {/* Modal Konfirmasi Hapus Foto Dokumentasi */}
+      {confirmDeletePhoto && (
+        <Modal
+          isOpen={true}
+          onClose={() => setConfirmDeletePhoto(null)}
+          title="Hapus Foto Dokumentasi?"
+          subtitle={`Kegiatan: ${confirmDeletePhoto.eventTitle}`}
+        >
+          <div className="space-y-4">
+            <div className="rounded-xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] bg-black/10 flex items-center justify-center">
+              <img
+                src={confirmDeletePhoto.photoUrl}
+                alt="Foto dokumentasi yang akan dihapus"
+                className="max-h-56 w-full object-cover"
+              />
+            </div>
+            <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed">
+              Apakah Anda yakin ingin menghapus foto dokumentasi ini dari kegiatan{' '}
+              <strong className="text-[#1F3A5F] dark:text-[#FAF6EE]">
+                {confirmDeletePhoto.eventTitle}
+              </strong>
+              ? Foto yang telah dihapus tidak dapat dipulihkan kembali.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <button
+                type="button"
+                onClick={() => setConfirmDeletePhoto(null)}
+                className="simo-btn-outline min-h-[42px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  removeEventPhoto(confirmDeletePhoto.eventId, confirmDeletePhoto.photoIndex);
+                  if (lightboxPhoto === confirmDeletePhoto.photoUrl) {
+                    setLightboxPhoto(null);
+                  }
+                  setConfirmDeletePhoto(null);
+                }}
+                className="min-h-[42px] px-5 rounded-[12px] bg-red-600 hover:bg-red-700 text-white text-[14px] font-bold cursor-pointer transition-colors shadow-sm flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Ya, Hapus Foto</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Lightbox Modal Pratinjau Foto */}
       {lightboxPhoto && (
         <div
-          className="fixed inset-0 z-50 bg-[#0E1B2C]/90 backdrop-blur-xs flex items-center justify-center p-4 cursor-pointer"
+          className="fixed inset-0 z-50 bg-[#0E1B2C]/90 backdrop-blur-xs flex flex-col items-center justify-center p-4"
           onClick={() => setLightboxPhoto(null)}
         >
-          <img
-            src={lightboxPhoto}
-            alt="Preview"
-            className="max-h-[85vh] max-w-[90vw] object-contain rounded-[16px] border border-[#283D56]"
-          />
+          <div
+            className="relative max-h-[92vh] max-w-[94vw] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Toolbar Atas */}
+            <div className="w-full flex items-center justify-between pb-3 text-white">
+              <span className="text-[13px] font-bold text-[#F2B544] flex items-center gap-1.5">
+                <Camera className="w-4 h-4" />
+                <span>Pratinjau Foto Dokumentasi</span>
+              </span>
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const targetItem = allPhotos.find((p) => p.url === lightboxPhoto);
+                  if (targetItem) {
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmDeletePhoto({
+                            eventId: targetItem.eventId,
+                            photoIndex: targetItem.photoIndex,
+                            eventTitle: targetItem.eventTitle,
+                            photoUrl: targetItem.url,
+                          });
+                        }}
+                        className="px-3 py-1.5 bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                        title="Hapus foto ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus Foto</span>
+                      </button>
+                    );
+                  }
+                  return null;
+                })()}
+                <button
+                  type="button"
+                  onClick={() => setLightboxPhoto(null)}
+                  className="p-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-colors cursor-pointer"
+                  title="Tutup pratinjau"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <img
+              src={lightboxPhoto}
+              alt="Preview"
+              className="max-h-[80vh] max-w-[90vw] object-contain rounded-[16px] border border-[#283D56] shadow-2xl"
+            />
+          </div>
         </div>
       )}
     </div>

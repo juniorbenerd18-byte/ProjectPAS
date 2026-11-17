@@ -10,11 +10,7 @@ interface ScrollRevealProps {
   threshold?: number; // intersection ratio trigger (default: 0.12)
 }
 
-/**
- * ScrollReveal Component
- * Memberikan efek animasi transisi card meluncur ke atas (slide up & fade in)
- * ketika halaman di-scroll ke bawah dan card memasuki viewport.
- */
+
 export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   children,
   className = '',

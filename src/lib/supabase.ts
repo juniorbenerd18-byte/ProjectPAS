@@ -14,9 +14,76 @@ export const supabase = isSupabaseConfigured()
   : null;
 
 /**
- * Utility to read image files chosen from local device/computer and convert to Base64
+ * Compress and downscale images so they fit safely within browser storage
+ * limits and render instantly without blank-screen crashes or DOMExceptions.
+ */
+export const compressImage = (
+  dataUrl: string,
+  maxWidth = 1280,
+  maxHeight = 1280,
+  quality = 0.78
+): Promise<string> => {
+  return new Promise((resolve) => {
+    if (typeof window === 'undefined' || !dataUrl.startsWith('data:image/')) {
+      resolve(dataUrl);
+      return;
+    }
+
+    if (dataUrl.startsWith('data:image/svg+xml') || dataUrl.startsWith('data:image/gif')) {
+      resolve(dataUrl);
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => {
+      try {
+        let { width, height } = img;
+        if (width <= 0 || height <= 0) {
+          resolve(dataUrl);
+          return;
+        }
+
+        if (width > maxWidth || height > maxHeight) {
+          if (width / height > maxWidth / maxHeight) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            maxHeight = height;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(dataUrl);
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const compressed = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressed);
+      } catch (e) {
+        console.warn('Image compression fallback:', e);
+        resolve(dataUrl);
+      }
+    };
+    img.onerror = () => {
+      resolve(dataUrl);
+    };
+    img.src = dataUrl;
+  });
+};
+
+/**
+ * Utility to read image files chosen from local device/computer and convert to optimized Base64
  * Ensures "ketika ingin menambah foto bisa dipilih lewat local" works seamlessly
- * both in local demo mode and online mode.
+ * both in local demo mode and online mode without quota crashes or blank screens.
  */
 export const readLocalImageAsDataUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -25,8 +92,15 @@ export const readLocalImageAsDataUrl = (file: File): Promise<string> => {
       return;
     }
     const reader = new FileReader();
-    reader.onload = () => {
-      resolve(reader.result as string);
+    reader.onload = async () => {
+      try {
+        const rawDataUrl = reader.result as string;
+        const optimized = await compressImage(rawDataUrl, 1280, 1280, 0.78);
+        resolve(optimized);
+      } catch (err) {
+        console.warn('Compression notice, returning original dataUrl:', err);
+        resolve(reader.result as string);
+      }
     };
     reader.onerror = (error) => {
       reject(error);
