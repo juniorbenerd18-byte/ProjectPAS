@@ -6,17 +6,19 @@ import {
   CheckCircle2,
   Clock,
   X,
+  Trash2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { StudentAspiration } from '../../types';
 import { Modal } from '../common/Modal';
 
 export const AspirationAdminWidget: React.FC = () => {
-  const { aspirations, updateAspirationStatus, orgProfile, showToast, setActivePage } = useApp();
+  const { aspirations, updateAspirationStatus, deleteAspiration, orgProfile, showToast, setActivePage } = useApp();
 
   const [selectedAsp, setSelectedAsp] = useState<StudentAspiration | null>(null);
   const [internalReplyText, setInternalReplyText] = useState('');
   const [newStatus, setNewStatus] = useState<StudentAspiration['status']>('diproses');
+  const [confirmDeleteAsp, setConfirmDeleteAsp] = useState<StudentAspiration | null>(null);
 
   // Metrics
   const totalCount = aspirations.length;
@@ -210,6 +212,14 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                           >
                             Tanggapi
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmDeleteAsp(asp)}
+                            title="Hapus pesan ini"
+                            className="min-h-[34px] w-[34px] rounded-[8px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 transition-colors cursor-pointer flex items-center justify-center"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -298,25 +308,90 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
               />
             </div>
 
-            <div className="pt-3 flex items-center justify-end gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+            <div className="pt-3 flex items-center justify-between gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
               <button
                 type="button"
-                onClick={() => setSelectedAsp(null)}
-                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                onClick={() => {
+                  const target = selectedAsp;
+                  setSelectedAsp(null);
+                  setConfirmDeleteAsp(target);
+                }}
+                className="min-h-[44px] px-3.5 rounded-[12px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 text-[13px] font-bold cursor-pointer flex items-center gap-1.5 transition-colors"
+                title="Hapus pesan ini"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Hapus Pesan</span>
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSelectedAsp(null)}
+                  className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveInternalResponse}
+                  className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                >
+                  Simpan
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* MODAL KONFIRMASI HAPUS PESAN WIDGET */}
+      {confirmDeleteAsp && (
+        <Modal
+          isOpen={true}
+          onClose={() => setConfirmDeleteAsp(null)}
+          title="Hapus Pesan Ide & Aspirasi?"
+          subtitle={`Pengirim: ${confirmDeleteAsp.studentName} (${confirmDeleteAsp.classRoom || 'Publik'})`}
+        >
+          <div className="space-y-4">
+            <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  {confirmDeleteAsp.title}
+                </span>
+                <span className="text-xs text-[#5A6472] dark:text-[#9AA8B8]">{confirmDeleteAsp.date}</span>
+              </div>
+              <p className="text-[#5A6472] dark:text-[#9AA8B8] italic text-[14px] leading-relaxed">
+                "{confirmDeleteAsp.content}"
+              </p>
+            </div>
+
+            <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed">
+              Apakah Anda yakin ingin menghapus pesan ide &amp; aspirasi ini? Tindakan ini tidak dapat dibatalkan.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteAsp(null)}
+                className="simo-btn-outline min-h-[42px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
               >
                 Batal
               </button>
               <button
                 type="button"
-                onClick={handleSaveInternalResponse}
-                className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                onClick={() => {
+                  deleteAspiration(confirmDeleteAsp.id);
+                  setConfirmDeleteAsp(null);
+                }}
+                className="min-h-[42px] px-5 rounded-[12px] bg-red-600 hover:bg-red-700 text-white text-[14px] font-bold cursor-pointer transition-colors shadow-sm flex items-center gap-1.5"
               >
-                Simpan
+                <Trash2 className="w-4 h-4" />
+                <span>Ya, Hapus Pesan</span>
               </button>
             </div>
           </div>
-        )}
-      </Modal>
+        </Modal>
+      )}
     </>
   );
 };

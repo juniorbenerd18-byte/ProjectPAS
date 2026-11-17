@@ -144,6 +144,7 @@ interface AppContextType {
   addAspiration: (asp: Omit<StudentAspiration, 'id' | 'date' | 'status' | 'likes'>) => void;
   likeAspiration: (id: string) => void;
   updateAspirationStatus: (id: string, status: StudentAspiration['status'], response?: string, respondedBy?: string) => void;
+  deleteAspiration: (id: string) => void;
 
   recruitments: RecruitmentApplication[];
   addRecruitment: (rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>) => RecruitmentApplication;
@@ -787,6 +788,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast(`Status aspirasi diperbarui menjadi: ${status.toUpperCase()}`);
   };
 
+  const deleteAspiration = (id: string) => {
+    setAspirations((prev) => prev.filter((a) => a.id !== id));
+    deleteAspirationFromCloud(id).catch(() => {});
+    showToast('Pesan ide & aspirasi berhasil dihapus.', 'info');
+  };
+
   // Public Portal Actions: Open Recruitment
   const addRecruitment = (
     rec: Omit<RecruitmentApplication, 'id' | 'registrationNumber' | 'appliedDate' | 'status'>
@@ -1030,6 +1037,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addAspiration,
         likeAspiration,
         updateAspirationStatus,
+        deleteAspiration,
         recruitments,
         addRecruitment,
         updateRecruitment,
