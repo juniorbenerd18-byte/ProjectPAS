@@ -1,53 +1,35 @@
 import React, { useState } from 'react';
 import {
   CalendarCheck,
-  Briefcase,
   MessagesSquare,
   Camera,
   Plus,
-  Sliders,
   CheckCircle2,
   Calendar,
   Clock,
   MapPin,
   FileText,
   Search,
-  Check,
   X,
   Printer,
   Download,
   Users,
-  ListTodo,
-  CheckSquare,
-  Square,
   Trash2,
-  ChevronDown,
-  ChevronUp,
-  User,
   Building2,
-  AlertCircle,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { WorkProgram, Meeting, ProkerTask, CommitteeSection } from '../../types';
-import { formatRupiah, formatDateIndo, formatNumber, parseFormattedNumber, formatAttendanceTime, normalizeMajor } from '../../lib/utils';
+import { Meeting } from '../../types';
+import { formatDateIndo, formatAttendanceTime, normalizeMajor } from '../../lib/utils';
 import { FaceRecognitionScanner } from '../../components/presensi/FaceRecognitionScanner';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
-import confetti from 'canvas-confetti';
 
 export const KegiatanPresensiPage: React.FC = () => {
   const {
     meetings,
-    workPrograms,
     events,
     attendances,
-    divisions,
     members,
-    addWorkProgram,
-    updateWorkProgram,
-    addProkerTask,
-    toggleProkerTask,
-    deleteProkerTask,
     addMeeting,
     updateMeeting,
     addEvent,
@@ -58,21 +40,8 @@ export const KegiatanPresensiPage: React.FC = () => {
     orgProfile,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'presensi' | 'proker' | 'rapat' | 'dokumentasi'>('presensi');
+  const [activeTab, setActiveTab] = useState<'presensi' | 'rapat' | 'dokumentasi'>('presensi');
   const [selectedMeetingId, setSelectedMeetingId] = useState<string>(meetings[0]?.id || '');
-
-  // Proker Modal state
-  const [isAddProkerModalOpen, setIsAddProkerModalOpen] = useState(false);
-  const [prokerForm, setProkerForm] = useState({
-    title: '',
-    divisionId: divisions[0]?.id || '',
-    description: '',
-    estimatedBudgetRaw: '2.500.000',
-    targetDate: '2026-11-15',
-    status: 'diajukan' as const,
-    progressPercent: 0,
-    proposalUrl: '#',
-  });
 
   // Meeting Modal state
   const [isAddMeetingModalOpen, setIsAddMeetingModalOpen] = useState(false);
@@ -111,89 +80,7 @@ export const KegiatanPresensiPage: React.FC = () => {
     setIsAddPhotoModalOpen(true);
   };
 
-  // Proker Committee Task Management State
-  const [expandedProkerId, setExpandedProkerId] = useState<string | null>('proker-1');
-  const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
-  const [activeProkerForTask, setActiveProkerForTask] = useState<WorkProgram | null>(null);
-  const [taskForm, setTaskForm] = useState({
-    title: '',
-    section: 'Seksi Acara' as CommitteeSection,
-    assignedMemberId: '',
-    assignedMemberName: '',
-    dueDate: new Date().toISOString().split('T')[0],
-  });
-
-  const handleOpenAddTask = (proker: WorkProgram) => {
-    setActiveProkerForTask(proker);
-    const defaultMember = members[0];
-    setTaskForm({
-      title: '',
-      section: 'Seksi Acara',
-      assignedMemberId: defaultMember?.id || '',
-      assignedMemberName: defaultMember?.fullName || '',
-      dueDate: proker.targetDate || new Date().toISOString().split('T')[0],
-    });
-    setIsAddTaskModalOpen(true);
-  };
-
-  const handleTaskSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeProkerForTask || !taskForm.title.trim()) return;
-    const assigned = members.find((m) => m.id === taskForm.assignedMemberId);
-    addProkerTask(activeProkerForTask.id, {
-      title: taskForm.title,
-      section: taskForm.section,
-      assignedMemberId: taskForm.assignedMemberId,
-      assignedMemberName: assigned?.fullName || taskForm.assignedMemberName,
-      dueDate: taskForm.dueDate,
-      isCompleted: false,
-    });
-    setIsAddTaskModalOpen(false);
-    setExpandedProkerId(activeProkerForTask.id);
-  };
-
-  // Section badge styles strictly using 2-color variations
-  const getSectionBadgeColor = (sec: CommitteeSection) => {
-    switch (sec) {
-      case 'Ketua Pelaksana':
-        return 'bg-[#1F3A5F] text-[#FAF6EE] border-[#1F3A5F]';
-      case 'Seksi Acara':
-        return 'bg-[#E4EAF2] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#1F3A5F]/40 dark:text-[#E4EAF2] dark:border-[#283D56]';
-      case 'Seksi Perlengkapan':
-        return 'bg-[#FBEBC8] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#F2B544]/20 dark:text-[#FAF6EE] dark:border-[#283D56]';
-      case 'Seksi Konsumsi':
-        return 'bg-[#FAF6EE] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#17293E] dark:text-[#FAF6EE] dark:border-[#283D56]';
-      case 'Seksi Pubdok':
-        return 'bg-[#E4EAF2] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#1F3A5F]/40 dark:text-[#E4EAF2] dark:border-[#283D56]';
-      case 'Seksi Humas':
-        return 'bg-[#FBEBC8] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#F2B544]/20 dark:text-[#FAF6EE] dark:border-[#283D56]';
-      case 'Seksi Keamanan':
-        return 'bg-[#FAF6EE] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#17293E] dark:text-[#FAF6EE] dark:border-[#283D56]';
-      default:
-        return 'bg-[#FAF6EE] text-[#5A6472] border-[#E6DFD0] dark:bg-[#17293E] dark:text-[#9AA8B8] dark:border-[#283D56]';
-    }
-  };
-
   const currentMeeting = meetings.find((m) => m.id === selectedMeetingId) || meetings[0];
-  const canApprove = currentRole === 'ketua' || currentRole === 'pembina' || currentRole === 'admin';
-
-  // Submit Proker
-  const handleProkerSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const div = divisions.find((d) => d.id === prokerForm.divisionId);
-    addWorkProgram({
-      title: prokerForm.title,
-      divisionId: prokerForm.divisionId,
-      divisionName: div?.name || 'Sekbid',
-      description: prokerForm.description,
-      estimatedBudget: parseFormattedNumber(prokerForm.estimatedBudgetRaw),
-      targetDate: prokerForm.targetDate,
-      status: prokerForm.status,
-      progressPercent: prokerForm.progressPercent,
-      proposalUrl: prokerForm.proposalUrl,
-    });
-    setIsAddProkerModalOpen(false);
-  };
 
   // Submit Meeting
   const handleMeetingSubmit = (e: React.FormEvent) => {
@@ -205,18 +92,6 @@ export const KegiatanPresensiPage: React.FC = () => {
     setIsAddMeetingModalOpen(false);
   };
 
-  // Progress change handler
-  const handleProgressChange = (id: string, newPercent: number) => {
-    const isCompleted = newPercent >= 100;
-    updateWorkProgram(id, {
-      progressPercent: newPercent,
-      status: isCompleted ? 'selesai' : newPercent > 0 ? 'berjalan' : 'disetujui',
-    });
-    if (isCompleted) {
-      confetti({ particleCount: 70, spread: 60 });
-    }
-  };
-
   // Attendances for current meeting
   const meetingAttendances = attendances.filter((a) => a.targetId === currentMeeting?.id);
 
@@ -224,12 +99,6 @@ export const KegiatanPresensiPage: React.FC = () => {
   const gradeXCount = meetingAttendances.filter((a) => a.grade === 'X').length;
   const gradeXICount = meetingAttendances.filter((a) => a.grade === 'XI').length;
   const gradeXIICount = meetingAttendances.filter((a) => a.grade === 'XII').length;
-
-  // Proker budget analytics
-  const totalProkerBudget = workPrograms.reduce((sum, p) => sum + p.estimatedBudget, 0);
-  const avgProkerProgress = workPrograms.length > 0
-    ? Math.round(workPrograms.reduce((sum, p) => sum + p.progressPercent, 0) / workPrograms.length)
-    : 0;
 
   // Export Attendance CSV function
   const exportAttendanceCSV = () => {
@@ -287,12 +156,12 @@ export const KegiatanPresensiPage: React.FC = () => {
             Kegiatan &amp; Presensi Organisasi
           </h2>
           <p className="hidden sm:block text-[13px] sm:text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
-            Presensi scan wajah biometrik, manajemen proker, jadwal agenda rapat, dan galeri foto
+            Presensi scan wajah biometrik, jadwal agenda rapat, dan galeri foto
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="grid grid-cols-4 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch sm:self-start shrink-0">
+        <div className="grid grid-cols-3 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch sm:self-start shrink-0">
           <button
             onClick={() => setActiveTab('presensi')}
             className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
@@ -303,17 +172,6 @@ export const KegiatanPresensiPage: React.FC = () => {
           >
             <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Presensi</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('proker')}
-            className={`min-h-[34px] sm:min-h-[40px] px-1.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
-              activeTab === 'proker'
-                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
-                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
-            }`}
-          >
-            <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span>Proker</span>
           </button>
           <button
             onClick={() => setActiveTab('rapat')}
@@ -495,250 +353,7 @@ export const KegiatanPresensiPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: PROGRAM KERJA */}
-      {activeTab === 'proker' && (
-        <div className="space-y-6">
-          {/* Deep Analytics: RAB & Financial (Single Continuous Card with Dividers) */}
-          <div className="simo-card p-0 grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E6DFD0] dark:divide-[#283D56] overflow-hidden">
-            <div className="p-4 sm:p-6">
-              <span className="text-[12px] sm:text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Total Pagu Anggaran Proker</span>
-              <p className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{formatRupiah(totalProkerBudget)}</p>
-              <p className="text-[11px] sm:text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">{workPrograms.length} Rencana kegiatan semester ini</p>
-            </div>
-            <div className="p-4 sm:p-6 bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/30">
-              <span className="text-[12px] sm:text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Rata-Rata Capaian Proker</span>
-              <p className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">{avgProkerProgress}%</p>
-              <div className="w-full h-2 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-full mt-2 overflow-hidden border border-[#E6DFD0] dark:border-[#283D56]">
-                <div className="h-full bg-[#1F3A5F] dark:bg-[#F2B544] rounded-full" style={{ width: `${avgProkerProgress}%` }} />
-              </div>
-            </div>
-            <div className="p-4 sm:p-6">
-              <span className="text-[12px] sm:text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">Status Kelayakan</span>
-              <p className="text-xl sm:text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE] mt-1">
-                {workPrograms.filter((p) => p.status === 'disetujui' || p.status === 'berjalan' || p.status === 'selesai').length} / {workPrograms.length}
-              </p>
-              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 font-semibold">Telah disetujui Pembina OSIS</p>
-            </div>
-          </div>
-
-          <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Program Kerja &amp; Capaian Milestone</h3>
-              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">Kelola target anggaran dan perbarui progres pelaksanaan</p>
-            </div>
-            <button
-              onClick={() => setIsAddProkerModalOpen(true)}
-              className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Proker</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {workPrograms.map((p) => {
-              const tasks = p.tasks || [];
-              const completedCount = tasks.filter((t) => t.isCompleted).length;
-              const isExpanded = expandedProkerId === p.id;
-
-              return (
-                <div
-                  key={p.id}
-                  className="simo-card p-6 space-y-4 flex flex-col justify-between"
-                >
-                  <div className="space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[12px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 border border-[#E6DFD0] dark:border-[#283D56] px-3 py-1 rounded-[8px] uppercase">
-                        {p.divisionName}
-                      </span>
-                      <span
-                        className={p.status === 'selesai' ? 'simo-badge-blue' : p.status === 'berjalan' ? 'simo-badge-amber' : 'simo-badge-neutral'}
-                      >
-                        {p.status}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">{p.title}</h4>
-                      <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1 line-clamp-2 leading-relaxed">
-                        {p.description}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] text-[14px]">
-                      <div>
-                        <span className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] block">Kebutuhan Anggaran:</span>
-                        <span className="font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">{formatRupiah(p.estimatedBudget)}</span>
-                      </div>
-                      <div>
-                        <span className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] block">Target Waktu:</span>
-                        <span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">{formatDateIndo(p.targetDate)}</span>
-                      </div>
-                    </div>
-
-                    {/* Progress Slider */}
-                    <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] space-y-2">
-                      <div className="flex items-center justify-between text-[14px]">
-                        <span className="text-[#5A6472] dark:text-[#9AA8B8] font-semibold flex items-center gap-1.5">
-                          <Sliders className="w-4 h-4 text-[#5A6472]" />
-                          Progres Capaian Proker:
-                        </span>
-                        <span className="font-extrabold text-[#1F3A5F] dark:text-[#F2B544]">{p.progressPercent}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="5"
-                        value={p.progressPercent}
-                        onChange={(e) => handleProgressChange(p.id, Number(e.target.value))}
-                        className="w-full accent-[#1F3A5F] h-2 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-lg cursor-pointer border border-[#E6DFD0] dark:border-[#283D56]"
-                      />
-                    </div>
-
-                    {/* Kepanitiaan & Jobdesk Checklist Accordion */}
-                    <div className="pt-2.5 border-t border-[#E6DFD0] dark:border-[#283D56]">
-                      <div className="flex items-center justify-between">
-                        <button
-                          type="button"
-                          onClick={() => setExpandedProkerId(isExpanded ? null : p.id)}
-                          className="flex items-center gap-2 text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] hover:underline cursor-pointer"
-                        >
-                          <ListTodo className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />
-                          <span>Jobdesk Panitia</span>
-                          <span className="text-[12px] px-2.5 py-0.5 rounded-[8px] font-bold bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/40 dark:text-[#FAF6EE]">
-                            {completedCount}/{tasks.length} Selesai
-                          </span>
-                        </button>
-
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenAddTask(p)}
-                            className="px-3 py-1 text-[13px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer"
-                            title="Tambah Tugas Kepanitiaan"
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Tugas</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setExpandedProkerId(isExpanded ? null : p.id)}
-                            className="p-1.5 text-[#5A6472] dark:text-[#9AA8B8] rounded-md cursor-pointer"
-                          >
-                            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Expanded Task List */}
-                      {isExpanded && (
-                        <div className="mt-3.5 space-y-2.5 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
-                          {tasks.length === 0 ? (
-                            <div className="text-center py-4 px-3 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[12px] border border-dashed border-[#E6DFD0] dark:border-[#283D56] text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
-                              Belum ada checklist tugas panitia. Klik tombol <strong className="text-[#1F3A5F] dark:text-[#FAF6EE]">+ Tugas</strong> untuk menambahkan.
-                            </div>
-                          ) : (
-                            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                              {tasks.map((task) => (
-                                <div
-                                  key={task.id}
-                                  className={`p-3 rounded-[12px] border transition-all flex items-start justify-between gap-2.5 text-[14px] ${
-                                    task.isCompleted
-                                      ? 'bg-[#FAF6EE]/70 dark:bg-[#0E1B2C]/70 border-[#E6DFD0] dark:border-[#283D56] text-[#5A6472]'
-                                      : 'bg-[#FFFDF8] dark:bg-[#17293E] border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE]'
-                                  }`}
-                                >
-                                  <div className="flex items-start gap-2.5 min-w-0">
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleProkerTask(p.id, task.id)}
-                                      className="mt-0.5 text-[#1F3A5F] dark:text-[#F2B544] cursor-pointer shrink-0"
-                                      title={task.isCompleted ? 'Tandai belum selesai' : 'Tandai selesai'}
-                                    >
-                                      {task.isCompleted ? (
-                                        <CheckSquare className="w-4 h-4 text-[#1F3A5F] dark:text-[#FAF6EE]" />
-                                      ) : (
-                                        <Square className="w-4 h-4 text-[#5A6472]" />
-                                      )}
-                                    </button>
-
-                                    <div className="min-w-0">
-                                      <p
-                                        className={`font-semibold leading-snug break-words ${
-                                          task.isCompleted ? 'line-through text-[#5A6472] dark:text-[#9AA8B8]' : ''
-                                        }`}
-                                      >
-                                        {task.title}
-                                      </p>
-                                      <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                                        <span
-                                          className={`text-[11px] font-bold px-2 py-0.5 rounded-[6px] border ${getSectionBadgeColor(
-                                            task.section
-                                          )}`}
-                                        >
-                                          {task.section}
-                                        </span>
-                                        {task.assignedMemberName && (
-                                          <span className="inline-flex items-center gap-1 text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">
-                                            <User className="w-3.5 h-3.5 text-[#5A6472]" />
-                                            {task.assignedMemberName}
-                                          </span>
-                                        )}
-                                        {task.dueDate && (
-                                          <span className="inline-flex items-center gap-1 text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">
-                                            <Clock className="w-3.5 h-3.5 text-[#5A6472]" />
-                                            {task.dueDate}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={() => deleteProkerTask(p.id, task.id)}
-                                    className="p-1 text-[#5A6472] hover:text-[#1F3A5F] rounded-md cursor-pointer transition-colors shrink-0"
-                                    title="Hapus tugas ini"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {canApprove && p.status === 'diajukan' && (
-                    <div className="pt-3 flex items-center justify-between bg-[#FBEBC8] dark:bg-[#F2B544]/20 p-3.5 rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56]">
-                      <span className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Perlu Persetujuan:</span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => updateWorkProgram(p.id, { status: 'disetujui' })}
-                          className="simo-btn-primary min-h-[36px] px-3.5 rounded-[10px] text-[13px] font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <Check className="w-3.5 h-3.5" /> Setujui
-                        </button>
-                        <button
-                          onClick={() => updateWorkProgram(p.id, { status: 'ditolak' })}
-                          className="simo-btn-outline min-h-[36px] px-3.5 rounded-[10px] text-[13px] font-bold flex items-center gap-1 cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" /> Tolak
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: JADWAL RAPAT & NOTULEN */}
+      {/* TAB 2: JADWAL RAPAT & NOTULEN */}
       {activeTab === 'rapat' && (
         <div className="space-y-6">
           <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -894,100 +509,6 @@ export const KegiatanPresensiPage: React.FC = () => {
           )}
         </div>
       )}
-
-      {/* Modal Add Proker */}
-      <Modal
-        isOpen={isAddProkerModalOpen}
-        onClose={() => setIsAddProkerModalOpen(false)}
-        title="Tambah Program Kerja Baru"
-        subtitle="Nominal anggaran otomatis terformat dengan titik ribuan (misal: 10.000, 100.000)"
-      >
-        <form onSubmit={handleProkerSubmit} className="space-y-4">
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Nama Program Kerja</label>
-            <input
-              type="text"
-              value={prokerForm.title}
-              onChange={(e) => setProkerForm({ ...prokerForm, title: e.target.value })}
-              placeholder="Contoh: Lomba Desain Poster & Web Vokasi"
-              className="simo-input min-h-[44px] text-[15px] w-full"
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Divisi Penanggung Jawab</label>
-              <select
-                value={prokerForm.divisionId}
-                onChange={(e) => setProkerForm({ ...prokerForm, divisionId: e.target.value })}
-                className="simo-input min-h-[44px] text-[14px] w-full"
-              >
-                {divisions.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Estimasi Anggaran (Rp)
-              </label>
-              <input
-                type="text"
-                value={prokerForm.estimatedBudgetRaw}
-                onChange={(e) => {
-                  const num = parseFormattedNumber(e.target.value);
-                  setProkerForm({ ...prokerForm, estimatedBudgetRaw: formatNumber(num) });
-                }}
-                placeholder="10.000 / 100.000"
-                className="simo-input min-h-[44px] text-[15px] font-bold w-full"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Target Tanggal</label>
-            <input
-              type="date"
-              value={prokerForm.targetDate}
-              onChange={(e) => setProkerForm({ ...prokerForm, targetDate: e.target.value })}
-              className="simo-input min-h-[44px] text-[14px] w-full"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">Deskripsi Proker</label>
-            <textarea
-              value={prokerForm.description}
-              onChange={(e) => setProkerForm({ ...prokerForm, description: e.target.value })}
-              rows={3}
-              placeholder="Jelaskan tujuan dan sasaran kegiatan..."
-              className="simo-input text-[14px] w-full p-3 leading-relaxed"
-              required
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
-            <button
-              type="button"
-              onClick={() => setIsAddProkerModalOpen(false)}
-              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-            >
-              Simpan Proker
-            </button>
-          </div>
-        </form>
-      </Modal>
 
       {/* Modal Add Meeting */}
       <Modal
@@ -1155,104 +676,6 @@ export const KegiatanPresensiPage: React.FC = () => {
               className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer disabled:opacity-50"
             >
               Simpan Foto Dokumentasi
-            </button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Modal Add Committee Task */}
-      <Modal
-        isOpen={isAddTaskModalOpen}
-        onClose={() => setIsAddTaskModalOpen(false)}
-        title="Tambah Tugas Kepanitiaan"
-        subtitle={activeProkerForTask ? `Untuk Proker: ${activeProkerForTask.title}` : 'Penugasan jobdesk anggota panitia'}
-      >
-        <form onSubmit={handleTaskSubmit} className="space-y-4">
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-              Nama / Deskripsi Tugas <span className="text-[#F2B544]">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={taskForm.title}
-              onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })}
-              placeholder="Contoh: Booking Sound System & Genset 5000W"
-              className="simo-input min-h-[44px] text-[15px] w-full"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Seksi Kepanitiaan
-              </label>
-              <select
-                value={taskForm.section}
-                onChange={(e) => setTaskForm({ ...taskForm, section: e.target.value as CommitteeSection })}
-                className="simo-input min-h-[44px] text-[14px] w-full"
-              >
-                <option value="Ketua Pelaksana">Ketua Pelaksana</option>
-                <option value="Seksi Acara">Seksi Acara</option>
-                <option value="Seksi Perlengkapan">Seksi Perlengkapan</option>
-                <option value="Seksi Konsumsi">Seksi Konsumsi</option>
-                <option value="Seksi Pubdok">Seksi Pubdok</option>
-                <option value="Seksi Humas">Seksi Humas</option>
-                <option value="Seksi Keamanan">Seksi Keamanan</option>
-                <option value="Lainnya">Lainnya</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Penanggung Jawab (PIC)
-              </label>
-              <select
-                value={taskForm.assignedMemberId}
-                onChange={(e) => {
-                  const m = members.find((mem) => mem.id === e.target.value);
-                  setTaskForm({
-                    ...taskForm,
-                    assignedMemberId: e.target.value,
-                    assignedMemberName: m?.fullName || '',
-                  });
-                }}
-                className="simo-input min-h-[44px] text-[14px] w-full"
-              >
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.fullName} ({m.classRoom})
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-              Target Selesai / Deadline
-            </label>
-            <input
-              type="date"
-              value={taskForm.dueDate}
-              onChange={(e) => setTaskForm({ ...taskForm, dueDate: e.target.value })}
-              className="simo-input min-h-[44px] text-[14px] w-full"
-            />
-          </div>
-
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
-            <button
-              type="button"
-              onClick={() => setIsAddTaskModalOpen(false)}
-              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-            >
-              Simpan Tugas
             </button>
           </div>
         </form>

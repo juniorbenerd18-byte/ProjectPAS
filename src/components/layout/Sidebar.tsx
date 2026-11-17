@@ -20,9 +20,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
-  const { activePage, setActivePage, orgProfile, workPrograms, aspirations, recruitments, showToast, currentRole } = useApp();
+  const { activePage, setActivePage, orgProfile, aspirations, recruitments, showToast, currentRole } = useApp();
 
-  const pendingProkerCount = workPrograms.filter((p) => p.status === 'diajukan').length;
   const pendingAspirationsCount = aspirations ? aspirations.filter((a) => a.status === 'diterima' || a.status === 'diproses').length : 0;
   const pendingRecruitmentsCount = recruitments ? recruitments.filter((r) => r.status === 'menunggu' || r.status === 'lolos_berkas').length : 0;
 
@@ -53,7 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       id: 'kegiatan-presensi',
       label: 'Kegiatan & Presensi',
       icon: <CalendarCheck className="w-4 h-4 shrink-0" />,
-      badge: pendingProkerCount > 0 ? `${pendingProkerCount}` : null,
+      badge: null as string | null,
     },
     {
       id: 'dokumen',

@@ -27,7 +27,7 @@ export const DashboardPage: React.FC = () => {
     currentRole,
     orgProfile,
     members,
-    workPrograms,
+    events,
     meetings,
     announcements,
     aspirations,
@@ -41,9 +41,6 @@ export const DashboardPage: React.FC = () => {
   const activeMembersCount = members.filter((m) => m.status === 'aktif').length;
   const alumniCount = members.filter((m) => m.status === 'alumni').length;
 
-  const ongoingProkers = workPrograms.filter(
-    (p) => p.status === 'berjalan' || p.status === 'disetujui'
-  );
   const upcomingMeetings = meetings.filter(
     (m) => new Date(m.meetingDate) >= new Date('2026-09-01')
   );
@@ -53,7 +50,6 @@ export const DashboardPage: React.FC = () => {
   const newAspirations = aspirations
     ? aspirations.filter((a) => a.status === 'diterima' || a.status === 'diproses')
     : [];
-  const pendingProkers = workPrograms.filter((p) => p.status === 'diajukan');
   const pendingDocs = documents ? documents.filter((d) => d.status === 'pending') : [];
   const pendingRecruitments = recruitments
     ? recruitments.filter((r) => r.status === 'menunggu' || r.status === 'lolos_berkas')
@@ -61,7 +57,6 @@ export const DashboardPage: React.FC = () => {
 
   const totalActionItems =
     newAspirations.length +
-    pendingProkers.length +
     pendingDocs.length +
     pendingRecruitments.length;
 
@@ -215,30 +210,7 @@ export const DashboardPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Tugas 2: Proker Menunggu Persetujuan */}
-              {pendingProkers.length > 0 && (
-                <div className="p-2.5 sm:p-3 rounded-[12px] bg-white/10 border border-white/15 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#F2B544] text-[#1F3A5F] flex items-center justify-center shrink-0">
-                      <Briefcase className="w-4 h-4" strokeWidth={2} />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[13px] sm:text-[14px] font-bold text-[#FAF6EE] truncate">
-                        {pendingProkers.length} program kerja diajukan sekbid
-                      </p>
-                      <p className="text-[12px] text-[#A4B2C3] truncate">
-                        Menunggu persetujuan Pembina / Ketua
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setActivePage('kegiatan-presensi')}
-                    className="min-h-[34px] px-3.5 py-1 bg-[#F2B544] hover:bg-[#E0A12F] text-[#1F3A5F] font-extrabold text-[12px] rounded-[8px] transition-colors shrink-0 cursor-pointer shadow-none"
-                  >
-                    Kelola
-                  </button>
-                </div>
-              )}
+
 
               {/* Tugas 3: Dokumen / Surat Pending */}
               {pendingDocs.length > 0 && (
@@ -333,22 +305,22 @@ export const DashboardPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Segmen 2: Program Kerja Berjalan */}
+          {/* Segmen 2: Agenda Kegiatan & Rapat */}
           <div className="p-6 flex flex-col justify-between space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-[12px] bg-[#E4EAF2] dark:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center justify-center">
-                  <Briefcase className="w-5 h-5" strokeWidth={2} />
+                  <Calendar className="w-5 h-5" strokeWidth={2} />
                 </div>
                 <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">
-                  Program Kerja Berjalan
+                  Agenda Rapat &amp; Kegiatan
                 </span>
               </div>
               <button
                 onClick={() => setActivePage('kegiatan-presensi')}
                 className="text-[#5A6472] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE] p-1.5 rounded-[8px]"
-                title="Kelola Program Kerja"
-                aria-label="Kelola Program Kerja"
+                title="Kelola Kegiatan"
+                aria-label="Kelola Kegiatan"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -356,13 +328,13 @@ export const DashboardPage: React.FC = () => {
 
             <div>
               <div className="text-3xl font-black text-[#1F3A5F] dark:text-[#FAF6EE]">
-                {ongoingProkers.length}{' '}
+                {meetings.length}{' '}
                 <span className="text-lg font-semibold text-[#5A6472] dark:text-[#9AA8B8]">
-                  / {workPrograms.length} proker
+                  agenda rapat
                 </span>
               </div>
               <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
-                Target capaian semester gasal
+                {events.length} dokumentasi kegiatan aktif
               </p>
             </div>
 

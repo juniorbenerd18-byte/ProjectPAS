@@ -24,10 +24,6 @@ import { DataAnggota } from './pages/anggota/DataAnggota';
 import { AnggotaAktif } from './pages/anggota/AnggotaAktif';
 import { AlumniPage } from './pages/anggota/AlumniPage';
 import { KartuAnggota } from './pages/anggota/KartuAnggota';
-import { DaftarProker } from './pages/proker/DaftarProker';
-import { TambahProker } from './pages/proker/TambahProker';
-import { ProgressProker } from './pages/proker/ProgressProker';
-import { EvaluasiProker } from './pages/proker/EvaluasiProker';
 import { KalenderKegiatan } from './pages/kegiatan/KalenderKegiatan';
 import { KegiatanMendatang } from './pages/kegiatan/KegiatanMendatang';
 import { KegiatanSelesai } from './pages/kegiatan/KegiatanSelesai';
@@ -88,15 +84,7 @@ const MainLayout: React.FC = () => {
         return <AlumniPage />;
       case 'anggota-kartu':
         return <KartuAnggota />;
-      // Program Kerja
-      case 'proker-daftar':
-        return <DaftarProker />;
-      case 'proker-tambah':
-        return <TambahProker />;
-      case 'proker-progress':
-        return <ProgressProker />;
-      case 'proker-evaluasi':
-        return <EvaluasiProker />;
+
       // Kegiatan
       case 'kegiatan-kalender':
         return <KalenderKegiatan />;
