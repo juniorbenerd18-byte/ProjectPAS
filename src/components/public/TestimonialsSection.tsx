@@ -99,10 +99,10 @@ export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-[#1F3A5F]">
-                KATA ANGGOTA
+                CERITA NYATA
               </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold text-[#1F3A5F] tracking-tight leading-tight mt-2">
-                Cerita nyata dari <Highlight>anggota</Highlight> kami
+                Dari <Highlight>pengurus</Highlight> kami
               </h2>
               <p className="text-sm sm:text-base text-[#5A6472] mt-2 max-w-xl">
                 Pengalaman berharga, pembelajaran kepemimpinan, dan kesan mendalam selama berdinamika bersama organisasi.

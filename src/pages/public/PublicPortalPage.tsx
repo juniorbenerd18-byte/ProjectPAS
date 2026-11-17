@@ -449,19 +449,19 @@ export const PublicPortalPage: React.FC = () => {
           ) : (
             <form onSubmit={handleSubmitRegistration} className="space-y-4 py-2">
               {/* Event Quick Info Banner */}
-              <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-1.5">
+              <div className="p-4 rounded-[14px] bg-white border border-slate-200 space-y-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[#F2B544] bg-[#1F3A5F] px-2.5 py-0.5 rounded-[6px]">
                     {selectedEventForRegister.category || 'Kegiatan OSIS'}
                   </span>
-                  <span className="text-[12px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  <span className="text-[12px] font-bold text-[#1F3A5F]">
                     {selectedEventForRegister.date}
                   </span>
                 </div>
-                <h4 className="font-extrabold text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE] leading-snug">
+                <h4 className="font-extrabold text-[15px] text-[#1F3A5F] leading-snug">
                   {selectedEventForRegister.title}
                 </h4>
-                <div className="flex items-center gap-3 text-[12px] text-[#5A6472] dark:text-[#9AA8B8] pt-0.5">
+                <div className="flex items-center gap-3 text-[12px] text-[#5A6472] pt-0.5">
                   {selectedEventForRegister.time && <span>🕒 {selectedEventForRegister.time}</span>}
                   <span>📍 {selectedEventForRegister.location}</span>
                 </div>
@@ -476,7 +476,7 @@ export const PublicPortalPage: React.FC = () => {
               {/* Inputs */}
               <div className="space-y-3">
                 <div>
-                  <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                  <label className="block text-[13px] font-bold text-[#1F3A5F] mb-1">
                     Nama Lengkap Siswa <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -485,13 +485,13 @@ export const PublicPortalPage: React.FC = () => {
                     value={regForm.studentName}
                     onChange={(e) => setRegForm({ ...regForm, studentName: e.target.value })}
                     placeholder="Contoh: Muhammad Rizky Pratama"
-                    className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                    className="w-full px-3.5 py-2.5 rounded-[12px] bg-white border border-slate-200 text-[#1F3A5F] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F]"
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                    <label className="block text-[13px] font-bold text-[#1F3A5F] mb-1">
                       NISN <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -500,12 +500,12 @@ export const PublicPortalPage: React.FC = () => {
                       value={regForm.nisn}
                       onChange={(e) => setRegForm({ ...regForm, nisn: e.target.value })}
                       placeholder="Contoh: 0081234567"
-                      className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                      className="w-full px-3.5 py-2.5 rounded-[12px] bg-white border border-slate-200 text-[#1F3A5F] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                    <label className="block text-[13px] font-bold text-[#1F3A5F] mb-1">
                       Kelas &amp; Jurusan <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -514,13 +514,13 @@ export const PublicPortalPage: React.FC = () => {
                       value={regForm.classRoom}
                       onChange={(e) => setRegForm({ ...regForm, classRoom: e.target.value })}
                       placeholder="Contoh: X PPLG 1"
-                      className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                      className="w-full px-3.5 py-2.5 rounded-[12px] bg-white border border-slate-200 text-[#1F3A5F] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F]"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                  <label className="block text-[13px] font-bold text-[#1F3A5F] mb-1">
                     Nomor WhatsApp / HP <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -529,7 +529,7 @@ export const PublicPortalPage: React.FC = () => {
                     value={regForm.phone}
                     onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
                     placeholder="Contoh: 081234567890"
-                    className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                    className="w-full px-3.5 py-2.5 rounded-[12px] bg-white border border-slate-200 text-[#1F3A5F] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F]"
                   />
                 </div>
               </div>

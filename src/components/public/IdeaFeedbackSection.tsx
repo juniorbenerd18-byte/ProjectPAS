@@ -62,10 +62,10 @@ export const IdeaFeedbackSection: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-bold text-[#0F172A]">
-                Kotak Ide &amp; Masukan
+                Kotak Pesan
               </h3>
               <p className="text-xs text-[#64748B]">
-                Sampaikan ide atau saran Anda. Pengurus OSIS akan meninjau dan membalas lewat Gmail.
+                Sampaikan pesan Anda. Pengurus OSIS akan meninjau dan membalas lewat Gmail.
               </p>
             </div>
           </div>
