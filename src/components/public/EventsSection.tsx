@@ -7,6 +7,7 @@ import { ScrollReveal } from '../common/ScrollReveal';
 interface EventsSectionProps {
   events?: PublicEventCardData[];
   onRegisterEvent?: (eventId: string) => void;
+  onDetailEvent?: (eventId: string) => void;
 }
 
 const DEFAULT_PUBLIC_EVENTS: PublicEventCardData[] = [
@@ -19,6 +20,7 @@ const DEFAULT_PUBLIC_EVENTS: PublicEventCardData[] = [
     category: 'Kepemimpinan',
     photoUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=800&auto=format&fit=crop&q=80',
     description: 'Pelatihan karakter kepemimpinan, manajemen organisasi, dan sinergi tim bagi calon pengurus.',
+    requiresRegistration: true,
   },
   {
     id: 'evt-2',
@@ -29,6 +31,7 @@ const DEFAULT_PUBLIC_EVENTS: PublicEventCardData[] = [
     category: 'Seni & Budaya',
     photoUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80',
     description: 'Ajang unjuk kebolehan minat bakat musik tradisional, teater monolog, dan tari daerah.',
+    requiresRegistration: false,
   },
   {
     id: 'evt-3',
@@ -39,6 +42,7 @@ const DEFAULT_PUBLIC_EVENTS: PublicEventCardData[] = [
     category: 'Teknologi',
     photoUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&auto=format&fit=crop&q=80',
     description: 'Edukasi etika digital, pemanfaatan AI positif, serta proteksi privasi di ruang daring.',
+    requiresRegistration: true,
   },
   {
     id: 'evt-4',
@@ -49,6 +53,7 @@ const DEFAULT_PUBLIC_EVENTS: PublicEventCardData[] = [
     category: 'Sosial & Ekologi',
     photoUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop&q=80',
     description: 'Gerakan gotong royong kepedulian iklim dan penghijauan sekolah bersama warga sekitar.',
+    requiresRegistration: false,
   },
   {
     id: 'evt-5',
@@ -59,12 +64,14 @@ const DEFAULT_PUBLIC_EVENTS: PublicEventCardData[] = [
     category: 'Kewirausahaan',
     photoUrl: 'https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=800&auto=format&fit=crop&q=80',
     description: 'Pameran produk karya wirausaha siswa dari tata boga, kerajinan, hingga startup rintisan.',
+    requiresRegistration: false,
   },
 ];
 
 export const EventsSection: React.FC<EventsSectionProps> = ({
   events = DEFAULT_PUBLIC_EVENTS,
   onRegisterEvent,
+  onDetailEvent,
 }) => {
   const [startIndex, setStartIndex] = useState(0);
 
@@ -148,6 +155,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                 <PublicEventCard
                   event={evt}
                   onRegister={() => onRegisterEvent && onRegisterEvent(evt.id)}
+                  onDetail={() => onDetailEvent && onDetailEvent(evt.id)}
                 />
               </ScrollReveal>
             ))}

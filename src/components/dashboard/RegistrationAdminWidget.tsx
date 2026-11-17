@@ -121,7 +121,7 @@ export const RegistrationAdminWidget: React.FC = () => {
       <ScrollReveal distance={28} duration={650}>
         <div className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-6 shadow-none space-y-6">
           {/* Header Widget */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
             <div className="flex items-start gap-3">
               <div className="w-10 h-10 rounded-[12px] bg-[#1F3A5F] text-[#FAF6EE] flex items-center justify-center shrink-0">
                 <UserPlus className="w-5 h-5 text-[#F2B544]" strokeWidth={2} />
@@ -132,7 +132,7 @@ export const RegistrationAdminWidget: React.FC = () => {
                     Pendaftaran &amp; Calon Anggota Baru (OPREC)
                   </h3>
                   <span
-                    className={`inline-flex items-center gap-1.5 text-[13px] font-bold px-2.5 py-0.5 rounded-full border ${
+                    className={`inline-flex items-center gap-1.5 text-[12px] sm:text-[13px] font-bold px-2.5 py-0.5 rounded-full border ${
                       isRegistrationOpen
                         ? 'bg-[#E4EAF2] text-[#1F3A5F] border-[#E6DFD0] dark:bg-[#213B5C] dark:text-[#FAF6EE]'
                         : 'bg-[#FBEBC8] text-[#7A4B00] border-[#F2B544] dark:bg-[#3D2E14] dark:text-[#FFD584]'
@@ -146,18 +146,18 @@ export const RegistrationAdminWidget: React.FC = () => {
                     <span>{isRegistrationOpen ? 'Pendaftaran Dibuka' : 'Pendaftaran Ditutup'}</span>
                   </span>
                 </div>
-                <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
+                <p className="text-[13px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8] mt-0.5">
                   Pantau formulir registrasi online web publik dan Google Form pendaftaran siswa baru.
                 </p>
               </div>
             </div>
 
-            {/* Tombol Aksi Cepat Header */}
-            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+            {/* Tombol Aksi Cepat Header - Sederajat & Responsif */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 w-full xl:w-auto shrink-0">
               <button
                 type="button"
                 onClick={handleToggleStatus}
-                className={`min-h-[42px] px-3.5 py-2 rounded-[12px] text-[13px] sm:text-[14px] font-bold transition-all flex items-center gap-2 cursor-pointer shadow-none border ${
+                className={`min-h-[42px] px-3.5 py-2 rounded-[12px] text-[13px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-none border ${
                   isRegistrationOpen
                     ? 'bg-transparent hover:bg-[#FBEBC8] text-[#1F3A5F] dark:text-[#FAF6EE] border-[#E6DFD0] dark:border-[#283D56]'
                     : 'bg-[#F2B544] hover:bg-[#E0A12F] text-[#1F3A5F] border-[#F2B544]'
@@ -165,13 +165,13 @@ export const RegistrationAdminWidget: React.FC = () => {
               >
                 {isRegistrationOpen ? (
                   <>
-                    <Lock className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
-                    <span>Tutup Pendaftaran</span>
+                    <Lock className="w-4 h-4 text-[#F2B544] shrink-0" strokeWidth={2} />
+                    <span className="whitespace-nowrap">Tutup Pendaftaran</span>
                   </>
                 ) : (
                   <>
-                    <Unlock className="w-4 h-4 text-[#1F3A5F]" strokeWidth={2} />
-                    <span>Buka Pendaftaran</span>
+                    <Unlock className="w-4 h-4 text-[#1F3A5F] shrink-0" strokeWidth={2} />
+                    <span className="whitespace-nowrap">Buka Pendaftaran</span>
                   </>
                 )}
               </button>
@@ -179,19 +179,19 @@ export const RegistrationAdminWidget: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}
-                className="min-h-[42px] px-3.5 py-2 bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all border border-[#E6DFD0] dark:border-[#283D56] flex items-center gap-2 cursor-pointer"
+                className="min-h-[42px] px-3.5 py-2 bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px] font-bold rounded-[12px] transition-all border border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Edit3 className="w-4 h-4" strokeWidth={2} />
-                <span>Atur Jadwal &amp; Form</span>
+                <Edit3 className="w-4 h-4 shrink-0" strokeWidth={2} />
+                <span className="whitespace-nowrap">Atur Jadwal &amp; Form</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleNavigateToApplicants}
-                className="min-h-[42px] px-3.5 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all shadow-none flex items-center gap-2 cursor-pointer"
+                className="min-h-[42px] px-3.5 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[13px] font-bold rounded-[12px] transition-all shadow-none flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Semua Pendaftar</span>
-                <ArrowUpRight className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
+                <span className="whitespace-nowrap">Semua Pendaftar</span>
+                <ArrowUpRight className="w-4 h-4 text-[#F2B544] shrink-0" strokeWidth={2} />
               </button>
             </div>
           </div>

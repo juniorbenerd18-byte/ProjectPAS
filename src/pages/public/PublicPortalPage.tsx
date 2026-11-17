@@ -1,6 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { portalData } from '../../data/portalData';
+import { EventRegistration } from '../../types';
+import { Modal } from '../../components/common/Modal';
+import { CheckCircle2, Printer, Ticket } from 'lucide-react';
 
 // Komponen Redesign Halaman Publik Baru
 import { PublicNavbar } from '../../components/public/PublicNavbar';
@@ -24,7 +27,22 @@ export const PublicPortalPage: React.FC = () => {
     galleryPhotos,
     showToast,
     orgProfile,
+    registerForEvent,
   } = useApp();
+
+  // Dialog State untuk Registrasi & Detail Kegiatan
+  const [selectedEventForRegister, setSelectedEventForRegister] = useState<PublicEventCardData | null>(null);
+  const [selectedEventForDetail, setSelectedEventForDetail] = useState<PublicEventCardData | null>(null);
+  const [issuedTicket, setIssuedTicket] = useState<EventRegistration | null>(null);
+
+  // Form input pendaftaran
+  const [regForm, setRegForm] = useState({
+    studentName: '',
+    nisn: '',
+    classRoom: '',
+    phone: '',
+  });
+  const [regError, setRegError] = useState<string | null>(null);
 
   // 1. Data Organisasi Terpadu — merge admin-editable orgProfile fields over static portalData
   const organizationData = useMemo(() => {
@@ -148,6 +166,22 @@ export const PublicPortalPage: React.FC = () => {
   }, [members]);
 
   // 4. Sinkronisasi Kegiatan Publik
+  const checkRegistrationRequired = (title: string, desc?: string, cat?: string) => {
+    const text = `${title} ${desc || ''} ${cat || ''}`.toLowerCase();
+    return (
+      text.includes('ldks') ||
+      text.includes('workshop') ||
+      text.includes('pelatihan') ||
+      text.includes('lomba') ||
+      text.includes('seleksi') ||
+      text.includes('seminar') ||
+      text.includes('pendaftaran') ||
+      text.includes('registrasi') ||
+      text.includes('oprec') ||
+      text.includes('diklat')
+    );
+  };
+
   const publicEvents: PublicEventCardData[] = useMemo(() => {
     if (events && events.length > 0) {
       const upcoming = events.filter((e) => e.status === 'mendatang');
@@ -164,6 +198,7 @@ export const PublicPortalPage: React.FC = () => {
               ? e.documentationPhotos[0]
               : undefined,
           description: e.description,
+          requiresRegistration: checkRegistrationRequired(e.title, e.description, e.workProgramTitle),
         }));
       }
     }
@@ -177,6 +212,7 @@ export const PublicPortalPage: React.FC = () => {
       category: te.category,
       photoUrl: undefined,
       description: te.description,
+      requiresRegistration: checkRegistrationRequired(te.title, te.description, te.category),
     }));
   }, [events]);
 
@@ -187,10 +223,60 @@ export const PublicPortalPage: React.FC = () => {
 
   const handleRegisterEvent = (eventId: string) => {
     const targetEvent = publicEvents.find((e) => e.id === eventId);
-    showToast(
-      `Pendaftaran untuk "${targetEvent?.title || 'kegiatan'}" dibuka. Silakan hubungi pengurus atau panitia kegiatan!`,
-      'info'
-    );
+    if (!targetEvent) return;
+    setSelectedEventForRegister(targetEvent);
+    setIssuedTicket(null);
+    setRegError(null);
+    setRegForm({
+      studentName: '',
+      nisn: '',
+      classRoom: '',
+      phone: '',
+    });
+  };
+
+  const handleDetailEvent = (eventId: string) => {
+    const targetEvent = publicEvents.find((e) => e.id === eventId);
+    if (!targetEvent) return;
+    setSelectedEventForDetail(targetEvent);
+  };
+
+  const handleSubmitRegistration = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegError(null);
+    if (!selectedEventForRegister) return;
+
+    if (!regForm.studentName.trim()) {
+      setRegError('Nama lengkap siswa wajib diisi.');
+      return;
+    }
+    if (!regForm.nisn.trim()) {
+      setRegError('NISN wajib diisi.');
+      return;
+    }
+    if (!regForm.classRoom.trim()) {
+      setRegError('Kelas & Jurusan wajib diisi.');
+      return;
+    }
+    if (!regForm.phone.trim()) {
+      setRegError('Nomor WhatsApp / HP wajib diisi.');
+      return;
+    }
+
+    try {
+      const ticket = registerForEvent({
+        eventId: selectedEventForRegister.id,
+        eventTitle: selectedEventForRegister.title,
+        studentName: regForm.studentName.trim(),
+        nisn: regForm.nisn.trim(),
+        classRoom: regForm.classRoom.trim(),
+        phone: regForm.phone.trim(),
+      });
+      setIssuedTicket(ticket);
+    } catch (err) {
+      console.error(err);
+      setRegError('Gagal memproses pendaftaran. Silakan coba kembali.');
+    }
   };
 
   return (
@@ -241,6 +327,7 @@ export const PublicPortalPage: React.FC = () => {
         <EventsSection
           events={publicEvents}
           onRegisterEvent={handleRegisterEvent}
+          onDetailEvent={handleDetailEvent}
         />
 
         {/* 7. Galeri / Dokumentasi Kegiatan Lalu (Latar: Putih) */}
@@ -258,6 +345,275 @@ export const PublicPortalPage: React.FC = () => {
         organization={organizationData}
         onAdminLogin={handleAdminLogin}
       />
+
+      {/* MODAL 1: Formulir Pendaftaran Kegiatan & E-Tiket Digital */}
+      {selectedEventForRegister && (
+        <Modal
+          isOpen={Boolean(selectedEventForRegister)}
+          onClose={() => {
+            setSelectedEventForRegister(null);
+            setIssuedTicket(null);
+          }}
+          title={issuedTicket ? 'E-Tiket Resmi Diterbitkan' : 'Pendaftaran Kegiatan Siswa'}
+          subtitle={
+            issuedTicket
+              ? 'Tunjukkan tiket ini ke panitia di lokasi kegiatan'
+              : selectedEventForRegister.title
+          }
+          maxWidth="lg"
+        >
+          {issuedTicket ? (
+            <div className="space-y-5 py-2">
+              {/* Alert Sukses */}
+              <div className="p-4 rounded-[16px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-center gap-3">
+                <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div>
+                  <h4 className="font-extrabold text-[15px] text-emerald-900 dark:text-emerald-200">
+                    Pendaftaran Berhasil!
+                  </h4>
+                  <p className="text-[13px] text-emerald-700 dark:text-emerald-300">
+                    Data Anda telah terdaftar dan tiket resmi telah berhasil diterbitkan.
+                  </p>
+                </div>
+              </div>
+
+              {/* Kartu E-Tiket Digital */}
+              <div className="p-6 rounded-[20px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border-2 border-dashed border-[#F2B544] relative space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E6DFD0] dark:border-[#283D56]">
+                  <div>
+                    <span className="text-[11px] font-bold text-[#F2B544] uppercase tracking-wider block">
+                      {organizationData.appName || 'SIMO'} OFFICIAL PASS
+                    </span>
+                    <h5 className="font-extrabold text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                      {issuedTicket.eventTitle}
+                    </h5>
+                  </div>
+                  <div className="px-3.5 py-1.5 rounded-[10px] bg-[#1F3A5F] text-[#F2B544] font-mono font-black text-sm tracking-wider">
+                    {issuedTicket.ticketCode}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-[13px]">
+                  <div>
+                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Nama Peserta</span>
+                    <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{issuedTicket.studentName}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Kelas &amp; NISN</span>
+                    <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                      {issuedTicket.classRoom} • {issuedTicket.nisn}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Waktu &amp; Tanggal</span>
+                    <span className="font-medium text-[#1F3A5F] dark:text-[#FAF6EE]">
+                      {selectedEventForRegister.date} {selectedEventForRegister.time ? `• ${selectedEventForRegister.time}` : ''}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Lokasi Acara</span>
+                    <span className="font-medium text-[#1F3A5F] dark:text-[#FAF6EE] truncate block">
+                      {selectedEventForRegister.location}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between text-[11px] text-[#5A6472] dark:text-[#9AA8B8]">
+                  <span>Terdaftar: {issuedTicket.registeredAt}</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">STATUS: TERKONFIRMASI</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="simo-btn-outline px-4 py-2 text-[13px] font-bold rounded-[10px] flex items-center gap-2 cursor-pointer"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Tiket</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedEventForRegister(null);
+                    setIssuedTicket(null);
+                  }}
+                  className="px-5 py-2 rounded-[10px] bg-[#1F3A5F] text-[#FAF6EE] text-[13px] font-bold hover:bg-[#162B46] transition-colors cursor-pointer"
+                >
+                  Selesai
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmitRegistration} className="space-y-4 py-2">
+              {/* Event Quick Info Banner */}
+              <div className="p-4 rounded-[14px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#F2B544] bg-[#1F3A5F] px-2.5 py-0.5 rounded-[6px]">
+                    {selectedEventForRegister.category || 'Kegiatan OSIS'}
+                  </span>
+                  <span className="text-[12px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    {selectedEventForRegister.date}
+                  </span>
+                </div>
+                <h4 className="font-extrabold text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE] leading-snug">
+                  {selectedEventForRegister.title}
+                </h4>
+                <div className="flex items-center gap-3 text-[12px] text-[#5A6472] dark:text-[#9AA8B8] pt-0.5">
+                  {selectedEventForRegister.time && <span>🕒 {selectedEventForRegister.time}</span>}
+                  <span>📍 {selectedEventForRegister.location}</span>
+                </div>
+              </div>
+
+              {regError && (
+                <div className="p-3 rounded-[10px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-[13px] font-semibold">
+                  {regError}
+                </div>
+              )}
+
+              {/* Inputs */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                    Nama Lengkap Siswa <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={regForm.studentName}
+                    onChange={(e) => setRegForm({ ...regForm, studentName: e.target.value })}
+                    placeholder="Contoh: Muhammad Rizky Pratama"
+                    className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                      NISN <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regForm.nisn}
+                      onChange={(e) => setRegForm({ ...regForm, nisn: e.target.value })}
+                      placeholder="Contoh: 0081234567"
+                      className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                      Kelas &amp; Jurusan <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={regForm.classRoom}
+                      onChange={(e) => setRegForm({ ...regForm, classRoom: e.target.value })}
+                      placeholder="Contoh: X PPLG 1"
+                      className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                    Nomor WhatsApp / HP <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={regForm.phone}
+                    onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+                    placeholder="Contoh: 081234567890"
+                    className="w-full px-3.5 py-2.5 rounded-[12px] bg-[#FAF6EE] dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] font-semibold focus:outline-none focus:border-[#1F3A5F] dark:focus:border-[#F2B544]"
+                  />
+                </div>
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+                <button
+                  type="button"
+                  onClick={() => setSelectedEventForRegister(null)}
+                  className="px-4 py-2 text-[13px] font-bold text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE] cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-[12px] bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[13px] font-bold flex items-center gap-2 cursor-pointer transition-colors shadow-none"
+                >
+                  <Ticket className="w-4 h-4 text-[#F2B544]" />
+                  <span>Daftar &amp; Dapatkan Tiket</span>
+                </button>
+              </div>
+            </form>
+          )}
+        </Modal>
+      )}
+
+      {/* MODAL 2: Detail Kegiatan Terbuka untuk Umum */}
+      {selectedEventForDetail && (
+        <Modal
+          isOpen={Boolean(selectedEventForDetail)}
+          onClose={() => setSelectedEventForDetail(null)}
+          title="Informasi Kegiatan Publik"
+          subtitle={selectedEventForDetail.category || 'Agenda Terbuka OSIS'}
+          maxWidth="md"
+        >
+          <div className="space-y-4 py-2">
+            {selectedEventForDetail.photoUrl && (
+              <img
+                src={selectedEventForDetail.photoUrl}
+                alt={selectedEventForDetail.title}
+                className="w-full h-48 rounded-[14px] object-cover border border-[#E6DFD0] dark:border-[#283D56]"
+              />
+            )}
+
+            <div>
+              <h4 className="text-lg font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] leading-snug">
+                {selectedEventForDetail.title}
+              </h4>
+              <div className="flex flex-wrap items-center gap-3 text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mt-2">
+                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">📅 {selectedEventForDetail.date}</span>
+                {selectedEventForDetail.time && <span>🕒 {selectedEventForDetail.time}</span>}
+                <span>📍 {selectedEventForDetail.location}</span>
+              </div>
+            </div>
+
+            {selectedEventForDetail.description && (
+              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed pt-1">
+                {selectedEventForDetail.description}
+              </p>
+            )}
+
+            {/* Banner Terbuka untuk Umum */}
+            <div className="p-4 rounded-[14px] bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 flex items-start gap-3 text-emerald-800 dark:text-emerald-300 text-[13px]">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold">Terbuka Bebas untuk Umum</p>
+                <p className="text-emerald-700 dark:text-emerald-300/90 mt-0.5 leading-relaxed">
+                  Kegiatan ini tidak memerlukan pendaftaran atau tiket khusus. Seluruh siswa, guru, dan warga sekolah dapat langsung hadir meramaikan acara di lokasi sesuai jadwal!
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedEventForDetail(null)}
+                className="px-5 py-2 rounded-[10px] bg-[#1F3A5F] text-[#FAF6EE] text-[13px] font-bold hover:bg-[#162B46] cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

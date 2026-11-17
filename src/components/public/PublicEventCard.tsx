@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, ArrowRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, ArrowRight, CheckCircle2, Info } from 'lucide-react';
 
 export interface PublicEventCardData {
   id: string;
@@ -10,16 +10,19 @@ export interface PublicEventCardData {
   category?: string;
   photoUrl?: string;
   description?: string;
+  requiresRegistration?: boolean;
 }
 
 interface PublicEventCardProps {
   event: PublicEventCardData;
   onRegister?: (eventId: string) => void;
+  onDetail?: (eventId: string) => void;
 }
 
 export const PublicEventCard: React.FC<PublicEventCardProps> = ({
   event,
   onRegister,
+  onDetail,
 }) => {
   return (
     <div className="bg-[#FFFDF8] border border-[#E6DFD0] rounded-xl overflow-hidden shadow-xs flex flex-col h-full hover:border-[#1F3A5F] transition-all duration-200 group">
@@ -72,16 +75,37 @@ export const PublicEventCard: React.FC<PublicEventCardProps> = ({
           )}
         </div>
 
-        {/* Tombol Aksi "Daftar" */}
-        <div className="pt-2 border-t border-[#E6DFD0]/70 flex items-center justify-between">
-          <span className="text-[11px] text-[#5A6472] font-medium">Terbuka untuk Umum</span>
-          <button
-            onClick={() => onRegister && onRegister(event.id)}
-            className="px-3.5 py-1.5 text-xs font-bold text-[#FAF6EE] bg-[#1F3A5F] hover:bg-[#162B46] rounded-lg shadow-2xs transition-colors flex items-center gap-1 cursor-pointer"
-          >
-            Daftar
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+        {/* Tombol Aksi & Status Akses Kegiatan */}
+        <div className="pt-3 border-t border-[#E6DFD0]/70 flex items-center justify-between gap-2">
+          {event.requiresRegistration ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#7A4B00] bg-[#FBEBC8] px-2.5 py-1 rounded-md border border-[#F2B544]/40">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F2B544] animate-pulse" />
+                Wajib Daftar
+              </span>
+              <button
+                onClick={() => onRegister && onRegister(event.id)}
+                className="px-3.5 py-1.5 text-xs font-bold text-[#FAF6EE] bg-[#1F3A5F] hover:bg-[#162B46] rounded-lg shadow-2xs transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Daftar</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </>
+          ) : (
+            <>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                Terbuka Bebas
+              </span>
+              <button
+                onClick={() => onDetail && onDetail(event.id)}
+                className="px-3 py-1.5 text-xs font-bold text-[#1F3A5F] bg-[#FAF6EE] hover:bg-[#E4EAF2] border border-[#E6DFD0] rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+              >
+                <Info className="w-3.5 h-3.5 text-[#5A6472]" />
+                <span>Info Acara</span>
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
