@@ -18,7 +18,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Meeting } from '../../types';
+import { Meeting, EventItem } from '../../types';
 import { formatDateIndo, formatAttendanceTime, normalizeMajor } from '../../lib/utils';
 import { FaceRecognitionScanner } from '../../components/presensi/FaceRecognitionScanner';
 import { Modal } from '../../components/common/Modal';
@@ -33,6 +33,8 @@ export const KegiatanPresensiPage: React.FC = () => {
     addMeeting,
     updateMeeting,
     addEvent,
+    updateEvent,
+    deleteEvent,
     addEventPhoto,
     removeEventPhoto,
     currentRole,
@@ -40,7 +42,7 @@ export const KegiatanPresensiPage: React.FC = () => {
     orgProfile,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'presensi' | 'rapat' | 'dokumentasi'>('presensi');
+  const [activeTab, setActiveTab] = useState<'presensi' | 'kegiatan' | 'rapat' | 'dokumentasi'>('presensi');
   const [selectedMeetingId, setSelectedMeetingId] = useState<string>(meetings[0]?.id || '');
 
   // Role pembatasan yang berwenang membuka / menutup sesi presensi
@@ -77,6 +79,69 @@ export const KegiatanPresensiPage: React.FC = () => {
     eventTitle: string;
     photoUrl: string;
   } | null>(null);
+
+  // Event (Kegiatan) state & filter
+  const [isAddEventModalOpen, setIsAddEventModalOpen] = useState(false);
+  const [confirmDeleteEvent, setConfirmDeleteEvent] = useState<EventItem | null>(null);
+  const [initialEventPhoto, setInitialEventPhoto] = useState('');
+  const [eventFilter, setEventFilter] = useState<'semua' | 'mendatang' | 'selesai'>('semua');
+  const [eventSearch, setEventSearch] = useState('');
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    description: '',
+    eventDate: new Date().toISOString().split('T')[0],
+    startTime: '08:00',
+    endTime: '12:00',
+    location: 'SMK Negeri 1 Cerdas Bangsa',
+    status: 'mendatang' as EventItem['status'],
+  });
+
+  const handleEventSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!eventForm.title.trim()) {
+      showToast('Nama kegiatan wajib diisi!', 'error');
+      return;
+    }
+
+    const cleanToken = `EVT-${eventForm.title
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .slice(0, 8)
+      .toUpperCase()}-${Date.now().toString().slice(-4)}`;
+
+    addEvent({
+      title: eventForm.title.trim(),
+      description: eventForm.description.trim(),
+      eventDate: eventForm.eventDate,
+      startTime: eventForm.startTime || '08:00',
+      endTime: eventForm.endTime || '12:00',
+      location: eventForm.location.trim() || 'SMK Negeri 1 Cerdas Bangsa',
+      status: eventForm.status,
+      documentationPhotos: initialEventPhoto ? [initialEventPhoto] : [],
+      qrToken: cleanToken,
+    });
+
+    setEventForm({
+      title: '',
+      description: '',
+      eventDate: new Date().toISOString().split('T')[0],
+      startTime: '08:00',
+      endTime: '12:00',
+      location: 'SMK Negeri 1 Cerdas Bangsa',
+      status: 'mendatang',
+    });
+    setInitialEventPhoto('');
+    setIsAddEventModalOpen(false);
+  };
+
+  const filteredEvents = events.filter((evt) => {
+    const matchesFilter =
+      eventFilter === 'semua' ? true : evt.status === eventFilter;
+    const matchesSearch =
+      evt.title.toLowerCase().includes(eventSearch.toLowerCase()) ||
+      evt.location.toLowerCase().includes(eventSearch.toLowerCase()) ||
+      evt.description.toLowerCase().includes(eventSearch.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   const handleOpenAddPhoto = () => {
     const validId = events.some((e) => e.id === selectedEventId)
@@ -163,12 +228,12 @@ export const KegiatanPresensiPage: React.FC = () => {
             Kegiatan &amp; Presensi Organisasi
           </h2>
           <p className="hidden sm:block text-[13px] sm:text-[15px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
-            Presensi scan wajah biometrik, jadwal agenda rapat, dan galeri foto
+            Presensi scan wajah biometrik, jadwal kegiatan acara, rapat pengurus, dan galeri foto
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="grid grid-cols-3 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch md:self-auto shrink-0">
+        <div className="grid grid-cols-4 sm:flex p-1 sm:p-1.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] rounded-[12px] sm:rounded-[14px] gap-1 self-stretch md:self-auto shrink-0">
           <button
             onClick={() => setActiveTab('presensi')}
             className={`min-h-[36px] sm:min-h-[44px] px-2 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
@@ -179,6 +244,17 @@ export const KegiatanPresensiPage: React.FC = () => {
           >
             <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span>Presensi</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('kegiatan')}
+            className={`min-h-[36px] sm:min-h-[44px] px-2 sm:px-4 py-1.5 sm:py-2 text-[12px] sm:text-[14px] font-bold rounded-[8px] sm:rounded-[10px] transition-all flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer ${
+              activeTab === 'kegiatan'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-sm'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span>Kegiatan</span>
           </button>
           <button
             onClick={() => setActiveTab('rapat')}
@@ -369,7 +445,191 @@ export const KegiatanPresensiPage: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 2: JADWAL RAPAT & NOTULEN */}
+      {/* TAB 2: AGENDA & JADWAL KEGIATAN */}
+      {activeTab === 'kegiatan' && (
+        <div className="space-y-6">
+          <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-[15px] sm:text-[17px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2">
+                <span>Daftar &amp; Agenda Kegiatan Organisasi</span>
+                <span className="text-[12px] font-bold px-2.5 py-0.5 rounded-full bg-[#E4EAF2] text-[#1F3A5F] dark:bg-[#1F3A5F]/60 dark:text-[#E4EAF2]">
+                  {events.length} Kegiatan
+                </span>
+              </h3>
+              <p className="text-[12px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8]">
+                Jadwalkan kegiatan acara baru OSIS, kelola waktu pelaksanaan, lokasi, serta foto dokumentasi
+              </p>
+            </div>
+            <button
+              onClick={() => setIsAddEventModalOpen(true)}
+              className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Buat Kegiatan Baru</span>
+            </button>
+          </div>
+
+          {/* Filter & Pencarian Kegiatan */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-4 h-4 text-[#5A6472] dark:text-[#9AA8B8] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={eventSearch}
+                onChange={(e) => setEventSearch(e.target.value)}
+                placeholder="Cari nama kegiatan atau lokasi..."
+                className="simo-input pl-10 pr-3 min-h-[40px] text-[13px] w-full"
+              />
+            </div>
+
+            <div className="flex items-center gap-1.5 self-start sm:self-auto bg-[#FAF6EE] dark:bg-[#0E1B2C] border border-[#E6DFD0] dark:border-[#283D56] p-1 rounded-[10px]">
+              {(['semua', 'mendatang', 'selesai'] as const).map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setEventFilter(st)}
+                  className={`px-3 py-1.5 rounded-[8px] text-[12px] font-bold capitalize transition-all cursor-pointer ${
+                    eventFilter === st
+                      ? 'bg-[#1F3A5F] text-[#FAF6EE] shadow-xs'
+                      : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {filteredEvents.length === 0 ? (
+            <div className="simo-card p-10 sm:p-14 text-center flex flex-col items-center justify-center">
+              <div className="w-16 h-16 rounded-2xl bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 flex items-center justify-center mb-3 text-[#1F3A5F] dark:text-[#FAF6EE]">
+                <Calendar className="w-8 h-8" />
+              </div>
+              <h4 className="text-[16px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                {eventSearch || eventFilter !== 'semua'
+                  ? 'Tidak Ada Kegiatan yang Cocok'
+                  : 'Belum Ada Kegiatan Terjadwal'}
+              </h4>
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] max-w-md mt-1 mb-5">
+                {eventSearch || eventFilter !== 'semua'
+                  ? 'Coba ganti kata kunci pencarian atau ubah filter status kegiatan.'
+                  : 'Belum ada kegiatan atau acara OSIS yang dibuat. Klik tombol di bawah untuk membuat kegiatan pertama Anda.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setEventSearch('');
+                  setEventFilter('semua');
+                  setIsAddEventModalOpen(true);
+                }}
+                className="simo-btn-primary min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Kegiatan Sekarang</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              {filteredEvents.map((evt) => (
+                <div
+                  key={evt.id}
+                  className="simo-card p-5 sm:p-6 space-y-4 flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`text-[12px] font-bold px-2.5 py-1 rounded-[8px] uppercase tracking-wider ${
+                          evt.status === 'selesai'
+                            ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300'
+                            : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300'
+                        }`}
+                      >
+                        {evt.status === 'selesai' ? 'Selesai' : 'Mendatang'}
+                      </span>
+                      <span className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] font-mono">
+                        Kode: {evt.qrToken}
+                      </span>
+                    </div>
+
+                    <h4 className="text-[16px] sm:text-[18px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] leading-snug">
+                      {evt.title}
+                    </h4>
+
+                    {evt.description && (
+                      <p className="text-[13px] sm:text-[14px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed line-clamp-2">
+                        {evt.description}
+                      </p>
+                    )}
+
+                    <div className="space-y-2 pt-2 border-t border-[#E6DFD0]/60 dark:border-[#283D56]/60 text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />
+                        <span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                          {formatDateIndo(evt.eventDate)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />
+                        <span>{evt.startTime} - {evt.endTime} WIB</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-[#1F3A5F] dark:text-[#F2B544] shrink-0" />
+                        <span className="truncate">{evt.location}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer Card: Photo count and Actions */}
+                  <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between gap-2">
+                    <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1.5">
+                      <Camera className="w-4 h-4" />
+                      <span>{evt.documentationPhotos?.length || 0} Foto</span>
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextStatus = evt.status === 'selesai' ? 'mendatang' : 'selesai';
+                          updateEvent(evt.id, { status: nextStatus });
+                        }}
+                        className="simo-btn-outline min-h-[34px] px-2.5 py-1 rounded-[8px] text-[11px] font-bold cursor-pointer"
+                        title="Ubah status selesai / mendatang"
+                      >
+                        {evt.status === 'selesai' ? 'Buka Kembali' : 'Tandai Selesai'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedEventId(evt.id);
+                          setNewPhotoUrl('');
+                          setIsAddPhotoModalOpen(true);
+                        }}
+                        className="simo-btn-primary min-h-[34px] px-3 py-1 rounded-[8px] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
+                        title="Upload foto untuk kegiatan ini"
+                      >
+                        <Camera className="w-3.5 h-3.5" />
+                        <span>+ Foto</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirmDeleteEvent(evt)}
+                        className="p-1.5 rounded-[8px] text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                        title="Hapus kegiatan ini"
+                        aria-label="Hapus kegiatan"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: JADWAL RAPAT & NOTULEN */}
       {activeTab === 'rapat' && (
         <div className="space-y-6">
           <div className="simo-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -446,13 +706,24 @@ export const KegiatanPresensiPage: React.FC = () => {
                 Pilih foto dari komputer lokal untuk dokumentasi kegiatan atau hapus foto yang tidak diperlukan
               </p>
             </div>
-            <button
-              onClick={handleOpenAddPhoto}
-              className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto justify-center"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Upload Foto dari Komputer</span>
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setIsAddEventModalOpen(true)}
+                className="simo-btn-outline min-h-[44px] px-4 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Buat Kegiatan Baru</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenAddPhoto}
+                className="simo-btn-primary min-h-[44px] px-4 sm:px-5 py-2.5 rounded-[12px] flex items-center gap-2 cursor-pointer shrink-0"
+              >
+                <Camera className="w-4 h-4" />
+                <span>Upload Foto dari Komputer</span>
+              </button>
+            </div>
           </div>
 
           {allPhotos.length === 0 ? (
@@ -464,16 +735,26 @@ export const KegiatanPresensiPage: React.FC = () => {
                 Belum Ada Foto Dokumentasi
               </h4>
               <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] max-w-md mt-1 mb-5">
-                Dokumentasi foto kegiatan OSIS masih kosong. Klik tombol di bawah untuk mengunggah foto baru dari penyimpanan komputer atau HP Anda.
+                Dokumentasi foto kegiatan OSIS masih kosong. Anda dapat membuat kegiatan baru atau langsung mengunggah foto dokumentasi.
               </p>
-              <button
-                type="button"
-                onClick={handleOpenAddPhoto}
-                className="simo-btn-primary min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Upload Foto Sekarang</span>
-              </button>
+              <div className="flex items-center gap-3 flex-wrap justify-center">
+                <button
+                  type="button"
+                  onClick={() => setIsAddEventModalOpen(true)}
+                  className="simo-btn-outline min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Buat Kegiatan Baru</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenAddPhoto}
+                  className="simo-btn-primary min-h-[42px] px-5 rounded-[12px] flex items-center gap-2 cursor-pointer"
+                >
+                  <Camera className="w-4 h-4" />
+                  <span>Upload Foto Sekarang</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -645,9 +926,22 @@ export const KegiatanPresensiPage: React.FC = () => {
           className="space-y-4"
         >
           <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-              Pilih Kegiatan Terkait
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                Pilih Kegiatan Terkait
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddPhotoModalOpen(false);
+                  setIsAddEventModalOpen(true);
+                }}
+                className="text-[12px] font-bold text-[#1F3A5F] dark:text-[#F2B544] hover:underline flex items-center gap-1 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Buat Kegiatan Baru</span>
+              </button>
+            </div>
             {events.length > 0 ? (
               <select
                 value={selectedEventId || events[0]?.id || ''}
@@ -661,9 +955,19 @@ export const KegiatanPresensiPage: React.FC = () => {
                 ))}
               </select>
             ) : (
-              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] italic bg-[#FAF6EE] dark:bg-[#17293E] p-3 rounded-xl border border-[#E6DFD0] dark:border-[#283D56]">
-                Foto akan otomatis dimasukkan ke dalam arsip dokumentasi kegiatan umum OSIS.
-              </p>
+              <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] bg-[#FAF6EE] dark:bg-[#17293E] p-3 rounded-xl border border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between">
+                <span>Belum ada kegiatan terdaftar.</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAddPhotoModalOpen(false);
+                    setIsAddEventModalOpen(true);
+                  }}
+                  className="simo-btn-primary px-3 py-1 text-[12px] rounded-lg font-bold"
+                >
+                  Buat Kegiatan
+                </button>
+              </div>
             )}
           </div>
 
@@ -741,6 +1045,183 @@ export const KegiatanPresensiPage: React.FC = () => {
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Ya, Hapus Foto</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Modal Buat Kegiatan Baru */}
+      <Modal
+        isOpen={isAddEventModalOpen}
+        onClose={() => {
+          setIsAddEventModalOpen(false);
+          setInitialEventPhoto('');
+        }}
+        title="Buat Kegiatan Baru"
+        subtitle="Jadwalkan agenda atau kegiatan acara baru OSIS"
+      >
+        <form onSubmit={handleEventSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Nama / Judul Kegiatan <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={eventForm.title}
+              onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+              placeholder="Contoh: Latihan Dasar Kepemimpinan Siswa (LDKS)"
+              className="simo-input min-h-[44px] text-[14px] w-full"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Tanggal Pelaksanaan <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                value={eventForm.eventDate}
+                onChange={(e) => setEventForm({ ...eventForm, eventDate: e.target.value })}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Status Kegiatan
+              </label>
+              <select
+                value={eventForm.status}
+                onChange={(e) => setEventForm({ ...eventForm, status: e.target.value as EventItem['status'] })}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+              >
+                <option value="mendatang">Mendatang (Akan Datang)</option>
+                <option value="selesai">Selesai (Telah Terlaksana)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Waktu Mulai
+              </label>
+              <input
+                type="time"
+                value={eventForm.startTime}
+                onChange={(e) => setEventForm({ ...eventForm, startTime: e.target.value })}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Waktu Selesai
+              </label>
+              <input
+                type="time"
+                value={eventForm.endTime}
+                onChange={(e) => setEventForm({ ...eventForm, endTime: e.target.value })}
+                className="simo-input min-h-[44px] text-[14px] w-full"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Lokasi Pelaksanaan <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={eventForm.location}
+              onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
+              placeholder="Contoh: Aula Utama SMK / Lapangan Basket"
+              className="simo-input min-h-[44px] text-[14px] w-full"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Deskripsi / Ringkasan Acara
+            </label>
+            <textarea
+              value={eventForm.description}
+              onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+              rows={3}
+              placeholder="Jelaskan ringkasan agenda atau tujuan acara..."
+              className="simo-input text-[14px] w-full p-3 leading-relaxed"
+            />
+          </div>
+
+          <ImagePicker
+            label="Foto Dokumentasi Awal (Opsional)"
+            value={initialEventPhoto}
+            onChange={(url) => setInitialEventPhoto(url)}
+            helperText="Bisa langsung upload foto pertama untuk kegiatan ini (dapat ditambah lagi nanti)"
+            aspectRatio="video"
+          />
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddEventModalOpen(false);
+                setInitialEventPhoto('');
+              }}
+              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+            >
+              Simpan Kegiatan Baru
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Konfirmasi Hapus Kegiatan */}
+      {confirmDeleteEvent && (
+        <Modal
+          isOpen={true}
+          onClose={() => setConfirmDeleteEvent(null)}
+          title="Hapus Kegiatan?"
+          subtitle={`Konfirmasi penghapusan: ${confirmDeleteEvent.title}`}
+        >
+          <div className="space-y-4">
+            <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed">
+              Apakah Anda yakin ingin menghapus kegiatan{' '}
+              <strong className="text-[#1F3A5F] dark:text-[#FAF6EE]">
+                "{confirmDeleteEvent.title}"
+              </strong>
+              ? Data kegiatan serta {confirmDeleteEvent.documentationPhotos?.length || 0} foto dokumentasi terkait di dalam kegiatan ini akan ikut dihapus.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <button
+                type="button"
+                onClick={() => setConfirmDeleteEvent(null)}
+                className="simo-btn-outline min-h-[42px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteEvent(confirmDeleteEvent.id);
+                  if (selectedEventId === confirmDeleteEvent.id) {
+                    setSelectedEventId('');
+                  }
+                  setConfirmDeleteEvent(null);
+                }}
+                className="min-h-[42px] px-5 rounded-[12px] bg-red-600 hover:bg-red-700 text-white text-[14px] font-bold cursor-pointer transition-colors shadow-sm flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Ya, Hapus Kegiatan</span>
               </button>
             </div>
           </div>
