@@ -621,52 +621,53 @@ export const ArsipDokumenPage: React.FC = () => {
         {previewDoc && (
           <div className="space-y-6">
             {/* Real Official Paper Document Sheet (HVS Paper Appearance) */}
-            <div
-              id="printable-disposisi"
-              className="bg-white text-black p-6 sm:p-10 font-sans select-text max-w-full overflow-x-auto"
-            >
-              {/* KOP SURAT RESMI KEDINASAN */}
-              <div className="flex items-center justify-between pb-3.5 border-b-[3px] border-double border-black">
-                {/* Logo Kiri: Lambang Tut Wuri Handayani / Pendidikan */}
-                <div className="w-16 h-16 flex items-center justify-center shrink-0">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg"
-                    alt="Logo Pendidikan"
-                    className="w-14 h-14 object-contain"
-                  />
-                </div>
+            <div className="overflow-x-auto -mx-2 sm:mx-0 border border-slate-200 dark:border-[#283D56] rounded-xl shadow-xs">
+              <div
+                id="printable-disposisi"
+                className="bg-white text-black p-5 sm:p-10 font-sans select-text min-w-[540px]"
+              >
+                {/* KOP SURAT RESMI KEDINASAN */}
+                <div className="flex items-center justify-between pb-3.5 border-b-[3px] border-double border-black gap-2">
+                  {/* Logo Kiri: Lambang Tut Wuri Handayani / Pendidikan */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg"
+                      alt="Logo Pendidikan"
+                      className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                    />
+                  </div>
 
-                {/* Teks Kop Resmi */}
-                <div className="text-center flex-1 px-3 text-black">
-                  <p className="text-[12px] font-bold tracking-wider uppercase leading-tight text-slate-800">
-                    Pemerintah Daerah Provinsi Khusus Ibukota Jakarta
-                  </p>
-                  <p className="text-[12px] font-bold tracking-wider uppercase leading-tight text-slate-800">
-                    Dinas Pendidikan Menengah Kejuruan
-                  </p>
-                  <h2 className="text-[16px] sm:text-[18px] font-black uppercase tracking-wide leading-snug font-serif text-black mt-0.5">
-                    {orgProfile.schoolName || 'SMK NEGERI 1 CERDAS BANGSA'}
-                  </h2>
-                  <h3 className="text-[13px] sm:text-[14px] font-extrabold uppercase tracking-widest text-slate-900">
-                    ORGANISASI SISWA INTRA SEKOLAH (OSIS)
-                  </h3>
-                  <p className="text-[11px] text-slate-700 mt-0.5 leading-tight">
-                    Jalan Merdeka Belajar No. 45, Jakarta Pusat 10110 • Telepon: (021) 3845901
-                  </p>
-                  <p className="text-[10px] text-slate-600 font-mono leading-tight">
-                    Laman Resmi: https://smro.web.id • Pos-el: {orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}
-                  </p>
-                </div>
+                  {/* Teks Kop Resmi */}
+                  <div className="text-center flex-1 px-2 text-black">
+                    <p className="text-[11px] sm:text-[12px] font-bold tracking-wider uppercase leading-tight text-slate-800">
+                      Pemerintah Daerah Provinsi Khusus Ibukota Jakarta
+                    </p>
+                    <p className="text-[11px] sm:text-[12px] font-bold tracking-wider uppercase leading-tight text-slate-800">
+                      Dinas Pendidikan Menengah Kejuruan
+                    </p>
+                    <h2 className="text-[15px] sm:text-[18px] font-black uppercase tracking-wide leading-snug font-serif text-black mt-0.5">
+                      {orgProfile.schoolName || 'SMK NEGERI 1 CERDAS BANGSA'}
+                    </h2>
+                    <h3 className="text-[12px] sm:text-[14px] font-extrabold uppercase tracking-widest text-slate-900">
+                      ORGANISASI SISWA INTRA SEKOLAH (OSIS)
+                    </h3>
+                    <p className="text-[10px] sm:text-[11px] text-slate-700 mt-0.5 leading-tight">
+                      {orgProfile.address || 'Jalan Merdeka Belajar No. 45, Jakarta Pusat 10110'} • Telepon: {orgProfile.phone || '(021) 3845901'}
+                    </p>
+                    <p className="text-[9px] sm:text-[10px] text-slate-600 font-mono leading-tight">
+                      Laman Resmi: https://smro.web.id • Pos-el: {orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}
+                    </p>
+                  </div>
 
-                {/* Logo Kanan: Lambang OSIS */}
-                <div className="w-16 h-16 flex items-center justify-center shrink-0">
-                  <img
-                    src={orgProfile.logoUrl || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80'}
-                    alt="Logo OSIS"
-                    className="w-14 h-14 object-contain rounded-full border border-black/20"
-                  />
+                  {/* Logo Kanan: Lambang OSIS */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
+                    <img
+                      src={orgProfile.logoUrl || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80'}
+                      alt="Logo OSIS"
+                      className="w-12 h-12 sm:w-14 sm:h-14 object-contain rounded-full border border-black/20"
+                    />
+                  </div>
                 </div>
-              </div>
 
               {/* JUDUL NASKAH LEMBAR DISPOSISI */}
               <div className="text-center my-3.5">
@@ -864,6 +865,7 @@ export const ArsipDokumenPage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
 
             {/* Modal Actions */}
             <div className="no-print flex items-center justify-between pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">

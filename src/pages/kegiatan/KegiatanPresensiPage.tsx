@@ -685,17 +685,17 @@ export const KegiatanPresensiPage: React.FC = () => {
                   </div>
 
                   {/* Footer Card: Photo count and Actions */}
-                  <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between gap-2">
+                  <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                     <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] flex items-center gap-1.5">
                       <Camera className="w-4 h-4" />
                       <span>{evt.documentationPhotos?.length || 0} Foto</span>
                     </span>
 
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap sm:justify-end">
                       <button
                         type="button"
                         onClick={() => handleOpenEditEvent(evt)}
-                        className="simo-btn-outline min-h-[34px] px-2.5 py-1 rounded-[8px] text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C]"
+                        className="simo-btn-outline min-h-[32px] px-2.5 py-1 rounded-[8px] text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C]"
                         title="Edit data kegiatan ini"
                       >
                         <Edit3 className="w-3.5 h-3.5" />
@@ -707,7 +707,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                           const nextStatus = evt.status === 'selesai' ? 'mendatang' : 'selesai';
                           updateEvent(evt.id, { status: nextStatus });
                         }}
-                        className="simo-btn-outline min-h-[34px] px-2.5 py-1 rounded-[8px] text-[11px] font-bold cursor-pointer"
+                        className="simo-btn-outline min-h-[32px] px-2.5 py-1 rounded-[8px] text-[11px] font-bold cursor-pointer"
                         title="Ubah status selesai / mendatang"
                       >
                         {evt.status === 'selesai' ? 'Buka Kembali' : 'Tandai Selesai'}
@@ -719,7 +719,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                           setNewPhotoUrl('');
                           setIsAddPhotoModalOpen(true);
                         }}
-                        className="simo-btn-primary min-h-[34px] px-3 py-1 rounded-[8px] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
+                        className="simo-btn-primary min-h-[32px] px-3 py-1 rounded-[8px] text-[11px] font-bold flex items-center gap-1.5 cursor-pointer"
                         title="Upload foto untuk kegiatan ini"
                       >
                         <Camera className="w-3.5 h-3.5" />
@@ -728,7 +728,7 @@ export const KegiatanPresensiPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setConfirmDeleteEvent(evt)}
-                        className="p-1.5 rounded-[8px] text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-[8px] text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ml-auto sm:ml-0"
                         title="Hapus kegiatan ini"
                         aria-label="Hapus kegiatan"
                       >

@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenSidebar }) => {
           {showNotificationMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowNotificationMenu(false)} />
-              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:w-96 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-none z-50">
+              <div className="fixed left-3 right-3 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 bg-[#FFFDF8] dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] shadow-xl z-50">
                 <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#E6DFD0] dark:border-[#283D56]">
                   <span className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE]">Warta &amp; Pengumuman</span>
                   <button
