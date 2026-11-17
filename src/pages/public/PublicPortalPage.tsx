@@ -30,8 +30,11 @@ export const PublicPortalPage: React.FC = () => {
   // 1. Data Organisasi Terpadu — merge admin-editable orgProfile fields over static portalData
   const organizationData = useMemo(() => {
     const ketuaMember = members.find((m) => m.role === 'ketua');
-    const ketuaName = ketuaMember?.fullName || orgProfile.ketuaName || 'Zevin';
-    const ketuaPhoto = ketuaMember?.avatarUrl || orgProfile.ketuaPhotoUrl || '/ketua-osis.png';
+    const ketuaClass = ketuaMember?.classRoom
+      ? ` (${ketuaMember.grade ? `${ketuaMember.grade} ` : ''}${ketuaMember.classRoom})`
+      : '';
+    const ketuaName = ketuaMember ? `${ketuaMember.fullName}${ketuaClass}` : (orgProfile.ketuaName || 'Zevin');
+    const ketuaPhoto = orgProfile.ketuaPhotoUrl || ketuaMember?.avatarUrl || '/ketua-osis.png';
 
     return {
       ...portalData.organization,

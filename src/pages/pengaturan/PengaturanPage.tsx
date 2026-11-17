@@ -64,9 +64,16 @@ export const PengaturanPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'profil' | 'portal' | 'tampilan' | 'data'>('profil');
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
+  // Data Ketua OSIS aktif (otomatis tersinkronisasi dari data keanggotaan)
+  const currentKetuaMember = members.find((m) => m.role === 'ketua');
+  const currentKetuaName = currentKetuaMember?.fullName || orgProfile.ketuaName || 'Zevin';
+  const currentKetuaClass = currentKetuaMember?.classRoom
+    ? ` (${currentKetuaMember.grade ? `${currentKetuaMember.grade} ` : ''}${currentKetuaMember.classRoom})`
+    : '';
+
   // Form states for Foto & Profil Ketua OSIS
   const [ketuaForm, setKetuaForm] = useState({
-    name: orgProfile.ketuaName || 'Zevin',
+    name: currentKetuaName,
     photoUrl: orgProfile.ketuaPhotoUrl || '/ketua-osis.png',
     period: orgProfile.ketuaPeriod || 'KETUA OSIS PERIODE 2025/2026',
     welcomeTitle: orgProfile.ketuaWelcomeTitle || `Menjadi Wadah Inovasi Untuk ${orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa'} Unggul.`,
@@ -76,7 +83,7 @@ export const PengaturanPage: React.FC = () => {
   const handleSaveKetua = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     updateOrgProfile({
-      ketuaName: ketuaForm.name,
+      ketuaName: currentKetuaName,
       ketuaPhotoUrl: ketuaForm.photoUrl,
       ketuaPeriod: ketuaForm.period,
       ketuaWelcomeTitle: ketuaForm.welcomeTitle,
@@ -629,7 +636,7 @@ export const PengaturanPage: React.FC = () => {
                 <div className="relative w-full max-w-[260px] rounded-2xl overflow-hidden border border-[#E6DFD0] dark:border-[#283D56] shadow-md bg-[#FAF6EE] dark:bg-[#17293E] group">
                   <div className="aspect-[3/4] w-full overflow-hidden bg-[#E4EAF2] dark:bg-[#213B5C]">
                     <img
-                      src={ketuaForm.photoUrl || '/ketua-osis.png'}
+                      src={ketuaForm.photoUrl || currentKetuaMember?.avatarUrl || '/ketua-osis.png'}
                       alt="Ketua OSIS Preview"
                       className="w-full h-full object-cover object-top"
                       onError={(e) => {
@@ -638,12 +645,12 @@ export const PengaturanPage: React.FC = () => {
                       }}
                     />
                   </div>
-                  {/* Badge Nama Melayang */}
+                  {/* Badge Nama Melayang (Otomatis Tersinkron Sesuai Ketua OSIS Aktif) */}
                   <div className="absolute bottom-3 inset-x-3 bg-[#FFFDF8]/95 dark:bg-[#17293E]/95 backdrop-blur-md border border-[#E6DFD0] dark:border-[#283D56] rounded-xl p-2.5 text-center shadow-sm">
                     <div className="inline-flex items-center justify-center gap-1 text-[#F2B544] mb-0.5">
                       <Sparkles className="w-3 h-3" />
                       <span className="font-extrabold text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] truncate">
-                        {ketuaForm.name || 'Zevin'}
+                        {currentKetuaName}{currentKetuaClass}
                       </span>
                     </div>
                     <p className="text-[10px] font-bold tracking-wider text-[#5A6472] dark:text-[#9AA8B8] uppercase truncate">
@@ -679,17 +686,19 @@ export const PengaturanPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                      Nama Lengkap Ketua OSIS
+                    <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5 flex items-center justify-between">
+                      <span>Nama Ketua OSIS</span>
+                      <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                        Otomatis Tersinkron
+                      </span>
                     </label>
-                    <input
-                      type="text"
-                      value={ketuaForm.name}
-                      onChange={(e) => setKetuaForm({ ...ketuaForm, name: e.target.value })}
-                      placeholder="Zevin"
-                      className="simo-input min-h-[44px] text-[14px] w-full"
-                      required
-                    />
+                    <div className="flex items-center gap-2.5 px-3.5 min-h-[44px] rounded-[12px] bg-[#E4EAF2]/60 dark:bg-[#1E344D] border border-[#CBD5E1] dark:border-[#283D56] text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                      <UserCheck className="w-4 h-4 text-[#F2B544] shrink-0" />
+                      <span className="truncate">{currentKetuaName}{currentKetuaClass}</span>
+                    </div>
+                    <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] mt-1">
+                      Otomatis mengikuti data pengurus Ketua OSIS saat ini.
+                    </p>
                   </div>
                   <div>
                     <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
@@ -749,15 +758,6 @@ export const PengaturanPage: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={resetGalleryPhotos}
-                  className="simo-btn-outline min-h-[44px] px-3.5 py-2 rounded-[12px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer text-[#5A6472]"
-                  title="Kembalikan foto galeri ke foto default"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Reset Default</span>
-                </button>
                 <button
                   type="button"
                   onClick={handleOpenAddPhoto}
@@ -1054,6 +1054,83 @@ export const PengaturanPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Tambah / Edit Foto Galeri Dokumentasi */}
+      <Modal
+        isOpen={isGalleryModalOpen}
+        onClose={() => setIsGalleryModalOpen(false)}
+        title={editingPhoto ? 'Edit Foto Dokumentasi Kegiatan' : 'Tambah Foto Dokumentasi Kegiatan'}
+      >
+        <form onSubmit={handleSaveGalleryPhoto} className="space-y-4">
+          <div>
+            <ImagePicker
+              label="Pilih Foto Kegiatan"
+              value={photoForm.imageUrl}
+              onChange={(url) => setPhotoForm({ ...photoForm, imageUrl: url })}
+              helperText="Pilih foto dokumentasi dari komputer (JPG/PNG/WEBP). Rekomendasi rasio 4:3 atau 16:9."
+              aspectRatio="video"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Judul Kegiatan
+            </label>
+            <input
+              type="text"
+              value={photoForm.title}
+              onChange={(e) => setPhotoForm({ ...photoForm, title: e.target.value })}
+              placeholder="Contoh: Latihan Dasar Kepemimpinan Siswa (LDKS)"
+              className="simo-input min-h-[44px] text-[14px] w-full"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Keterangan / Deskripsi Singkat
+            </label>
+            <textarea
+              value={photoForm.caption}
+              onChange={(e) => setPhotoForm({ ...photoForm, caption: e.target.value })}
+              placeholder="Deskripsi kegiatan, tujuan, atau momen yang tertangkap..."
+              className="simo-input text-[14px] w-full p-3 min-h-[80px]"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+              Waktu / Periode Pelaksanaan
+            </label>
+            <input
+              type="text"
+              value={photoForm.date}
+              onChange={(e) => setPhotoForm({ ...photoForm, date: e.target.value })}
+              placeholder="Contoh: Oktober 2026 atau 15 November 2026"
+              className="simo-input min-h-[44px] text-[14px] w-full"
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+            <button
+              type="button"
+              onClick={() => setIsGalleryModalOpen(false)}
+              className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer"
+            >
+              <Save className="w-4 h-4" />
+              <span>{editingPhoto ? 'Simpan Perubahan' : 'Tambahkan Foto'}</span>
+            </button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Confirmation Modal for Reset */}
       <Modal
