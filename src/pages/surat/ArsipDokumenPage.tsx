@@ -614,102 +614,279 @@ export const ArsipDokumenPage: React.FC = () => {
       <Modal
         isOpen={isDisposisiModalOpen}
         onClose={() => setIsDisposisiModalOpen(false)}
-        title="Lembar Disposisi & Rincian Surat Resmi"
+        title="Lembar Disposisi Surat Resmi (Standar Dokumen Fisik)"
+        subtitle="Format tata naskah dinas persuratan sekolah resmi siap cetak"
+        maxWidth="4xl"
       >
         {previewDoc && (
-          <div className="space-y-5">
-            {/* Sheet Preview */}
-            <div className="border border-[#E6DFD0] dark:border-[#283D56] p-6 rounded-[16px] bg-[#FFFDF8] dark:bg-[#17293E] text-[14px] text-[#1F3A5F] dark:text-[#FAF6EE] space-y-4">
-              {/* Kop Mini */}
-              <div className="text-center border-b border-[#1F3A5F] dark:border-[#E6DFD0] pb-3">
-                <h4 className="font-extrabold uppercase text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
-                  {orgProfile.schoolName}
-                </h4>
-                <h3 className="font-extrabold uppercase text-[17px] text-[#1F3A5F] dark:text-[#FAF6EE]">
-                  LEMBAR DISPOSISI RESMI OSIS
-                </h3>
-                <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
-                  Tahun Ajaran {orgProfile.academicYear} • Sekretariat OSIS
+          <div className="space-y-6">
+            {/* Real Official Paper Document Sheet (HVS Paper Appearance) */}
+            <div
+              id="printable-disposisi"
+              className="bg-white text-black p-6 sm:p-10 font-sans select-text max-w-full overflow-x-auto"
+            >
+              {/* KOP SURAT RESMI KEDINASAN */}
+              <div className="flex items-center justify-between pb-3.5 border-b-[3px] border-double border-black">
+                {/* Logo Kiri: Lambang Tut Wuri Handayani / Pendidikan */}
+                <div className="w-16 h-16 flex items-center justify-center shrink-0">
+                  <img
+                    src="https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg"
+                    alt="Logo Pendidikan"
+                    className="w-14 h-14 object-contain"
+                  />
+                </div>
+
+                {/* Teks Kop Resmi */}
+                <div className="text-center flex-1 px-3 text-black">
+                  <p className="text-[12px] font-bold tracking-wider uppercase leading-tight text-slate-800">
+                    Pemerintah Daerah Provinsi Khusus Ibukota Jakarta
+                  </p>
+                  <p className="text-[12px] font-bold tracking-wider uppercase leading-tight text-slate-800">
+                    Dinas Pendidikan Menengah Kejuruan
+                  </p>
+                  <h2 className="text-[16px] sm:text-[18px] font-black uppercase tracking-wide leading-snug font-serif text-black mt-0.5">
+                    {orgProfile.schoolName || 'SMK NEGERI 1 CERDAS BANGSA'}
+                  </h2>
+                  <h3 className="text-[13px] sm:text-[14px] font-extrabold uppercase tracking-widest text-slate-900">
+                    ORGANISASI SISWA INTRA SEKOLAH (OSIS)
+                  </h3>
+                  <p className="text-[11px] text-slate-700 mt-0.5 leading-tight">
+                    Jalan Merdeka Belajar No. 45, Jakarta Pusat 10110 • Telepon: (021) 3845901
+                  </p>
+                  <p className="text-[10px] text-slate-600 font-mono leading-tight">
+                    Laman Resmi: https://smro.web.id • Pos-el: {orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}
+                  </p>
+                </div>
+
+                {/* Logo Kanan: Lambang OSIS */}
+                <div className="w-16 h-16 flex items-center justify-center shrink-0">
+                  <img
+                    src={orgProfile.logoUrl || 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=200&auto=format&fit=crop&q=80'}
+                    alt="Logo OSIS"
+                    className="w-14 h-14 object-contain rounded-full border border-black/20"
+                  />
+                </div>
+              </div>
+
+              {/* JUDUL NASKAH LEMBAR DISPOSISI */}
+              <div className="text-center my-3.5">
+                <h1 className="text-[18px] font-black tracking-widest uppercase underline decoration-2 underline-offset-4 text-black">
+                  LEMBAR DISPOSISI
+                </h1>
+                <p className="text-[11px] font-semibold text-slate-700 tracking-wider uppercase mt-1">
+                  Tahun Ajaran {orgProfile.academicYear || '2025/2026'} • Administrasi Persuratan OSIS
                 </p>
               </div>
 
-              {/* Data Surat */}
-              <div className="grid grid-cols-2 gap-3 bg-[#FAF6EE] dark:bg-[#0E1B2C] p-4 rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56] text-[14px]">
-                <div>
-                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Nomor Surat</span>
-                  <span className="font-mono font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{previewDoc.documentNumber}</span>
-                </div>
-                <div>
-                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Tanggal Surat</span>
-                  <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{formatDateIndo(previewDoc.documentDate)}</span>
-                </div>
-                <div className="col-span-2 mt-1">
-                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Perihal / Isi Ringkas</span>
-                  <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{previewDoc.title}</span>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[13px] font-bold">Asal / Tujuan</span>
-                  <span className="font-semibold text-[#1F3A5F] dark:text-[#FAF6EE]">{previewDoc.senderOrReceiver}</span>
-                </div>
-              </div>
+              {/* TABEL 1: DATA INDEKS DAN KETERANGAN SURAT */}
+              <table className="w-full border-collapse border border-black text-[12px] text-black">
+                <tbody>
+                  <tr className="border-b border-black">
+                    <td className="w-1/2 p-2 border-r border-black align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">Surat Dari / Pengirim:</span>
+                      <span className="font-bold text-[13px] text-black">{previewDoc.senderOrReceiver}</span>
+                    </td>
+                    <td className="w-1/2 p-2 align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">Diterima Tanggal:</span>
+                      <span className="font-bold text-[13px] text-black">{formatDateIndo(previewDoc.documentDate)}</span>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-black">
+                    <td className="w-1/2 p-2 border-r border-black align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">Nomor Surat:</span>
+                      <span className="font-mono font-bold text-[12px] text-black">{previewDoc.documentNumber}</span>
+                    </td>
+                    <td className="w-1/2 p-2 align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">No. Agenda / Berkas:</span>
+                      <span className="font-mono font-bold text-[12px] text-black">
+                        AGD/{previewDoc.type === 'surat_masuk' ? 'SM' : 'SK'}/{previewDoc.documentDate.split('-')[0]}/
+                        {previewDoc.id.replace(/\D/g, '').slice(-3) || '002'}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-black">
+                    <td className="w-1/2 p-2 border-r border-black align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">Tanggal Surat:</span>
+                      <span className="font-bold text-[12px] text-black">{formatDateIndo(previewDoc.documentDate)}</span>
+                    </td>
+                    <td className="w-1/2 p-2 align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">Sifat / Klasifikasi Dokumen:</span>
+                      <div className="flex flex-wrap items-center gap-3 mt-0.5 text-[11px] font-semibold">
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-3.5 h-3.5 border border-black flex items-center justify-center font-black text-[10px]">✓</span> Sangat Segera
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-3.5 h-3.5 border border-black"></span> Segera
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-3.5 h-3.5 border border-black"></span> Penting
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <span className="w-3.5 h-3.5 border border-black"></span> Rahasia
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr className="border-b border-black bg-slate-50/70">
+                    <td colSpan={2} className="p-2.5 align-top">
+                      <span className="block font-bold text-[10px] uppercase text-slate-600">Perihal / Isi Ringkas Surat:</span>
+                      <p className="font-bold text-[13px] text-black mt-0.5 leading-relaxed">{previewDoc.title}</p>
+                      <p className="text-[11px] text-slate-600 italic mt-0.5">
+                        Kategori Dokumen: {previewDoc.type.replace('_', ' ').toUpperCase()} • Status: {previewDoc.status.toUpperCase()}
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
-              {/* Instruksi Disposisi Checklist */}
-              <div>
-                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] text-[14px] block mb-2">
-                  Instruksi / Catatan Disposisi Pembina / Kepala Sekolah:
+              {/* TABEL 2: DISPOSISI KEPADA & INSTRUKSI TINDAK LANJUT */}
+              <table className="w-full border-collapse border-x border-b border-black text-[11px] text-black">
+                <thead>
+                  <tr className="border-b border-black bg-slate-100 font-bold text-center">
+                    <th className="w-1/2 p-2 border-r border-black uppercase text-[11px] text-black">
+                      DISPOSISI KEPADA YTH:
+                    </th>
+                    <th className="w-1/2 p-2 uppercase text-[11px] text-black">
+                      PETUNJUK / INSTRUKSI TINDAK LANJUT:
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="align-top">
+                    {/* Kolom Kiri: Disposisi Kepada */}
+                    <td className="p-2.5 border-r border-black space-y-1.5 leading-normal">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black flex items-center justify-center text-[10px] font-black">✓</span>
+                        <span className="font-medium">1. Ketua OSIS ({orgProfile.ketuaName || 'Ketua OSIS'})</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>2. Wakil Ketua OSIS</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black flex items-center justify-center text-[10px] font-black">✓</span>
+                        <span className="font-medium">3. Sekretaris OSIS (Anisa Rahmawati)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>4. Bendahara OSIS (Penganggaran/Kas)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black flex items-center justify-center text-[10px] font-black">✓</span>
+                        <span>5. Koordinator Sekbid Terkait</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>6. Pembina OSIS Pendamping</span>
+                      </div>
+                    </td>
+
+                    {/* Kolom Kanan: Petunjuk Instruksi */}
+                    <td className="p-2.5 space-y-1.5 leading-normal">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black flex items-center justify-center text-[10px] font-black">✓</span>
+                        <span className="font-medium">Tindak lanjuti &amp; selesaikan segera</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>Hadiri / Wakili / Delegasikan panitia</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>Koordinasikan dengan Sekbid / Panitia terkait</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>Pelajari / Siapkan bahan tanggapan &amp; proposal</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black flex items-center justify-center text-[10px] font-black">✓</span>
+                        <span className="font-medium">Arsipkan dalam buku agenda baku</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border border-black"></span>
+                        <span>Bicarakan dengan saya / Laporkan hasilnya</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* TABEL 3: CATATAN RESMI ARAHAN PEMBINA */}
+              <div className="border-x border-b border-black p-3 text-[11px] text-black">
+                <span className="font-bold uppercase text-[10px] text-slate-700 block mb-1">
+                  Catatan / Instruksi Tambahan Pembina / Kepala Sekolah:
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[14px]">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
-                    <span>Tindak lanjuti segera</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
-                    <span>Hadiri / Wakili</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
-                    <span>Koordinasikan dengan Sekbid</span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" defaultChecked className="rounded border-[#E6DFD0] text-[#1F3A5F] focus:ring-[#1F3A5F]" />
-                    <span>Arsipkan dokumen baku</span>
-                  </label>
-                </div>
+                <p className="italic text-slate-800 leading-relaxed font-serif text-[12px]">
+                  "Surat telah diterima dan dicatat dalam agenda resmi OSIS {orgProfile.schoolName || 'SMK Negeri 1 Cerdas Bangsa'}. Diteruskan kepada pengurus dan panitia terkait untuk segera ditindaklanjuti serta didokumentasikan sesuai prosedur naskah dinas."
+                </p>
+                <div className="border-b border-dotted border-slate-400 mt-2"></div>
+                <div className="border-b border-dotted border-slate-400 mt-2"></div>
               </div>
 
-              {/* Paraf Box */}
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#E6DFD0] dark:border-[#283D56] text-center">
-                <div>
-                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mb-12">Sekretaris Pengarsip,</p>
-                  <p className="font-bold underline text-[14px]">Anisa Rahmawati</p>
-                  <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">NISN. 0071234502</p>
+              {/* TABEL 4: PENGESAHAN TANDA TANGAN & STEMPEL RESMI */}
+              <div className="border-x border-b border-black p-4 text-[12px] text-black">
+                <div className="text-right text-[11px] mb-2 font-medium text-slate-800">
+                  Jakarta, {formatDateIndo(previewDoc.documentDate)}
                 </div>
-                <div>
-                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] mb-12">Pembina OSIS,</p>
-                  <p className="font-bold underline text-[14px]">{orgProfile.pembinaName}</p>
-                  <p className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8]">NIP. 19780512 200501 1 004</p>
+                <div className="grid grid-cols-2 text-center pt-1">
+                  <div>
+                    <p className="font-semibold text-[11px] mb-14 text-slate-700">
+                      Petugas Pengarsip / Sekretaris,
+                    </p>
+                    <p className="font-bold underline text-[13px] text-black">Anisa Rahmawati</p>
+                    <p className="text-[11px] text-slate-600 font-mono">NISN. 0071234502</p>
+                  </div>
+
+                  <div className="relative">
+                    <p className="font-semibold text-[11px] mb-14 text-slate-700">
+                      Mengetahui / Pembina OSIS,
+                    </p>
+
+                    {/* Stempel Cap Basah Resmi OSIS */}
+                    <div className="absolute left-1/2 top-3 -translate-x-1/2 pointer-events-none opacity-80 select-none -rotate-6">
+                      <div className="w-24 h-24 rounded-full border-2 border-indigo-700/80 p-0.5 flex items-center justify-center">
+                        <div className="w-full h-full rounded-full border border-dashed border-indigo-700/80 flex flex-col items-center justify-center p-1 text-indigo-700/80 font-bold uppercase text-center leading-tight">
+                          <span className="text-[7px] tracking-wider font-extrabold">OSIS SMKN 1</span>
+                          <span className="text-[8.5px] font-black tracking-widest my-0.5">★ RESMI ★</span>
+                          <span className="text-[6.5px]">CERDAS BANGSA</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="font-bold underline text-[13px] text-black">
+                      {orgProfile.pembinaName || 'Drs. H. Bambang Sudiro, M.Pd.'}
+                    </p>
+                    <p className="text-[11px] text-slate-600 font-mono">
+                      NIP. {orgProfile.nipPembina || '19750812 200212 1 003'}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsDisposisiModalOpen(false)}
-                className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-              >
-                Tutup
-              </button>
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Cetak Lembar Disposisi</span>
-              </button>
+            <div className="no-print flex items-center justify-between pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                Format Dokumen: <b>Standar A4 Kedinasan Indonesia</b>
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsDisposisiModalOpen(false)}
+                  className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="simo-btn-primary min-h-[44px] px-6 rounded-[12px] text-[14px] font-bold flex items-center gap-2 cursor-pointer shadow-md"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Cetak Lembar Disposisi</span>
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -321,7 +321,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                 <th className="py-4 px-5 min-w-[260px]">Judul &amp; Isi Masukan</th>
                 <th className="py-4 px-4 w-44">Kontak / Email</th>
                 <th className="py-4 px-4 w-28 text-center">Status</th>
-                <th className="py-4 px-4 w-36 text-right">Aksi</th>
+                <th className="py-4 px-4 w-52 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
@@ -420,7 +420,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                           type="button"
                           onClick={() => setConfirmDeleteAsp(asp)}
                           title="Hapus pesan ide/aspirasi ini"
-                          className="min-h-[38px] px-2.5 py-1 rounded-[10px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 transition-colors cursor-pointer flex items-center justify-center"
+                          className="min-h-[38px] min-w-[38px] flex items-center justify-center rounded-[10px] bg-red-600 hover:bg-red-700 text-white transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
