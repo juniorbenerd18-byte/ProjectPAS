@@ -109,15 +109,15 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
         {/* Tabel Ringkas Masukan Terbaru */}
         <div className="rounded-[16px] border border-[#E6DFD0] dark:border-[#283D56] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-[14px]">
+            <table className="w-full min-w-[700px] text-left border-collapse text-[14px]">
               <thead>
                 <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[13px]">
-                  <th className="py-3 px-4 w-28">Tanggal</th>
-                  <th className="py-3 px-4 w-40">Pengirim</th>
-                  <th className="py-3 px-4 w-24">Kategori</th>
+                  <th className="py-3 px-4 w-28 whitespace-nowrap">Tanggal</th>
+                  <th className="py-3 px-4 min-w-[150px] whitespace-nowrap">Pengirim</th>
+                  <th className="py-3 px-4 w-24 text-center whitespace-nowrap">Kategori</th>
                   <th className="py-3 px-4 min-w-[200px]">Topik &amp; Pesan</th>
-                  <th className="py-3 px-4 w-24 text-center">Status</th>
-                  <th className="py-3 px-4 w-28 text-right">Aksi</th>
+                  <th className="py-3 px-4 w-28 text-center whitespace-nowrap">Status</th>
+                  <th className="py-3 px-4 w-36 text-right whitespace-nowrap">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
@@ -136,7 +136,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                       <td className="py-3 px-4 whitespace-nowrap text-[#5A6472] dark:text-[#9AA8B8] font-medium text-[13px]">
                         {asp.date}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         <div className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
                           {asp.studentName}
                         </div>

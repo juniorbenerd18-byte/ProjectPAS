@@ -27,6 +27,7 @@ export const AspirasiAdminPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | StudentAspiration['status']>('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all');
   const [confirmDeleteAsp, setConfirmDeleteAsp] = useState<StudentAspiration | null>(null);
+  const [detailAsp, setDetailAsp] = useState<StudentAspiration | null>(null);
 
   // Metrics
   const totalCount = aspirations.length;
@@ -255,17 +256,17 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
       {/* 4. Tabel Desktop */}
       <div className="simo-card p-0 overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-[15px]">
+          <table className="w-full min-w-[1050px] text-left border-collapse text-[15px]">
             <thead>
               <tr className="bg-[#FAF6EE] dark:bg-[#17293E] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] font-bold text-[14px]">
-                <th className="py-4 px-4 text-center w-12">No</th>
-                <th className="py-4 px-4 w-28">Tanggal</th>
-                <th className="py-4 px-4 w-44">Pengirim</th>
-                <th className="py-4 px-4 w-28">Kategori</th>
+                <th className="py-4 px-4 text-center w-12 whitespace-nowrap">No</th>
+                <th className="py-4 px-4 w-28 whitespace-nowrap">Tanggal</th>
+                <th className="py-4 px-4 min-w-[170px] whitespace-nowrap">Pengirim</th>
+                <th className="py-4 px-4 w-28 text-center whitespace-nowrap">Kategori</th>
                 <th className="py-4 px-5 min-w-[260px]">Judul &amp; Isi Masukan</th>
-                <th className="py-4 px-4 w-44">Kontak / Email</th>
-                <th className="py-4 px-4 w-28 text-center">Status</th>
-                <th className="py-4 px-4 w-52 text-right">Aksi</th>
+                <th className="py-4 px-4 min-w-[220px] whitespace-nowrap">Kontak / Email</th>
+                <th className="py-4 px-4 w-36 text-center whitespace-nowrap">Status</th>
+                <th className="py-4 px-4 w-44 text-right whitespace-nowrap">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
@@ -282,7 +283,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                     className="hover:bg-[#FAF6EE]/50 dark:hover:bg-[#17293E]/50 transition-colors"
                   >
                     {/* No */}
-                    <td className="py-4 px-4 text-center font-medium text-[#5A6472] dark:text-[#9AA8B8]">
+                    <td className="py-4 px-4 text-center font-medium text-[#5A6472] dark:text-[#9AA8B8] whitespace-nowrap">
                       {idx + 1}
                     </td>
 
@@ -292,25 +293,29 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                     </td>
 
                     {/* Pengirim */}
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-4 whitespace-nowrap">
                       <div className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
                         {asp.studentName}
                       </div>
-                      <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                      <div className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] capitalize">
                         {asp.classRoom || 'Publik'} {asp.senderRole ? `• ${asp.senderRole.replace('_', ' ')}` : ''}
                       </div>
                     </td>
 
                     {/* Kategori */}
-                    <td className="py-4 px-4">
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
                       <span className="inline-block px-2.5 py-1 rounded-[8px] text-[13px] font-bold uppercase bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
                         {asp.category}
                       </span>
                     </td>
 
                     {/* Judul & Isi Masukan */}
-                    <td className="py-4 px-5">
-                      <div className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
+                    <td
+                      className="py-4 px-5 cursor-pointer group"
+                      onClick={() => setDetailAsp(asp)}
+                      title="Klik untuk membaca detail masukan"
+                    >
+                      <div className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1 group-hover:text-[#F2B544] transition-colors">
                         {asp.title}
                       </div>
                       <div className="text-[#5A6472] dark:text-[#9AA8B8] line-clamp-2 leading-relaxed text-[14px]">
@@ -319,9 +324,12 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                     </td>
 
                     {/* Kontak / Email */}
-                    <td className="py-4 px-4 font-mono text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                    <td className="py-4 px-4 font-mono text-[13px] text-[#5A6472] dark:text-[#9AA8B8] whitespace-nowrap">
                       {asp.email ? (
-                        <span className="break-all">{asp.email}</span>
+                        <span className="inline-flex items-center gap-1.5 text-[#1F3A5F] dark:text-[#FAF6EE]">
+                          <Mail className="w-3.5 h-3.5 text-[#5A6472] dark:text-[#9AA8B8] shrink-0" />
+                          <span>{asp.email}</span>
+                        </span>
                       ) : (
                         <span className="text-[#5A6472] dark:text-[#9AA8B8] italic">Tanpa Email</span>
                       )}
@@ -357,7 +365,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                           <button
                             onClick={() => handleOpenGmail(asp)}
                             title="Balas pesan langsung via Gmail"
-                            className="simo-btn-primary min-h-[38px] px-3.5 py-1 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow-md transition-all"
+                            className="simo-btn-primary min-h-[38px] px-3.5 py-1 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow-md transition-all whitespace-nowrap"
                           >
                             <Mail className="w-3.5 h-3.5" />
                             <span>Balas Email</span>
@@ -365,7 +373,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                         ) : (
                           <span
                             title="Pengirim tidak menyertakan email"
-                            className="inline-flex items-center gap-1 min-h-[38px] px-3 py-1 rounded-[10px] text-[12px] font-medium bg-[#F1F3F5] dark:bg-[#1E293B] text-[#868E96] dark:text-[#64748B] border border-[#DEE2E6] dark:border-[#334155] cursor-not-allowed"
+                            className="inline-flex items-center gap-1 min-h-[38px] px-3 py-1 rounded-[10px] text-[12px] font-medium bg-[#F1F3F5] dark:bg-[#1E293B] text-[#868E96] dark:text-[#64748B] border border-[#DEE2E6] dark:border-[#334155] cursor-not-allowed whitespace-nowrap"
                           >
                             <Mail className="w-3.5 h-3.5 opacity-50" />
                             <span>Tanpa Email</span>
@@ -375,7 +383,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                           type="button"
                           onClick={() => setConfirmDeleteAsp(asp)}
                           title="Hapus pesan ide/aspirasi ini"
-                          className="min-h-[38px] min-w-[38px] flex items-center justify-center rounded-[10px] bg-red-600 hover:bg-red-700 text-white transition-colors cursor-pointer"
+                          className="min-h-[38px] min-w-[38px] flex items-center justify-center rounded-[10px] bg-red-600 hover:bg-red-700 text-white transition-colors cursor-pointer shrink-0"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -476,6 +484,112 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
           ))
         )}
       </div>
+
+      {/* Modal Detail Masukan Lengkap */}
+      {detailAsp && (
+        <Modal
+          isOpen={true}
+          onClose={() => setDetailAsp(null)}
+          title="Detail Masukan / Aspirasi"
+          subtitle={`Tanggal: ${detailAsp.date}`}
+        >
+          <div className="space-y-4 text-[14px]">
+            {/* Header Pengirim */}
+            <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-[16px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  {detailAsp.studentName}
+                </span>
+                <span className="px-2.5 py-0.5 rounded-[6px] text-[12px] font-bold uppercase bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#FAF6EE]">
+                  {detailAsp.category}
+                </span>
+              </div>
+              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
+                {detailAsp.classRoom || 'Publik'} {detailAsp.senderRole ? `• ${detailAsp.senderRole.replace('_', ' ')}` : ''}
+              </p>
+              {detailAsp.email && (
+                <p className="font-mono text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-1.5 pt-1">
+                  <Mail className="w-3.5 h-3.5 text-[#5A6472]" />
+                  <span>{detailAsp.email}</span>
+                </p>
+              )}
+            </div>
+
+            {/* Isi Pesan */}
+            <div className="p-4 bg-white dark:bg-[#17293E] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] space-y-2">
+              <h4 className="font-bold text-[16px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                {detailAsp.title}
+              </h4>
+              <p className="text-[14px] text-[#5A6472] dark:text-[#9AA8B8] leading-relaxed whitespace-pre-wrap">
+                {detailAsp.content}
+              </p>
+            </div>
+
+            {/* Status Penanganan */}
+            <div className="flex items-center justify-between p-3.5 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[12px] border border-[#E6DFD0] dark:border-[#283D56]">
+              <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">Status Penanganan:</span>
+              <select
+                value={detailAsp.status}
+                onChange={(e) => {
+                  const newSt = e.target.value as StudentAspiration['status'];
+                  updateAspirationStatus(detailAsp.id, newSt);
+                  setDetailAsp({ ...detailAsp, status: newSt });
+                }}
+                className={`cursor-pointer text-[12px] font-bold uppercase rounded-[8px] px-3 py-1.5 border transition-all focus:outline-none ${
+                  detailAsp.status === 'terealisasi'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                    : detailAsp.status === 'diproses'
+                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800'
+                    : detailAsp.status === 'ditolak'
+                    ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800'
+                    : 'bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border-[#E6DFD0] dark:border-[#283D56]'
+                }`}
+              >
+                <option value="diterima">Diterima</option>
+                <option value="diproses">Diproses</option>
+                <option value="terealisasi">Terealisasi</option>
+                <option value="ditolak">Ditolak</option>
+              </select>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <button
+                type="button"
+                onClick={() => {
+                  const target = detailAsp;
+                  setDetailAsp(null);
+                  setConfirmDeleteAsp(target);
+                }}
+                className="min-h-[42px] px-4 rounded-[10px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Hapus</span>
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDetailAsp(null)}
+                  className="simo-btn-outline min-h-[42px] px-4 rounded-[10px] text-[13px] font-bold cursor-pointer"
+                >
+                  Tutup
+                </button>
+                {detailAsp.email && (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenGmail(detailAsp)}
+                    className="simo-btn-primary min-h-[42px] px-4 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span>Balas via Gmail</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Modal Konfirmasi Hapus Pesan Ide & Aspirasi */}
       {confirmDeleteAsp && (
