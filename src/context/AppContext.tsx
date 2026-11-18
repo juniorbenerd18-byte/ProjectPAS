@@ -1551,7 +1551,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRecruitments((prev) => [newRec, ...prev]);
     runCloudWrite(addRecruitmentToCloud(newRec));
     showToast(
-      `Pendaftaran Oprec berhasil! No. Registrasi: ${newRec.registrationNumber}`,
+      'Pendaftaran Oprec berhasil terkirim ke sistem pengurus OSIS!',
       'success'
     );
     return newRec;

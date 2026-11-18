@@ -32,7 +32,6 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
   const [showContactModal, setShowContactModal] = useState(false);
   const [isWebRegisterModalOpen, setIsWebRegisterModalOpen] = useState(false);
   const [submittedTicket, setSubmittedTicket] = useState<{
-    regNumber: string;
     name: string;
     division: string;
   } | null>(null);
@@ -100,12 +99,9 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
     }
 
     setSubmittedTicket({
-      regNumber: reg.registrationNumber,
       name: reg.fullName,
       division: division,
     });
-
-    showToast("Pendaftaran berhasil terkirim ke sistem pengurus OSIS!", "success");
 
     // Reset form
     setWebRegForm({
@@ -379,14 +375,10 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
               </p>
             </div>
 
-            <div className="p-4 bg-[#FAF6EE] rounded-2xl border border-[#E6DFD0] max-w-xs mx-auto space-y-1">
-              <span className="text-xs text-[#5A6472] font-semibold block">Nomor Registrasi Anda:</span>
-              <p className="text-xl font-black text-[#1F3A5F] font-mono tracking-wider">
-                {submittedTicket.regNumber}
+            <div className="p-4 bg-[#FAF6EE] rounded-2xl border border-[#E6DFD0] max-w-sm mx-auto text-center">
+              <p className="text-xs text-[#5A6472] leading-relaxed">
+                Data pendaftaran Anda telah berhasil disimpan ke basis data OSIS. Pengurus akan memeriksa berkas dan menghubungi Anda terkait tahapan seleksi berikutnya.
               </p>
-              <span className="text-[11px] text-[#7A4B00] bg-[#FBEBC8] px-2 py-0.5 rounded-md inline-block font-bold">
-                Harap simpan nomor ini untuk verifikasi
-              </span>
             </div>
 
             <div className="pt-2">
