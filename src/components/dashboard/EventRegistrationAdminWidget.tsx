@@ -144,7 +144,7 @@ export const EventRegistrationAdminWidget: React.FC = () => {
   return (
     <>
       <ScrollReveal distance={28} duration={650}>
-        <div id="widget-pendaftar-kegiatan" className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-6 space-y-6">
+        <div id="widget-pendaftar-kegiatan" className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-4 sm:p-6 space-y-5 sm:space-y-6">
           {/* Header Widget */}
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
             <div className="flex items-start gap-3">
@@ -258,85 +258,158 @@ export const EventRegistrationAdminWidget: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] overflow-hidden bg-white dark:bg-[#17293E]">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-[13px]">
-                  <thead className="bg-[#FAF6EE] dark:bg-[#1C3048] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#5A6472] dark:text-[#9AA8B8] uppercase text-[11px] font-bold">
-                    <tr>
-                      <th className="px-4 py-3">Kode Tiket</th>
-                      <th className="px-4 py-3">Nama Siswa</th>
-                      <th className="px-4 py-3">Kelas &amp; NISN</th>
-                      <th className="px-4 py-3">Kegiatan Terdaftar</th>
-                      <th className="px-4 py-3">WhatsApp / HP</th>
-                      <th className="px-4 py-3">Waktu Daftar</th>
-                      <th className="px-4 py-3 text-right">Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
-                    {filteredRegistrations.map((reg) => (
-                      <tr
-                        key={reg.id}
-                        className="hover:bg-[#FAF6EE]/70 dark:hover:bg-[#1C3048]/70 transition-colors"
-                      >
-                        <td className="px-4 py-3.5 font-mono font-bold text-[#1F3A5F] dark:text-[#F2B544] whitespace-nowrap">
-                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
-                            {reg.ticketCode}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3.5 font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
-                          {reg.studentName}
-                        </td>
-                        <td className="px-4 py-3.5 text-[#5A6472] dark:text-[#9AA8B8] whitespace-nowrap">
-                          {reg.classRoom} • <span className="font-mono text-[12px]">{reg.nisn}</span>
-                        </td>
-                        <td className="px-4 py-3.5 font-medium text-[#1F3A5F] dark:text-[#FAF6EE] max-w-[220px] truncate" title={reg.eventTitle}>
-                          {reg.eventTitle}
-                        </td>
-                        <td className="px-4 py-3.5 whitespace-nowrap">
-                          {reg.phone ? (
-                            <a
-                              href={`https://wa.me/${reg.phone.replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-[12px] font-bold transition-colors"
-                              title="Hubungi via WhatsApp"
-                            >
-                              <Phone className="w-3.5 h-3.5" />
-                              <span>{reg.phone}</span>
-                            </a>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3.5 text-[12px] text-[#5A6472] dark:text-[#9AA8B8] whitespace-nowrap">
-                          {reg.registeredAt}
-                        </td>
-                        <td className="px-4 py-3.5 text-right whitespace-nowrap">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => handleOpenTicketModal(reg)}
-                              className="p-1.5 rounded-[8px] text-[#1F3A5F] dark:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] transition-colors"
-                              title="Lihat Detail & Cetak Tiket"
-                            >
-                              <Printer className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setTicketToDelete(reg)}
-                              className="p-1.5 rounded-[8px] text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
-                              title="Batalkan / Hapus Pendaftaran"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <>
+              {/* 1. TAMPILAN MOBILE: KARTU FLEKSIBEL (block md:hidden) - Aksi Print & Hapus Jelas Terlihat */}
+              <div className="block md:hidden space-y-3">
+                {filteredRegistrations.map((reg) => (
+                  <div
+                    key={reg.id}
+                    className="p-4 rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] bg-white dark:bg-[#1C3048] space-y-3 shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-700/60 pb-2.5">
+                      <span className="font-mono font-bold text-[12px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-[#1F3A5F] dark:text-[#F2B544] border border-slate-200 dark:border-slate-700">
+                        {reg.ticketCode}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-medium">
+                        {reg.registeredAt}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-[15px] font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] leading-snug">
+                        {reg.studentName}
+                      </h4>
+                      <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        {reg.classRoom} • NISN: <span className="font-mono font-semibold">{reg.nisn}</span>
+                      </p>
+                      <div className="text-[12px] font-semibold text-[#1F3A5F] dark:text-[#FAF6EE] mt-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Kegiatan:</span>
+                        <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{reg.eventTitle}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/60">
+                      {reg.phone ? (
+                        <a
+                          href={`https://wa.me/${reg.phone.replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-[12px] font-bold"
+                          title="Hubungi via WhatsApp"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>{reg.phone}</span>
+                        </a>
+                      ) : (
+                        <span className="text-slate-400 text-xs">-</span>
+                      )}
+
+                      {/* Tombol Aksi di Mobile - Langsung Kelihatan & Mudah Ditekan */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenTicketModal(reg)}
+                          className="px-3.5 py-1.5 rounded-[10px] bg-[#1F3A5F] text-[#FAF6EE] hover:bg-[#162B46] text-[12px] font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                          title="Lihat Detail & Cetak Tiket"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-[#F2B544]" />
+                          <span>Cetak</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTicketToDelete(reg)}
+                          className="p-1.5 rounded-[10px] text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 cursor-pointer"
+                          title="Hapus Pendaftaran"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+
+              {/* 2. TAMPILAN DESKTOP: TABEL LEBAR (hidden md:block) */}
+              <div className="hidden md:block rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] overflow-hidden bg-white dark:bg-[#17293E]">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-[13px]">
+                    <thead className="bg-[#FAF6EE] dark:bg-[#1C3048] border-b border-[#E6DFD0] dark:border-[#283D56] text-[#5A6472] dark:text-[#9AA8B8] uppercase text-[11px] font-bold">
+                      <tr>
+                        <th className="px-4 py-3">Kode Tiket</th>
+                        <th className="px-4 py-3">Nama Siswa</th>
+                        <th className="px-4 py-3">Kelas &amp; NISN</th>
+                        <th className="px-4 py-3">Kegiatan Terdaftar</th>
+                        <th className="px-4 py-3">WhatsApp / HP</th>
+                        <th className="px-4 py-3">Waktu Daftar</th>
+                        <th className="px-4 py-3 text-right">Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E6DFD0] dark:divide-[#283D56]">
+                      {filteredRegistrations.map((reg) => (
+                        <tr
+                          key={reg.id}
+                          className="hover:bg-[#FAF6EE]/70 dark:hover:bg-[#1C3048]/70 transition-colors"
+                        >
+                          <td className="px-4 py-3.5 font-mono font-bold text-[#1F3A5F] dark:text-[#F2B544] whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                              {reg.ticketCode}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5 font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
+                            {reg.studentName}
+                          </td>
+                          <td className="px-4 py-3.5 text-[#5A6472] dark:text-[#9AA8B8] whitespace-nowrap">
+                            {reg.classRoom} • <span className="font-mono text-[12px]">{reg.nisn}</span>
+                          </td>
+                          <td className="px-4 py-3.5 font-medium text-[#1F3A5F] dark:text-[#FAF6EE] max-w-[220px] truncate" title={reg.eventTitle}>
+                            {reg.eventTitle}
+                          </td>
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            {reg.phone ? (
+                              <a
+                                href={`https://wa.me/${reg.phone.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-[12px] font-bold transition-colors"
+                                title="Hubungi via WhatsApp"
+                              >
+                                <Phone className="w-3.5 h-3.5" />
+                                <span>{reg.phone}</span>
+                              </a>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3.5 text-[12px] text-[#5A6472] dark:text-[#9AA8B8] whitespace-nowrap">
+                            {reg.registeredAt}
+                          </td>
+                          <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenTicketModal(reg)}
+                                className="p-1.5 rounded-[8px] text-[#1F3A5F] dark:text-[#FAF6EE] hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] transition-colors"
+                                title="Lihat Detail & Cetak Tiket"
+                              >
+                                <Printer className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setTicketToDelete(reg)}
+                                className="p-1.5 rounded-[8px] text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                title="Batalkan / Hapus Pendaftaran"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </ScrollReveal>
@@ -396,21 +469,21 @@ export const EventRegistrationAdminWidget: React.FC = () => {
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => handlePrintSingleTicket(ticketToView)}
-                className="px-4 py-2 rounded-[10px] bg-[#1F3A5F] text-[#FAF6EE] text-[13px] font-bold hover:bg-[#162B46] flex items-center gap-2 cursor-pointer"
-              >
-                <Printer className="w-4 h-4 text-[#F2B544]" />
-                <span>Cetak Lembar Tiket</span>
-              </button>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setTicketToView(null)}
-                className="px-4 py-2 rounded-[10px] border border-slate-300 text-slate-700 hover:bg-slate-100 text-[13px] font-bold cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-[10px] border border-slate-300 text-slate-700 hover:bg-slate-100 text-[13px] font-bold cursor-pointer text-center"
               >
                 Tutup
+              </button>
+              <button
+                type="button"
+                onClick={() => handlePrintSingleTicket(ticketToView)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-[10px] bg-[#1F3A5F] text-[#FAF6EE] text-[13px] font-bold hover:bg-[#162B46] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-[#F2B544]" />
+                <span>Cetak Lembar Tiket</span>
               </button>
             </div>
           </div>
@@ -431,18 +504,18 @@ export const EventRegistrationAdminWidget: React.FC = () => {
               <span className="font-mono font-bold text-indigo-600">{ticketToDelete.ticketCode}</span>) dari kegiatan{' '}
               <em>{ticketToDelete.eventTitle}</em>?
             </p>
-            <div className="flex items-center justify-end gap-2.5 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
                 onClick={() => setTicketToDelete(null)}
-                className="px-4 py-2 rounded-[10px] border border-slate-300 text-slate-700 hover:bg-slate-100 text-[13px] font-bold cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-[10px] border border-slate-300 text-slate-700 hover:bg-slate-100 text-[13px] font-bold cursor-pointer text-center"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={confirmDeleteRegistration}
-                className="px-4 py-2 rounded-[10px] bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold cursor-pointer"
+                className="w-full sm:w-auto px-4 py-2.5 rounded-[10px] bg-rose-600 hover:bg-rose-700 text-white text-[13px] font-bold cursor-pointer text-center"
               >
                 Ya, Hapus Pendaftaran
               </button>

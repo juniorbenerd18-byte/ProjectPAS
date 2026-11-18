@@ -82,7 +82,7 @@ export const TestimonialAdminWidget: React.FC = () => {
   return (
     <>
       <ScrollReveal distance={28} duration={650}>
-        <div id="widget-cerita-pengurus" className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-6 space-y-6">
+        <div id="widget-cerita-pengurus" className="bg-[#FFFDF8] dark:bg-[#17293E] rounded-[20px] border border-[#E6DFD0] dark:border-[#283D56] p-4 sm:p-6 space-y-5 sm:space-y-6">
           {/* Header Widget */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E6DFD0] dark:border-[#283D56]">
             <div className="flex items-start gap-3">
