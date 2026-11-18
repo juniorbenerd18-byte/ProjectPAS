@@ -182,26 +182,22 @@ Halaman utama yang menjadi pintu masuk pengguna untuk mengenal sistem dan inform
 
 Halaman utama administrator untuk memantau informasi dan mengelola aktivitas organisasi.
 
-<img width="1919" height="783" alt="image" src="https://github.com/user-attachments/assets/c2b30318-271f-4d59-83a1-f8136e33f9d9" />
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/cd932471-4319-4de7-97ac-fe302aa01f75" />
 
 
 ### 3. Manajemen Organisasi
 
-Halaman untuk mengelola informasi organisasi, kepengurusan, dan struktur organisasi.
+Halaman untuk mengelola kepengurusan, dan struktur organisasi.
 
+<img width="1907" height="1049" alt="image" src="https://github.com/user-attachments/assets/7c44ffa3-af5e-4ff3-a12b-7fd0493ded5f" />
 
-
-### 4. Manajemen Program Kerja
-
-Halaman untuk mengelola dan memantau program kerja organisasi.
-
-<!-- Tambahkan screenshot program kerja di sini -->
 
 ### 5. Manajemen Kegiatan
 
 Halaman untuk mengelola agenda dan dokumentasi kegiatan organisasi.
 
-<!-- Tambahkan screenshot manajemen kegiatan di sini -->
+<img width="1919" height="1078" alt="image" src="https://github.com/user-attachments/assets/dca31421-148b-4183-a6b6-28cd9f9c1b38" />
+
 
 ---
 
@@ -376,5 +372,3 @@ Dikembangkan sebagai platform digital untuk mendukung pengelolaan organisasi sek
 
 <p align="center">
   <strong>SMO — Empowering Student Organizations Through Technology.</strong>
-  <br>
-  Digitalisasi<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/90696420-e374-43c8-8684-c6a581ccaa60" />
