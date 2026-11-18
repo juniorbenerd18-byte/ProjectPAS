@@ -103,6 +103,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   // Build token: setiap build baru dapat token unik; build lama yang masih berjalan
   // akan memeriksa token setelah setiap operasi async dan membatalkan diri jika sudah usang.
   const buildTokenRef = useRef<number>(0);
+  const unknownStreakRef = useRef<number>(0);
 
   // Keep ref in sync
   useEffect(() => {
@@ -196,7 +197,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         if (myToken !== buildTokenRef.current) return;
 
         const detection = await faceapi
-          .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 }))
+          .detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }))
           .withFaceLandmarks()
           .withFaceDescriptor();
 
@@ -219,9 +220,9 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
     if (myToken !== buildTokenRef.current) return;
 
     if (labeledDescriptors.length > 0) {
-      // threshold: Euclidean distance 0.0 (same) to 1.0+ (different)
-      // 0.5 = strict, 0.6 = balanced, 0.7 = lenient
-      const distanceThreshold = (100 - threshold) / 100;
+      // Standar balanced Euclidean distance face-api: 0.58
+      // Mencegah mismatch sekaligus toleran terhadap variasi pencahayaan, jarak & ekspresi wajah
+      const distanceThreshold = 0.58;
       faceMatcherRef.current = new faceapi.FaceMatcher(labeledDescriptors, distanceThreshold);
       setRegisteredCount(labeledDescriptors.length);
     } else {
@@ -230,7 +231,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
     }
 
     setIsBuilding(false);
-  }, [modelsLoaded, members, threshold]);
+  }, [modelsLoaded, members]);
 
   // Rebuild matcher when models loaded or members change
   useEffect(() => {
@@ -241,21 +242,21 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   // 3. CAMERA
   // =========================================================
   const captureWebcamSnapshot = (): string => {
-    if (videoRef.current && canvasRef.current) {
-      const canvas = canvasRef.current;
+    if (videoRef.current) {
       const video = videoRef.current;
-      canvas.width = video.videoWidth || 320;
-      canvas.height = video.videoHeight || 240;
-      const ctx = canvas.getContext('2d');
+      const offscreenCanvas = document.createElement('canvas');
+      offscreenCanvas.width = video.videoWidth || 480;
+      offscreenCanvas.height = video.videoHeight || 360;
+      const ctx = offscreenCanvas.getContext('2d');
       if (ctx) {
         ctx.save();
         if (facingMode === 'user') {
-          ctx.translate(canvas.width, 0);
+          ctx.translate(offscreenCanvas.width, 0);
           ctx.scale(-1, 1);
         }
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, 0, 0, offscreenCanvas.width, offscreenCanvas.height);
         ctx.restore();
-        return canvas.toDataURL('image/jpeg', 0.85);
+        return offscreenCanvas.toDataURL('image/jpeg', 0.85);
       }
     }
     return '';
@@ -367,6 +368,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
       !modelsLoaded ||
       isProcessingRef.current ||
       isCooldownRef.current ||
+      isEnrollModalOpen ||
       !isAttendanceOpen
     )
       return;
@@ -376,51 +378,55 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
     isProcessingRef.current = true;
     try {
-      // Use detectSingleFace for speed — one person scans at a time
+      // TinyFaceDetector dengan inputSize 224 konsisten dengan pembuatan deskriptor
       const detection = await faceapi
-        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 }))
+        .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }))
         .withFaceLandmarks()
         .withFaceDescriptor();
 
       if (!detection) {
-        // No face in frame — keep scanning silently
-        setScanStatus('scanning');
-        isProcessingRef.current = false;
+        // Tidak ada wajah dalam frame — reset streak dan pertahankan status scanning
+        unknownStreakRef.current = 0;
+        setScanStatus((prev) => (prev === 'verifying' ? 'scanning' : prev));
         return;
       }
 
-      // Face detected — move to verifying state
+      // Wajah terdeteksi — pindah ke status menganalisis
       setScanStatus('verifying');
 
       if (!faceMatcherRef.current) {
-        // No registered faces — prompt enrollment
-        const snap = captureWebcamSnapshot();
-        setSnapshotPhoto(snap);
-        setScanStatus('unregistered');
-        setIsEnrollModalOpen(true);
-        isProcessingRef.current = false;
+        // Belum ada data wajah terdaftar di database
+        unknownStreakRef.current += 1;
+        if (unknownStreakRef.current >= 4) {
+          const snap = captureWebcamSnapshot();
+          setSnapshotPhoto(snap);
+          setScanStatus('unregistered');
+          setIsEnrollModalOpen(true);
+        }
         return;
       }
 
-      // Match against registered faces
+      // Cocokkan terhadap database biometrik wajah
       const match = faceMatcherRef.current.findBestMatch(detection.descriptor);
 
       if (!match || match.label === 'unknown') {
-        // Face detected but not recognized → prompt enrollment
-        const snap = captureWebcamSnapshot();
-        setSnapshotPhoto(snap);
-        setScanStatus('unregistered');
-        setIsEnrollModalOpen(true);
-        isProcessingRef.current = false;
+        // Wajah belum cocok: akumulasikan streak agar tidak freeze akibat noise 1 frame
+        unknownStreakRef.current += 1;
+        if (unknownStreakRef.current >= 4) {
+          const snap = captureWebcamSnapshot();
+          setSnapshotPhoto(snap);
+          setScanStatus('unregistered');
+          setIsEnrollModalOpen(true);
+        }
         return;
       }
 
-      // Face recognized!
+      // Wajah dikenali! Reset streak
+      unknownStreakRef.current = 0;
       const confidence = Math.round((1 - match.distance) * 100);
       const memberId = match.label;
       const member = members.find((m) => m.id === memberId);
       if (!member) {
-        isProcessingRef.current = false;
         setScanStatus('scanning');
         return;
       }
@@ -439,7 +445,6 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
           setScanStatus('scanning');
           setMatchedStudent(null);
         }, 2000);
-        isProcessingRef.current = false;
         return;
       }
 
@@ -452,25 +457,27 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
     } finally {
       isProcessingRef.current = false;
     }
-  }, [modelsLoaded, isAttendanceOpen, members, attendances, meetingId, handleSuccessMatch]);
+  }, [modelsLoaded, isAttendanceOpen, isEnrollModalOpen, members, attendances, meetingId, handleSuccessMatch]);
 
-  // Detection loop: run every 500ms when camera is active and scanning
+  // Detection loop: berjalan kontinu tanpa terputus saat status transisi scanning -> verifying
   useEffect(() => {
-    if (!cameraActive || !modelsLoaded || scanStatus !== 'scanning' || isCooldown) return;
+    if (!cameraActive || !modelsLoaded || isCooldown || isEnrollModalOpen) return;
 
+    let isSubscribed = true;
     const loop = () => {
       runDetection().finally(() => {
-        if (!isCooldownRef.current) {
-          detectionLoopRef.current = setTimeout(loop, 500);
+        if (isSubscribed && !isCooldownRef.current) {
+          detectionLoopRef.current = setTimeout(loop, 350);
         }
       });
     };
 
-    detectionLoopRef.current = setTimeout(loop, 300);
+    detectionLoopRef.current = setTimeout(loop, 250);
     return () => {
+      isSubscribed = false;
       if (detectionLoopRef.current) clearTimeout(detectionLoopRef.current);
     };
-  }, [cameraActive, modelsLoaded, scanStatus, isCooldown, runDetection]);
+  }, [cameraActive, modelsLoaded, isCooldown, isEnrollModalOpen, runDetection]);
 
   // =========================================================
   // 5. ENROLLMENT (register new face on-the-fly)
@@ -514,6 +521,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
     }
 
     setIsEnrollModalOpen(false);
+    unknownStreakRef.current = 0;
     setScanStatus('scanning');
     setIsCooldown(false);
   };
@@ -830,6 +838,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
                 <button
                   onClick={() => {
                     setIsEnrollModalOpen(false);
+                    unknownStreakRef.current = 0;
                     setScanStatus('scanning');
                     setIsCooldown(false);
                   }}

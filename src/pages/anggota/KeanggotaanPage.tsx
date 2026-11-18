@@ -139,6 +139,18 @@ export const KeanggotaanPage: React.FC = () => {
       );
       return;
     }
+    if (m.role === 'admin') {
+      showToast('Akses ditolak: Akun Admin IT Sekolah dilindungi sistem dan tidak dapat diubah.', 'error');
+      return;
+    }
+    if (m.role === 'pembina' && currentRole !== 'admin') {
+      showToast('Akses dibatasi: Hanya Admin IT yang berwenang mengubah data Pembina Guru.', 'error');
+      return;
+    }
+    if (m.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') {
+      showToast('Akses dibatasi: Hanya Admin IT atau Pembina Guru yang dapat mengubah data Ketua Umum.', 'error');
+      return;
+    }
     setEditingMember(m);
     setFormData({
       nisn: m.nisn,
@@ -165,6 +177,16 @@ export const KeanggotaanPage: React.FC = () => {
 
     if (!canManageMembers) {
       showToast('Akses ditolak: Anda tidak memiliki wewenang menyimpan data anggota.', 'error');
+      return;
+    }
+
+    if (formData.role === 'pembina' && currentRole !== 'admin') {
+      showToast('Akses ditolak: Hanya Admin IT yang dapat menetapkan role Pembina Guru.', 'error');
+      return;
+    }
+
+    if (formData.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') {
+      showToast('Akses ditolak: Hanya Admin IT atau Pembina Guru yang dapat menetapkan role Ketua Umum.', 'error');
       return;
     }
 
@@ -210,6 +232,21 @@ export const KeanggotaanPage: React.FC = () => {
   const handleConfirmDelete = () => {
     if (!canManageMembers) {
       showToast('Akses ditolak: Anda tidak berwenang menghapus data siswa.', 'error');
+      setMemberToDelete(null);
+      return;
+    }
+    if (memberToDelete?.role === 'admin') {
+      showToast('Akses ditolak: Akun Admin IT Sekolah dilindungi sistem dan tidak dapat dihapus.', 'error');
+      setMemberToDelete(null);
+      return;
+    }
+    if (memberToDelete?.role === 'pembina' && currentRole !== 'admin') {
+      showToast('Akses dibatasi: Hanya Admin IT yang berwenang menghapus data Pembina Guru.', 'error');
+      setMemberToDelete(null);
+      return;
+    }
+    if (memberToDelete?.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') {
+      showToast('Akses dibatasi: Hanya Admin IT atau Pembina Guru yang berwenang menghapus data Ketua Umum.', 'error');
       setMemberToDelete(null);
       return;
     }
@@ -570,7 +607,17 @@ export const KeanggotaanPage: React.FC = () => {
                         </div>
                       </td>
                       <td className="py-4 px-5 text-right whitespace-nowrap">
-                        {canManageMembers ? (
+                        {m.role === 'admin' ? (
+                          <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-[8px] bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800">
+                            <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                            <span>Admin IT (Terkunci)</span>
+                          </span>
+                        ) : (m.role === 'pembina' && currentRole !== 'admin') ||
+                            (m.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') ? (
+                          <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] px-2.5 py-1 rounded-[8px] bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/40 border border-[#E6DFD0] dark:border-[#283D56]">
+                            Hanya Lihat (Terkunci)
+                          </span>
+                        ) : canManageMembers ? (
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => handleOpenEdit(m)}
@@ -639,7 +686,17 @@ export const KeanggotaanPage: React.FC = () => {
                     {m.divisionName || 'BPH'}
                   </span>
 
-                  {canManageMembers ? (
+                  {m.role === 'admin' ? (
+                    <span className="inline-flex items-center gap-1.5 text-[12px] font-bold text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-[10px] bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800">
+                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                      <span>Admin IT (Terkunci)</span>
+                    </span>
+                  ) : (m.role === 'pembina' && currentRole !== 'admin') ||
+                      (m.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') ? (
+                    <span className="text-[12px] font-bold text-[#5A6472] dark:text-[#9AA8B8] px-2.5 py-1.5 rounded-[10px] bg-[#E4EAF2]/60 dark:bg-[#1F3A5F]/40 border border-[#E6DFD0] dark:border-[#283D56]">
+                      Hanya Lihat (Terkunci)
+                    </span>
+                  ) : canManageMembers ? (
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleOpenEdit(m)}
@@ -1044,8 +1101,14 @@ export const KeanggotaanPage: React.FC = () => {
                 <option value="koordinator_sekbid">Koordinator Sekbid</option>
                 <option value="sekretaris">Sekretaris</option>
                 <option value="bendahara">Bendahara</option>
-                <option value="ketua">Ketua Umum</option>
-                <option value="pembina">Pembina Guru</option>
+                {/* Ketua Umum hanya bisa dipilih oleh Admin IT dan Pembina Guru */}
+                {(currentRole === 'admin' || currentRole === 'pembina') && (
+                  <option value="ketua">Ketua Umum</option>
+                )}
+                {/* Pembina Guru hanya bisa dipilih oleh Admin IT */}
+                {currentRole === 'admin' && (
+                  <option value="pembina">Pembina Guru</option>
+                )}
               </select>
             </div>
           </div>

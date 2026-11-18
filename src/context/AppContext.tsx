@@ -1071,12 +1071,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateMember = (id: string, member: Partial<Member>) => {
+    const existing = members.find((m) => m.id === id);
+    if (existing?.role === 'admin') {
+      showToast('Akses ditolak: Akun Admin IT Sekolah dilindungi sistem dan tidak dapat diubah.', 'error');
+      return;
+    }
     setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, ...member } : m)));
     runCloudWrite(updateMemberInCloud(id, member));
     showToast('Data anggota berhasil diperbarui & disinkronkan ke Cloud!');
   };
 
   const deleteMember = (id: string) => {
+    const existing = members.find((m) => m.id === id);
+    if (existing?.role === 'admin') {
+      showToast('Akses ditolak: Akun Admin IT Sekolah dilindungi sistem dan tidak dapat dihapus.', 'error');
+      return;
+    }
     setMembers((prev) => prev.filter((m) => m.id !== id));
     runCloudWrite(deleteMemberFromCloud(id));
     setAttendances((prev) => prev.filter((a) => a.memberId !== id));

@@ -111,8 +111,9 @@ export const KegiatanPresensiPage: React.FC = () => {
     description: '',
     startDateTime: getDefaultStartDateTime(),
     endDateTime: getDefaultEndDateTime(),
-    location: 'SMK Negeri 1 Cerdas Bangsa',
+    location: '',
     status: 'mendatang' as EventItem['status'],
+    requiresRegistration: false,
   });
 
   const handleOpenCreateEvent = () => {
@@ -122,8 +123,9 @@ export const KegiatanPresensiPage: React.FC = () => {
       description: '',
       startDateTime: getDefaultStartDateTime(),
       endDateTime: getDefaultEndDateTime(),
-      location: 'SMK Negeri 1 Cerdas Bangsa',
+      location: '',
       status: 'mendatang',
+      requiresRegistration: false,
     });
     setInitialEventPhoto('');
     setIsAddEventModalOpen(true);
@@ -152,8 +154,9 @@ export const KegiatanPresensiPage: React.FC = () => {
       description: evt.description || '',
       startDateTime: startDT || getDefaultStartDateTime(),
       endDateTime: endDT || getDefaultEndDateTime(),
-      location: evt.location || 'SMK Negeri 1 Cerdas Bangsa',
+      location: evt.location || '',
       status: evt.status,
+      requiresRegistration: evt.requiresRegistration ?? false,
     });
     setInitialEventPhoto(evt.documentationPhotos?.[0] || '');
     setIsAddEventModalOpen(true);
@@ -163,6 +166,10 @@ export const KegiatanPresensiPage: React.FC = () => {
     e.preventDefault();
     if (!eventForm.title.trim()) {
       showToast('Nama kegiatan wajib diisi!', 'error');
+      return;
+    }
+    if (!eventForm.location.trim()) {
+      showToast('Lokasi kegiatan wajib diisi!', 'error');
       return;
     }
 
@@ -195,9 +202,10 @@ export const KegiatanPresensiPage: React.FC = () => {
         endTime: endTimePart,
         startDateTime: eventForm.startDateTime,
         endDateTime: eventForm.endDateTime,
-        location: eventForm.location.trim() || 'SMK Negeri 1 Cerdas Bangsa',
+        location: eventForm.location.trim(),
         status: eventForm.status,
         documentationPhotos: photos,
+        requiresRegistration: eventForm.requiresRegistration,
       });
 
       setEditingEvent(null);
@@ -217,10 +225,11 @@ export const KegiatanPresensiPage: React.FC = () => {
         endTime: endTimePart,
         startDateTime: eventForm.startDateTime,
         endDateTime: eventForm.endDateTime,
-        location: eventForm.location.trim() || 'SMK Negeri 1 Cerdas Bangsa',
+        location: eventForm.location.trim(),
         status: eventForm.status,
         documentationPhotos: initialEventPhoto ? [initialEventPhoto] : [],
         qrToken: cleanToken,
+        requiresRegistration: eventForm.requiresRegistration,
       });
     }
 
@@ -229,8 +238,9 @@ export const KegiatanPresensiPage: React.FC = () => {
       description: '',
       startDateTime: getDefaultStartDateTime(),
       endDateTime: getDefaultEndDateTime(),
-      location: 'SMK Negeri 1 Cerdas Bangsa',
+      location: '',
       status: 'mendatang',
+      requiresRegistration: false,
     });
     setInitialEventPhoto('');
     setIsAddEventModalOpen(false);
@@ -1251,11 +1261,44 @@ export const KegiatanPresensiPage: React.FC = () => {
                 type="text"
                 value={eventForm.location}
                 onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })}
-                placeholder="Contoh: Aula Utama SMK / Lapangan Basket"
+                placeholder="Tentukan lokasi acara (misal: Aula Utama, Lapangan, dll)"
                 className="simo-input min-h-[44px] text-[14px] w-full"
                 required
               />
+              {/* Quick suggestions pills */}
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <span className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] self-center mr-1">Rekomendasi:</span>
+                {['Aula Utama', 'Lapangan Sekolah', 'Ruang OSIS', 'Lab Komputer', 'Luar Sekolah / Umum'].map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => setEventForm((prev) => ({ ...prev, location: loc }))}
+                    className="text-[11px] px-2 py-0.5 rounded-md bg-[#FAF6EE] dark:bg-[#16273c] border border-[#E6DFD0] dark:border-[#283D56] text-[#1F3A5F] dark:text-[#FAF6EE] hover:border-[#1F3A5F] transition-colors cursor-pointer"
+                  >
+                    + {loc}
+                  </button>
+                ))}
+              </div>
             </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-[#FAF6EE] dark:bg-[#16273c] border border-[#E6DFD0] dark:border-[#283D56]">
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={eventForm.requiresRegistration}
+                onChange={(e) => setEventForm({ ...eventForm, requiresRegistration: e.target.checked })}
+                className="w-4 h-4 mt-0.5 rounded text-[#1F3A5F] focus:ring-[#1F3A5F] accent-[#1F3A5F]"
+              />
+              <div>
+                <span className="text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] block">
+                  Buka Pendaftaran Siswa di Portal Publik
+                </span>
+                <span className="text-[11px] text-[#5A6472] dark:text-[#9AA8B8] block mt-0.5">
+                  Centang opsi ini jika kegiatan memerlukan formulir pendaftaran siswa (badge yang tampil di portal publik adalah &quot;Pendaftaran Terbuka&quot;, bukan &quot;Wajib&quot;).
+                </span>
+              </div>
+            </label>
           </div>
 
           <div>

@@ -79,9 +79,9 @@ export const PublicEventCard: React.FC<PublicEventCardProps> = ({
         <div className="pt-3 border-t border-[#E6DFD0]/70 flex items-center justify-between gap-2">
           {event.requiresRegistration ? (
             <>
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#7A4B00] bg-[#FBEBC8] px-2.5 py-1 rounded-md border border-[#F2B544]/40">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F2B544] animate-pulse" />
-                Wajib Daftar
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#1F3A5F] bg-[#E4EAF2] px-2.5 py-1 rounded-md border border-[#1F3A5F]/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1F3A5F]" />
+                Pendaftaran Terbuka
               </span>
               <button
                 onClick={() => onRegister && onRegister(event.id)}

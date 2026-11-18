@@ -6,7 +6,7 @@ import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
 
 export const DataAnggota: React.FC = () => {
-  const { members, divisions, addMember, updateMember, deleteMember, setActivePage } = useApp();
+  const { members, divisions, addMember, updateMember, deleteMember, setActivePage, currentRole, showToast } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMajor, setSelectedMajor] = useState<string>('all');
   const [selectedGrade, setSelectedGrade] = useState<string>('all');
@@ -40,6 +40,18 @@ export const DataAnggota: React.FC = () => {
   };
 
   const handleOpenEdit = (m: Member) => {
+    if (m.role === 'admin') {
+      showToast('Akses ditolak: Akun Admin IT Sekolah dilindungi sistem dan tidak dapat diubah.', 'error');
+      return;
+    }
+    if (m.role === 'pembina' && currentRole !== 'admin') {
+      showToast('Akses dibatasi: Hanya Admin IT yang berwenang mengubah data Pembina Guru.', 'error');
+      return;
+    }
+    if (m.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') {
+      showToast('Akses dibatasi: Hanya Admin IT atau Pembina Guru yang dapat mengubah data Ketua Umum.', 'error');
+      return;
+    }
     setEditingMember(m);
     setFormData({
       nisn: m.nisn,
@@ -63,6 +75,17 @@ export const DataAnggota: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.role === 'pembina' && currentRole !== 'admin') {
+      showToast('Akses ditolak: Hanya Admin IT yang dapat menetapkan role Pembina Guru.', 'error');
+      return;
+    }
+
+    if (formData.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') {
+      showToast('Akses ditolak: Hanya Admin IT atau Pembina Guru yang dapat menetapkan role Ketua Umum.', 'error');
+      return;
+    }
+
     const div = divisions.find((d) => d.id === formData.divisionId);
     const payload = {
       ...formData,
@@ -218,26 +241,38 @@ export const DataAnggota: React.FC = () => {
                     </span>
                   </td>
                   <td className="py-3 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => handleOpenEdit(m)}
-                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg cursor-pointer"
-                        title="Edit data"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Yakin ingin menghapus ${m.fullName}?`)) {
-                            deleteMember(m.id);
-                          }
-                        }}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg cursor-pointer"
-                        title="Hapus"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {m.role === 'admin' ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-200">
+                        <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                        <span>Admin IT (Terkunci)</span>
+                      </span>
+                    ) : (m.role === 'pembina' && currentRole !== 'admin') ||
+                        (m.role === 'ketua' && currentRole !== 'admin' && currentRole !== 'pembina') ? (
+                      <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                        Hanya Lihat (Terkunci)
+                      </span>
+                    ) : (
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => handleOpenEdit(m)}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                          title="Edit data"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (confirm(`Yakin ingin menghapus ${m.fullName}?`)) {
+                              deleteMember(m.id);
+                            }
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg cursor-pointer"
+                          title="Hapus"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -401,8 +436,12 @@ export const DataAnggota: React.FC = () => {
                 <option value="koordinator_sekbid">Koordinator Sekbid</option>
                 <option value="sekretaris">Sekretaris</option>
                 <option value="bendahara">Bendahara</option>
-                <option value="ketua">Ketua Umum</option>
-                <option value="pembina">Pembina Guru</option>
+                {(currentRole === 'admin' || currentRole === 'pembina') && (
+                  <option value="ketua">Ketua Umum</option>
+                )}
+                {currentRole === 'admin' && (
+                  <option value="pembina">Pembina Guru</option>
+                )}
               </select>
             </div>
           </div>

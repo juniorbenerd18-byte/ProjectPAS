@@ -205,7 +205,10 @@ export const PublicPortalPage: React.FC = () => {
               ? e.documentationPhotos[0]
               : undefined,
           description: e.description,
-          requiresRegistration: checkRegistrationRequired(e.title, e.description, e.workProgramTitle),
+          requiresRegistration:
+            e.requiresRegistration !== undefined
+              ? e.requiresRegistration
+              : checkRegistrationRequired(e.title, e.description, e.workProgramTitle),
         }));
       }
     }

@@ -91,6 +91,7 @@ export interface EventItem {
   status: 'mendatang' | 'selesai';
   documentationPhotos: string[];
   qrToken: string;
+  requiresRegistration?: boolean;
 }
 
 export interface Meeting {

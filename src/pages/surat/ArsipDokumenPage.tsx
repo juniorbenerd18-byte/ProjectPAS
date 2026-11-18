@@ -20,7 +20,6 @@ import { useApp } from '../../context/AppContext';
 import { DocumentItem } from '../../types';
 import { formatDateIndo } from '../../lib/utils';
 import { Modal } from '../../components/common/Modal';
-import { ImagePicker } from '../../components/common/ImagePicker';
 
 export const ArsipDokumenPage: React.FC = () => {
   const { documents, addDocument, deleteDocument, orgProfile, currentRole, showToast } = useApp();
@@ -38,7 +37,6 @@ export const ArsipDokumenPage: React.FC = () => {
     documentDate: new Date().toISOString().split('T')[0],
     senderOrReceiver: '',
     status: 'terkirim' as DocumentItem['status'],
-    fileUrl: '',
   });
 
   // Modal Disposisi / Preview
@@ -76,7 +74,6 @@ export const ArsipDokumenPage: React.FC = () => {
       documentDate: new Date().toISOString().split('T')[0],
       senderOrReceiver: 'Kepada: ',
       status: 'terkirim',
-      fileUrl: '',
     });
     setIsAddModalOpen(true);
   };
@@ -109,7 +106,6 @@ export const ArsipDokumenPage: React.FC = () => {
       documentDate: docForm.documentDate,
       senderOrReceiver: docForm.senderOrReceiver,
       status: docForm.status,
-      fileUrl: docForm.fileUrl || undefined,
     });
 
     setIsAddModalOpen(false);
@@ -579,17 +575,6 @@ export const ArsipDokumenPage: React.FC = () => {
                 <option value="pending">Pending Review</option>
               </select>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-[14px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-              Lampiran Berkas / Scan Surat (Dari Komputer)
-            </label>
-            <ImagePicker
-              value={docForm.fileUrl}
-              onChange={(url) => setDocForm((prev) => ({ ...prev, fileUrl: url }))}
-              helperText="Pilih foto/scan berkas dari komputer..."
-            />
           </div>
 
           <div className="pt-3 flex justify-end gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
