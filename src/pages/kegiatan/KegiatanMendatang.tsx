@@ -3,7 +3,7 @@ import { Calendar, Clock, MapPin, QrCode, ArrowRight, Ticket, Users, Phone, Prin
 import { useApp } from '../../context/AppContext';
 import { formatDateIndo } from '../../lib/utils';
 import { Modal } from '../../components/common/Modal';
-import { printEventTicket } from '../../lib/printTicket';
+import { printTicketDirectly } from '../../lib/ticketPrinter';
 import { EventRegistration } from '../../types';
 
 export const KegiatanMendatang: React.FC = () => {
@@ -27,7 +27,7 @@ export const KegiatanMendatang: React.FC = () => {
 
   const handlePrintTicket = async (ticket: EventRegistration) => {
     if (!activeModalEvent) return;
-    await printEventTicket({
+    await printTicketDirectly({
       ticket,
       eventDetails: {
         date: formatDateIndo(activeModalEvent.eventDate),
@@ -36,7 +36,6 @@ export const KegiatanMendatang: React.FC = () => {
       },
       orgName: orgProfile.appName || 'SIMO - OSIS',
       schoolName: orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa',
-      logoUrl: orgProfile.logoUrl,
     });
   };
 

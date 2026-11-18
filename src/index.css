@@ -331,14 +331,46 @@ h1, h2, h3, h4, h5, h6 {
     margin: 10mm 15mm;
   }
 
-  body {
+  /* MODE KHUSUS CETAK E-TIKET: Sembunyikan SEMUA elemen web, sisakan hanya kartu tiket */
+  body.printing-ticket-mode > *:not(#print-ticket-root) {
+    display: none !important;
+  }
+
+  body.printing-ticket-mode {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.printing-ticket-mode #print-ticket-root {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 600px !important;
+    margin: 15mm auto !important;
+    padding: 0 !important;
+    visibility: visible !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  body.printing-ticket-mode #print-ticket-root * {
+    visibility: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body:not(.printing-ticket-mode) {
     background: #FFFFFF !important;
     color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  body * {
+  body:not(.printing-ticket-mode) * {
     visibility: hidden;
   }
 

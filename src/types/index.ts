@@ -279,3 +279,11 @@ export interface GalleryItem {
   category?: string;
 }
 
+export interface TestimonialItem {
+  id: string;
+  name: string;
+  roleOrClass: string;
+  avatarUrl?: string;
+  content: string;
+}
+

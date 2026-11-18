@@ -4,7 +4,7 @@ import { portalData } from '../../data/portalData';
 import { EventRegistration } from '../../types';
 import { Modal } from '../../components/common/Modal';
 import { CheckCircle2, Printer, Ticket, Download } from 'lucide-react';
-import { printEventTicket } from '../../lib/printTicket';
+import { printTicketDirectly } from '../../lib/ticketPrinter';
 import { generateQRCode } from '../../lib/utils';
 import html2canvas from 'html2canvas';
 
@@ -28,6 +28,7 @@ export const PublicPortalPage: React.FC = () => {
     events,
     announcements,
     galleryPhotos,
+    testimonials,
     showToast,
     orgProfile,
     registerForEvent,
@@ -302,7 +303,7 @@ export const PublicPortalPage: React.FC = () => {
     if (!issuedTicket || !selectedEventForRegister) return;
     setIsPrintingTicket(true);
     try {
-      await printEventTicket({
+      await printTicketDirectly({
         ticket: issuedTicket,
         eventDetails: {
           date: selectedEventForRegister.date,
@@ -311,12 +312,10 @@ export const PublicPortalPage: React.FC = () => {
         },
         orgName: organizationData.appName || 'SIMO - OSIS',
         schoolName: organizationData.schoolName || 'SMKN 1 Cerdas Bangsa',
-        logoUrl: organizationData.logoUrl,
+        qrCodeUrl: ticketQrUrl,
       });
     } catch (err) {
       console.error('Print ticket error:', err);
-      // Fallback
-      window.print();
     } finally {
       setIsPrintingTicket(false);
     }
@@ -398,8 +397,8 @@ export const PublicPortalPage: React.FC = () => {
         {/* 8. Kontak & Kotak Ide Terpadu (Latar: Biru Muda #EFF6FF) */}
         <CtaSection organization={organizationData} />
 
-        {/* 11. Kata Anggota / Testimoni: Cerita Nyata dari Kami (Latar: Putih) */}
-        <TestimonialsSection testimonials={memberTestimonials} />
+        {/* 11. Cerita Nyata Dari Pengurus Kami (Dikelola via Dashboard Admin) */}
+        <TestimonialsSection testimonials={testimonials && testimonials.length > 0 ? testimonials : memberTestimonials} />
       </main>
 
       {/* 12. Footer (Latar: Biru Gelap #1E3A8A) */}

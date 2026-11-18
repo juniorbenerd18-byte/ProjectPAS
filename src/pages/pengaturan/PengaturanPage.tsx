@@ -29,6 +29,7 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
 import { GalleryItem } from '../../types';
+import { TestimonialAdminWidget } from '../../components/dashboard/TestimonialAdminWidget';
 
 export const PengaturanPage: React.FC = () => {
   const {
@@ -929,6 +930,9 @@ export const PengaturanPage: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* SECTION 4: KELOLA CERITA DARI PENGURUS KAMI (TESTIMONI PORTAL) */}
+          <TestimonialAdminWidget />
         </div>
       )}
 
@@ -1094,6 +1098,9 @@ export const PengaturanPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* SECTION 4: KELOLA CERITA DARI PENGURUS KAMI (TESTIMONI PORTAL) */}
+          <TestimonialAdminWidget />
         </div>
       )}
 

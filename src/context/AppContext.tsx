@@ -26,8 +26,10 @@ import {
   StudentAspiration,
   RecruitmentApplication,
   EventRegistration,
+  TestimonialItem,
 } from '../types';
 import { DEFAULT_GALLERY_PHOTOS } from '../components/public/GallerySection';
+import { DEFAULT_TESTIMONIALS } from '../components/public/TestimonialsSection';
 import { formatAttendanceTime, normalizeMajor } from '../lib/utils';
 import {
   isCloudConnected,
@@ -256,6 +258,12 @@ interface AppContextType {
   deleteGalleryPhoto: (id: string) => void;
   resetGalleryPhotos: () => void;
 
+  testimonials: TestimonialItem[];
+  addTestimonial: (item: Omit<TestimonialItem, 'id'>) => void;
+  updateTestimonial: (id: string, item: Partial<TestimonialItem>) => void;
+  deleteTestimonial: (id: string) => void;
+  resetTestimonials: () => void;
+
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
@@ -410,6 +418,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [galleryPhotos, setGalleryPhotos] = useState<GalleryItem[]>(() =>
     loadStored('galleryPhotos', DEFAULT_GALLERY_PHOTOS)
   );
+  const [testimonials, setTestimonials] = useState<TestimonialItem[]>(() =>
+    loadStored('portal_testimonials', DEFAULT_TESTIMONIALS)
+  );
 
   const [syncState, setSyncState] = useState<SyncState>({
     state: isCloudConnected() ? 'idle' : 'error',
@@ -490,6 +501,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       safeSave('recruitments', recruitments);
       safeSave('eventRegistrations', eventRegistrations);
       safeSave('galleryPhotos', galleryPhotos);
+      safeSave('portal_testimonials', testimonials);
     } catch (err) {
       console.warn('LocalStorage batch sync notice:', err);
     }
@@ -512,6 +524,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     recruitments,
     eventRegistrations,
     galleryPhotos,
+    testimonials,
   ]);
 
   // ==========================================
@@ -1673,6 +1686,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showToast('Galeri foto telah direset ke dokumentasi bawaan.');
   };
 
+  // Testimonials / Cerita Pengurus
+  const addTestimonial = (item: Omit<TestimonialItem, 'id'>) => {
+    const newItem: TestimonialItem = { ...item, id: `t-${Date.now()}` };
+    setTestimonials((prev) => [...prev, newItem]);
+    showToast('Cerita pengurus berhasil ditambahkan!', 'success');
+  };
+
+  const updateTestimonial = (id: string, item: Partial<TestimonialItem>) => {
+    setTestimonials((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...item } : t))
+    );
+    showToast('Cerita pengurus berhasil diperbarui!', 'success');
+  };
+
+  const deleteTestimonial = (id: string) => {
+    setTestimonials((prev) => prev.filter((t) => t.id !== id));
+    showToast('Cerita pengurus telah dihapus.', 'info');
+  };
+
+  const resetTestimonials = () => {
+    setTestimonials(DEFAULT_TESTIMONIALS);
+    showToast('Cerita pengurus telah direset ke bawaan.', 'info');
+  };
+
   // ==========================================
   // RESET / IMPORT (ADMIN ONLY)
   // ==========================================
@@ -1871,6 +1908,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateGalleryPhoto,
         deleteGalleryPhoto,
         resetGalleryPhotos,
+        testimonials,
+        addTestimonial,
+        updateTestimonial,
+        deleteTestimonial,
+        resetTestimonials,
         theme,
         setTheme,
         toggleTheme,

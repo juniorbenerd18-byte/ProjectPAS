@@ -16,12 +16,14 @@ import {
   UserPlus,
   UserCheck,
   Ticket,
+  Quote,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDateIndo } from '../../lib/utils';
 import { ScrollReveal } from '../../components/common/ScrollReveal';
 import { RegistrationAdminWidget } from '../../components/dashboard/RegistrationAdminWidget';
 import { EventRegistrationAdminWidget } from '../../components/dashboard/EventRegistrationAdminWidget';
+import { TestimonialAdminWidget } from '../../components/dashboard/TestimonialAdminWidget';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -125,6 +127,19 @@ export const DashboardPage: React.FC = () => {
           >
             <Lightbulb className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
             <span>Aspirasi ({newAspirations.length} Baru)</span>
+          </button>
+          <button
+            onClick={() => {
+              const widget = document.getElementById('widget-cerita-pengurus');
+              if (widget) {
+                widget.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="min-h-[42px] px-3.5 py-2 bg-transparent hover:bg-[#E4EAF2] dark:hover:bg-[#213B5C] text-[#1F3A5F] dark:text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all border border-[#E6DFD0] dark:border-[#283D56] flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
+            title="Kelola cerita & testimoni dari pengurus kami di portal publik"
+          >
+            <Quote className="w-4 h-4 text-[#F2B544]" strokeWidth={2} />
+            <span>Cerita Pengurus</span>
           </button>
           <button
             onClick={() => setActivePage('pengaturan')}
@@ -422,6 +437,11 @@ export const DashboardPage: React.FC = () => {
       {/* BARIS 2.6: WIDGET PENDAFTARAN KEGIATAN MENDATANG SISWA   */}
       {/* ======================================================== */}
       <EventRegistrationAdminWidget />
+
+      {/* ======================================================== */}
+      {/* BARIS 2.7: WIDGET CERITA DARI PENGURUS KAMI (TESTIMONI)  */}
+      {/* ======================================================== */}
+      <TestimonialAdminWidget />
 
       {/* ======================================================== */}
       {/* BARIS 3: JADWAL RAPAT TERDEKAT & PAPAN PENGUMUMAN RESMI  */}

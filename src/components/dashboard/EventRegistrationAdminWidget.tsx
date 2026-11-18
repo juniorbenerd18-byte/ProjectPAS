@@ -18,7 +18,7 @@ import { useApp } from '../../context/AppContext';
 import { EventRegistration } from '../../types';
 import { ScrollReveal } from '../common/ScrollReveal';
 import { Modal } from '../common/Modal';
-import { printEventTicket } from '../../lib/printTicket';
+import { printTicketDirectly } from '../../lib/ticketPrinter';
 import { generateQRCode } from '../../lib/utils';
 
 export const EventRegistrationAdminWidget: React.FC = () => {
@@ -84,7 +84,7 @@ export const EventRegistrationAdminWidget: React.FC = () => {
 
   const handlePrintSingleTicket = async (ticket: EventRegistration) => {
     const targetEvt = events.find((e) => e.id === ticket.eventId || e.title === ticket.eventTitle);
-    await printEventTicket({
+    await printTicketDirectly({
       ticket,
       eventDetails: {
         date: targetEvt?.eventDate || 'Sesuai Jadwal',
@@ -93,7 +93,6 @@ export const EventRegistrationAdminWidget: React.FC = () => {
       },
       orgName: orgProfile.appName || 'SIMO - OSIS',
       schoolName: orgProfile.schoolName || 'SMKN 1 Cerdas Bangsa',
-      logoUrl: orgProfile.logoUrl,
     });
   };
 

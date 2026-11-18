@@ -2,19 +2,37 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Quote } from 'lucide-react';
 import { Highlight } from './Highlight';
 import { ScrollReveal } from '../common/ScrollReveal';
+import { TestimonialItem } from '../../types';
 
-// TODO: sambungkan ke Supabase tabel 'testimonials' (columns: id, name, role_or_class, avatar_url, content, is_published)
-export interface TestimonialItem {
-  id: string;
-  name: string;
-  roleOrClass: string;
-  avatarUrl?: string;
-  content: string;
-}
+export type { TestimonialItem };
 
-const DUMMY_TESTIMONIALS: TestimonialItem[] = [
+export const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
   {
     id: 't-1',
+    name: 'Admin IT Sekolah',
+    roleOrClass: 'Super Admin / IT Support • -',
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    content:
+      'Pengalaman berorganisasi di OSIS menjadi wadah luar biasa untuk mengasah keterampilan kerja sama tim, tanggung jawab, dan kedewasaan berorganisasi.',
+  },
+  {
+    id: 't-2',
+    name: 'Alvaro Danendra',
+    roleOrClass: 'Anggota Sekbid • RPL',
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    content:
+      'Sebagai anggota baru, saya merasa sangat dirangkul dan transparan. Jadwal kegiatan dan pembagian peran selalu jelas, memberi ruang yang nyaman untuk belajar kepemimpinan.',
+  },
+  {
+    id: 't-3',
+    name: 'Anisa Rahmawati',
+    roleOrClass: 'Sekretaris Umum • TKJ 2',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
+    content:
+      'Sistem pengarsipan surat digital dan notulensi rapat di SIMO membuat tata kelola administrasi organisasi jauh lebih tertib, cepat, dan tidak ada lagi dokumen penting yang tercecer.',
+  },
+  {
+    id: 't-4',
     name: 'Zevin',
     roleOrClass: 'Ketua Umum OSIS • XI RPL 1',
     avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80',
@@ -22,44 +40,12 @@ const DUMMY_TESTIMONIALS: TestimonialItem[] = [
       'Melalui SIMO, seluruh alur kerja kepengurusan OSIS mulai dari perencanaan proker, absensi presensi wajah, hingga keterbukaan anggaran dapat diakses secara transparan dan akuntabel oleh seluruh warga sekolah.',
   },
   {
-    id: 't-2',
-    name: 'Anisa Rahmawati',
-    roleOrClass: 'Sekretaris Umum • XI TKJ 2',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop&q=80',
-    content:
-      'Sistem pengarsipan surat digital dan notulensi rapat di SIMO membuat tata kelola administrasi organisasi jauh lebih tertib, cepat, dan tidak ada lagi dokumen penting yang tercecer.',
-  },
-  {
-    id: 't-3',
+    id: 't-5',
     name: 'Rizky Alamsyah',
     roleOrClass: 'Bendahara Umum • XI AKL 1',
     avatarUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&auto=format&fit=crop&q=80',
     content:
       'Transparansi arus kas dan iuran anggota yang tercatat otomatis memudahkan pertanggungjawaban dana kegiatan. Semua pengurus dan siswa bisa meninjau realisasi anggaran secara terbuka.',
-  },
-  {
-    id: 't-4',
-    name: 'Dimas Anggoro',
-    roleOrClass: 'Koordinator Sekbid TIK • XI RPL 2',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    content:
-      'Penerapan absensi biometrik scan wajah dan koordinasi divisi berbasis web ini membuktikan bahwa siswa SMK mampu menciptakan inovasi digital yang berdampak nyata.',
-  },
-  {
-    id: 't-5',
-    name: 'Siti Aulia Nur',
-    roleOrClass: 'Anggota Siswa • X DKV 1',
-    avatarUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&auto=format&fit=crop&q=80',
-    content:
-      'Sebagai anggota baru, saya merasa sangat dirangkul dan transparan. Jadwal kegiatan dan pembagian peran selalu jelas, memberi ruang yang nyaman untuk belajar kepemimpinan.',
-  },
-  {
-    id: 't-6',
-    name: 'Bima Satria',
-    roleOrClass: 'Koordinator Sekbid Bela Negara • XI TKRO 1',
-    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80',
-    content:
-      'Koordinasi gladi upacara dan latihan baris-berbaris jadi lebih disiplin karena kehadiran setiap perwakilan terpantau langsung lewat sistem presensi cerdas SIMO.',
   },
 ];
 
@@ -68,7 +54,7 @@ interface TestimonialsSectionProps {
 }
 
 export const TestimonialsSection: React.FC<TestimonialsSectionProps> = ({
-  testimonials = DUMMY_TESTIMONIALS,
+  testimonials = DEFAULT_TESTIMONIALS,
 }) => {
   const [startIndex, setStartIndex] = useState(0);
 
