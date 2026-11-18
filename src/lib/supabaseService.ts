@@ -269,13 +269,20 @@ function memberPayload(member: Member): Record<string, any> {
 }
 
 export async function addMemberToCloud(member: Member): Promise<boolean> {
-  knownMemberIds.add(stringToUuid(member.id));
   let avatar = member.avatarUrl;
   if (avatar?.startsWith('data:image/')) {
     const uploaded = await uploadImageToStorage(avatar, `avatars/${stringToUuid(member.id)}.png`);
     avatar = uploaded || (await compressImageForCloud(avatar));
   }
-  return upsertRows('members', [{ ...memberPayload(member), avatar_url: avatar }], 'Gagal menyimpan anggota');
+  const ok = await upsertRows(
+    'members',
+    [{ ...memberPayload(member), avatar_url: avatar }],
+    'Gagal menyimpan anggota'
+  );
+  if (ok) {
+    knownMemberIds.add(stringToUuid(member.id));
+  }
+  return ok;
 }
 
 export async function updateMemberInCloud(

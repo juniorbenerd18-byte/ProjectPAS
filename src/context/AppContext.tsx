@@ -33,6 +33,7 @@ import { DEFAULT_TESTIMONIALS } from '../components/public/TestimonialsSection';
 import { formatAttendanceTime, normalizeMajor } from '../lib/utils';
 import {
   isCloudConnected,
+  stringToUuid,
   setSyncErrorHandler,
   fetchAllFromCloud,
   fetchMembersFromCloud,
@@ -711,17 +712,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const cloudIsEmpty = (rows: unknown[] | null) => Array.isArray(rows) && rows.length === 0;
       const cloudEventIds = new Set((snapshot.events ?? []).map((e) => e.id));
       const hasLocalOnlyEvents = events.some((e) => !cloudEventIds.has(e.id));
-      const cloudDueKeys = new Set(
-        (snapshot.memberDues ?? []).map((d) => `${d.memberId}-${d.periodYear}-${d.periodMonth}`)
-      );
-      const hasLocalOnlyDues = memberDues.some(
-        (d) => !cloudDueKeys.has(`${d.memberId}-${d.periodYear}-${d.periodMonth}`)
-      );
       const cloudAttendanceKeys = new Set(
-        (snapshot.attendances ?? []).map((a) => `${a.targetId}-${a.memberId}`)
+        (snapshot.attendances ?? []).map((a) => `${stringToUuid(a.targetId)}-${stringToUuid(a.memberId)}`)
       );
       const hasLocalOnlyAttendances = attendances.some(
-        (a) => !cloudAttendanceKeys.has(`${a.targetId}-${a.memberId}`)
+        (a) => !cloudAttendanceKeys.has(`${stringToUuid(a.targetId)}-${stringToUuid(a.memberId)}`)
       );
 
       const contributes =
@@ -733,7 +728,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (cloudIsEmpty(snapshot.workPrograms) && workPrograms.length > 0) ||
         (cloudIsEmpty(snapshot.eventRegistrations) && eventRegistrations.length > 0) ||
         hasLocalOnlyEvents ||
-        hasLocalOnlyDues ||
         hasLocalOnlyAttendances ||
         profileDiffers;
 
@@ -788,25 +782,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
 
-      // Dues: cloud empty -> upload; otherwise union by member + period.
-      if (snapshot.memberDues) {
-        const cloudKeys = new Set(
-          snapshot.memberDues.map((d) => `${d.memberId}-${d.periodYear}-${d.periodMonth}`)
-        );
-        for (const due of memberDues) {
-          const key = `${due.memberId}-${due.periodYear}-${due.periodMonth}`;
-          if (cloudKeys.has(key)) continue;
-          if (!(await addMemberDueToCloud(due))) failed = true;
-        }
-      }
-
       // Attendances: union by target + member.
       if (snapshot.attendances) {
         const cloudKeys = new Set(
-          snapshot.attendances.map((a) => `${a.targetId}-${a.memberId}`)
+          snapshot.attendances.map((a) => `${stringToUuid(a.targetId)}-${stringToUuid(a.memberId)}`)
         );
         for (const record of attendances) {
-          const key = `${record.targetId}-${record.memberId}`;
+          const key = `${stringToUuid(record.targetId)}-${stringToUuid(record.memberId)}`;
           if (cloudKeys.has(key)) continue;
           if (!(await recordAttendanceToCloud(record))) failed = true;
         }
@@ -1085,19 +1067,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newMember: Member = { ...member, id: `mem-${Date.now()}` };
     setMembers((prev) => [...prev, newMember]);
     runCloudWrite(addMemberToCloud(newMember));
-
-    const newDue: MemberDue = {
-      id: `due-${Date.now()}`,
-      memberId: newMember.id,
-      memberName: newMember.fullName,
-      nisn: newMember.nisn,
-      periodMonth: new Date().getMonth() + 1,
-      periodYear: new Date().getFullYear(),
-      amount: orgProfile.monthlyDueAmount ?? 15000,
-      status: 'belum_lunas',
-    };
-    setMemberDues((prev) => [...prev, newDue]);
-    runCloudWrite(addMemberDueToCloud(newDue));
     showToast(`Anggota ${newMember.fullName} berhasil didaftarkan & disinkronkan ke Cloud!`);
   };
 
