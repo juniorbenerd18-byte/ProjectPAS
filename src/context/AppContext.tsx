@@ -75,6 +75,7 @@ import {
   updateGalleryPhotoInCloud,
   deleteGalleryPhotoFromCloud,
   addEventRegistrationToCloud,
+  deleteEventRegistrationFromCloud,
   getAppMeta,
   setAppMeta,
   replaceCloudWithSnapshot,
@@ -247,6 +248,7 @@ interface AppContextType {
   registerForEvent: (
     reg: Omit<EventRegistration, 'id' | 'ticketCode' | 'registeredAt'>
   ) => EventRegistration;
+  deleteEventRegistration: (id: string) => void;
 
   galleryPhotos: GalleryItem[];
   addGalleryPhoto: (photo: Omit<GalleryItem, 'id'>) => void;
@@ -1628,6 +1630,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return newReg;
   };
 
+  const deleteEventRegistration = (id: string) => {
+    setEventRegistrations((prev) => prev.filter((r) => r.id !== id));
+    runCloudWrite(deleteEventRegistrationFromCloud(id));
+    showToast('Data pendaftaran kegiatan berhasil dihapus', 'info');
+  };
+
   // Gallery
   const addGalleryPhoto = (photo: Omit<GalleryItem, 'id'>) => {
     const newPhoto: GalleryItem = { ...photo, id: `g-${Date.now()}` };
@@ -1857,6 +1865,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setKeanggotaanTab,
         eventRegistrations,
         registerForEvent,
+        deleteEventRegistration,
         galleryPhotos,
         addGalleryPhoto,
         updateGalleryPhoto,

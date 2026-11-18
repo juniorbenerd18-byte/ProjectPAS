@@ -343,8 +343,27 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   #printable-disposisi,
-  #printable-disposisi * {
+  #printable-disposisi *,
+  #printable-ticket,
+  #printable-ticket *,
+  #printable-area,
+  #printable-area * {
     visibility: visible !important;
+  }
+
+  #printable-ticket {
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 600px !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    z-index: 9999999 !important;
+    border: 2px solid #1E3A8A !important;
+    box-shadow: none !important;
   }
 
   #printable-disposisi {

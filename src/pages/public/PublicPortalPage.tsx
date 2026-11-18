@@ -3,7 +3,10 @@ import { useApp } from '../../context/AppContext';
 import { portalData } from '../../data/portalData';
 import { EventRegistration } from '../../types';
 import { Modal } from '../../components/common/Modal';
-import { CheckCircle2, Printer, Ticket } from 'lucide-react';
+import { CheckCircle2, Printer, Ticket, Download } from 'lucide-react';
+import { printEventTicket } from '../../lib/printTicket';
+import { generateQRCode } from '../../lib/utils';
+import html2canvas from 'html2canvas';
 
 // Komponen Redesign Halaman Publik Baru
 import { PublicNavbar } from '../../components/public/PublicNavbar';
@@ -34,6 +37,9 @@ export const PublicPortalPage: React.FC = () => {
   const [selectedEventForRegister, setSelectedEventForRegister] = useState<PublicEventCardData | null>(null);
   const [selectedEventForDetail, setSelectedEventForDetail] = useState<PublicEventCardData | null>(null);
   const [issuedTicket, setIssuedTicket] = useState<EventRegistration | null>(null);
+  const [ticketQrUrl, setTicketQrUrl] = useState<string>('');
+  const [isPrintingTicket, setIsPrintingTicket] = useState(false);
+  const ticketCardRef = React.useRef<HTMLDivElement>(null);
 
   // Form input pendaftaran
   const [regForm, setRegForm] = useState({
@@ -273,9 +279,65 @@ export const PublicPortalPage: React.FC = () => {
         phone: regForm.phone.trim(),
       });
       setIssuedTicket(ticket);
+
+      // Generate QR Code untuk preview di modal
+      try {
+        const qrPayload = JSON.stringify({
+          code: ticket.ticketCode,
+          nisn: ticket.nisn,
+          name: ticket.studentName,
+          event: ticket.eventTitle,
+        });
+        generateQRCode(qrPayload).then((url) => setTicketQrUrl(url));
+      } catch (qrErr) {
+        console.warn('QR code generation notice:', qrErr);
+      }
     } catch (err) {
       console.error(err);
       setRegError('Gagal memproses pendaftaran. Silakan coba kembali.');
+    }
+  };
+
+  const handlePrintIssuedTicket = async () => {
+    if (!issuedTicket || !selectedEventForRegister) return;
+    setIsPrintingTicket(true);
+    try {
+      await printEventTicket({
+        ticket: issuedTicket,
+        eventDetails: {
+          date: selectedEventForRegister.date,
+          time: selectedEventForRegister.time,
+          location: selectedEventForRegister.location,
+        },
+        orgName: organizationData.appName || 'SIMO - OSIS',
+        schoolName: organizationData.schoolName || 'SMKN 1 Cerdas Bangsa',
+        logoUrl: organizationData.logoUrl,
+      });
+    } catch (err) {
+      console.error('Print ticket error:', err);
+      // Fallback
+      window.print();
+    } finally {
+      setIsPrintingTicket(false);
+    }
+  };
+
+  const handleDownloadTicketImage = async () => {
+    if (!ticketCardRef.current || !issuedTicket) return;
+    try {
+      const canvas = await html2canvas(ticketCardRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: '#FFFFFF',
+      });
+      const link = document.createElement('a');
+      link.download = `TIKET-${issuedTicket.ticketCode}-${issuedTicket.studentName.replace(/\s+/g, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Tiket berhasil diunduh dalam format gambar PNG!', 'success');
+    } catch (err) {
+      console.error('Error downloading ticket image:', err);
+      showToast('Gagal mengunduh gambar tiket', 'error');
     }
   };
 
@@ -377,62 +439,97 @@ export const PublicPortalPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Kartu E-Tiket Digital */}
-              <div className="p-6 rounded-[20px] bg-[#FAF6EE] dark:bg-[#0E1B2C] border-2 border-dashed border-[#F2B544] relative space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#E6DFD0] dark:border-[#283D56]">
+              {/* Kartu E-Tiket Digital (Putih Bersih Sesuai Tema Dashboard Publik) */}
+              <div
+                ref={ticketCardRef}
+                id="printable-ticket"
+                className="p-5 sm:p-6 rounded-[20px] bg-white border-2 border-dashed border-[#1E3A8A]/40 relative space-y-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                   <div>
-                    <span className="text-[11px] font-bold text-[#F2B544] uppercase tracking-wider block">
+                    <span className="text-[11px] font-bold text-[#F2B544] bg-[#1F3A5F] px-2.5 py-0.5 rounded-[6px] uppercase tracking-wider inline-block">
                       {organizationData.appName || 'SIMO'} OFFICIAL PASS
                     </span>
-                    <h5 className="font-extrabold text-[15px] text-[#1F3A5F] dark:text-[#FAF6EE]">
+                    <h5 className="font-extrabold text-[16px] text-[#1F3A5F] mt-1.5">
                       {issuedTicket.eventTitle}
                     </h5>
                   </div>
-                  <div className="px-3.5 py-1.5 rounded-[10px] bg-[#1F3A5F] text-[#F2B544] font-mono font-black text-sm tracking-wider">
+                  <div className="px-3.5 py-1.5 rounded-[10px] bg-[#1F3A5F] text-[#F2B544] font-mono font-black text-sm tracking-wider shrink-0 shadow-xs">
                     {issuedTicket.ticketCode}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-[13px]">
-                  <div>
-                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Nama Peserta</span>
-                    <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">{issuedTicket.studentName}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2 grid grid-cols-2 gap-3 text-[13px]">
+                    <div>
+                      <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Nama Peserta</span>
+                      <span className="font-bold text-[#1F3A5F] text-[14px]">{issuedTicket.studentName}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Kelas &amp; NISN</span>
+                      <span className="font-bold text-[#1F3A5F] text-[14px]">
+                        {issuedTicket.classRoom} • {issuedTicket.nisn}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Waktu &amp; Tanggal</span>
+                      <span className="font-medium text-[#1F3A5F]">
+                        {selectedEventForRegister.date} {selectedEventForRegister.time ? `• ${selectedEventForRegister.time}` : ''}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Lokasi Acara</span>
+                      <span className="font-medium text-[#1F3A5F] truncate block">
+                        {selectedEventForRegister.location}
+                      </span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-slate-500 block text-[11px] uppercase font-bold tracking-wider">Nomor WhatsApp / HP</span>
+                      <span className="font-medium text-[#1F3A5F]">{issuedTicket.phone}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Kelas &amp; NISN</span>
-                    <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
-                      {issuedTicket.classRoom} • {issuedTicket.nisn}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Waktu &amp; Tanggal</span>
-                    <span className="font-medium text-[#1F3A5F] dark:text-[#FAF6EE]">
-                      {selectedEventForRegister.date} {selectedEventForRegister.time ? `• ${selectedEventForRegister.time}` : ''}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[#5A6472] dark:text-[#9AA8B8] block text-[11px]">Lokasi Acara</span>
-                    <span className="font-medium text-[#1F3A5F] dark:text-[#FAF6EE] truncate block">
-                      {selectedEventForRegister.location}
+
+                  {/* QR Code Box */}
+                  <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 border border-slate-200 shrink-0">
+                    {ticketQrUrl ? (
+                      <img src={ticketQrUrl} alt="QR Code Tiket" className="w-24 h-24 object-contain" />
+                    ) : (
+                      <div className="w-24 h-24 bg-slate-200 animate-pulse rounded-lg" />
+                    )}
+                    <span className="text-[10px] font-mono text-slate-500 mt-1 font-bold">
+                      {issuedTicket.ticketCode}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between text-[11px] text-[#5A6472] dark:text-[#9AA8B8]">
+                <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
                   <span>Terdaftar: {issuedTicket.registeredAt}</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">STATUS: TERKONFIRMASI</span>
+                  <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    STATUS: TERDAFTAR &amp; RESMI
+                  </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-2">
+              <div className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="simo-btn-outline px-4 py-2 text-[13px] font-bold rounded-[10px] flex items-center gap-2 cursor-pointer"
+                  onClick={handleDownloadTicketImage}
+                  className="px-4 py-2 text-[13px] font-bold rounded-[10px] bg-slate-100 hover:bg-slate-200 text-[#1F3A5F] border border-slate-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Unduh gambar tiket ke galeri ponsel/laptop"
+                >
+                  <Download className="w-4 h-4 text-[#1F3A5F]" />
+                  <span>Unduh Gambar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintIssuedTicket}
+                  disabled={isPrintingTicket}
+                  className="simo-btn-outline px-4 py-2 text-[13px] font-bold rounded-[10px] flex items-center gap-2 cursor-pointer border-[#1E3A8A] text-[#1E3A8A] hover:bg-blue-50"
+                  title="Cetak tiket resmi (1 lembar rapi)"
                 >
                   <Printer className="w-4 h-4" />
-                  <span>Cetak Tiket</span>
+                  <span>{isPrintingTicket ? 'Menyiapkan...' : 'Cetak Tiket'}</span>
                 </button>
                 <button
                   type="button"

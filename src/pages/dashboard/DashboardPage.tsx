@@ -15,11 +15,13 @@ import {
   Image as ImageIcon,
   UserPlus,
   UserCheck,
+  Ticket,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatDateIndo } from '../../lib/utils';
 import { ScrollReveal } from '../../components/common/ScrollReveal';
 import { RegistrationAdminWidget } from '../../components/dashboard/RegistrationAdminWidget';
+import { EventRegistrationAdminWidget } from '../../components/dashboard/EventRegistrationAdminWidget';
 
 export const DashboardPage: React.FC = () => {
   const {
@@ -33,6 +35,7 @@ export const DashboardPage: React.FC = () => {
     aspirations,
     documents,
     recruitments,
+    eventRegistrations,
     setActivePage,
     setKeanggotaanTab,
   } = useApp();
@@ -95,6 +98,19 @@ export const DashboardPage: React.FC = () => {
           >
             <UserPlus className="w-4 h-4 text-[#1F3A5F]" strokeWidth={2.5} />
             <span>Pendaftar Oprec {pendingRecruitments.length > 0 && `(${pendingRecruitments.length} Baru)`}</span>
+          </button>
+          <button
+            onClick={() => {
+              const widget = document.getElementById('widget-pendaftar-kegiatan');
+              if (widget) {
+                widget.scrollIntoView({ behavior: 'smooth' });
+              }
+            }}
+            className="min-h-[42px] px-3.5 py-2 bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[13px] sm:text-[14px] font-bold rounded-[12px] transition-all flex items-center gap-2 cursor-pointer shadow-none whitespace-nowrap shrink-0"
+            title="Lihat siswa yang mendaftar kegiatan mendatang"
+          >
+            <Ticket className="w-4 h-4 text-[#F2B544]" strokeWidth={2.5} />
+            <span>Pendaftar Kegiatan ({eventRegistrations.length} Tiket)</span>
           </button>
           <button
             onClick={() => setActivePage('kegiatan-presensi')}
@@ -401,6 +417,11 @@ export const DashboardPage: React.FC = () => {
       {/* BARIS 2.5: WIDGET PENDAFTARAN & OPREC CALON ANGGOTA BARU */}
       {/* ======================================================== */}
       <RegistrationAdminWidget />
+
+      {/* ======================================================== */}
+      {/* BARIS 2.6: WIDGET PENDAFTARAN KEGIATAN MENDATANG SISWA   */}
+      {/* ======================================================== */}
+      <EventRegistrationAdminWidget />
 
       {/* ======================================================== */}
       {/* BARIS 3: JADWAL RAPAT TERDEKAT & PAPAN PENGUMUMAN RESMI  */}
