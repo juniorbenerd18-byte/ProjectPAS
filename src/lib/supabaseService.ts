@@ -246,19 +246,29 @@ export async function fetchMembersFromCloud(): Promise<Member[] | null> {
   return members;
 }
 
+function ensureValidMemberEmail(email?: string, nisn?: string, fullName?: string): string {
+  if (email && email.trim()) return email.trim();
+  const cleanNisn = nisn?.trim();
+  if (cleanNisn && cleanNisn.length >= 4) {
+    return `${cleanNisn}@siswa.smkn1cerdas.sch.id`;
+  }
+  const cleanName = fullName?.toLowerCase().replace(/[^a-z0-9]/g, '') || `siswa${Date.now().toString().slice(-4)}`;
+  return `${cleanName}@siswa.smkn1cerdas.sch.id`;
+}
+
 function memberPayload(member: Member): Record<string, any> {
   return {
     id: stringToUuid(member.id),
     nisn: member.nisn,
     full_name: member.fullName,
-    email: member.email || null,
+    email: ensureValidMemberEmail(member.email, member.nisn, member.fullName),
     role: member.role,
     grade: member.grade,
     class_room: member.classRoom,
     major: member.major,
     division_id: fkDivision(member.divisionId),
     position: member.position,
-    phone: member.phone,
+    phone: member.phone || '',
     avatar_url: member.avatarUrl,
     is_active: member.isActive,
     status: member.status,
@@ -292,7 +302,7 @@ export async function updateMemberInCloud(
   const payload: Record<string, any> = {};
   if (partial.fullName !== undefined) payload.full_name = partial.fullName;
   if (partial.nisn !== undefined) payload.nisn = partial.nisn;
-  if (partial.email !== undefined) payload.email = partial.email || null;
+  if (partial.email !== undefined) payload.email = ensureValidMemberEmail(partial.email, partial.nisn, partial.fullName);
   if (partial.role !== undefined) payload.role = partial.role;
   if (partial.grade !== undefined) payload.grade = partial.grade;
   if (partial.classRoom !== undefined) payload.class_room = partial.classRoom;

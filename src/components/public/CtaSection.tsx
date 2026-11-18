@@ -268,7 +268,7 @@ export const CtaSection: React.FC<CtaSectionProps> = ({ organization }) => {
                   <Lightbulb className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg sm:text-xl font-bold text-[#1F3A5F]">Kotak Ide atau Pesan</h3>
+                  <h3 className="text-lg sm:text-xl font-bold text-[#1F3A5F]">Kotak Masuk atau Pesan</h3>
                   <p className="text-xs text-[#64748B]">
                     Sampaikan ide, saran, atau pesan Anda. Admin akan membalas lewat Gmail.
                   </p>

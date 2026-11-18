@@ -87,8 +87,10 @@ export const DataAnggota: React.FC = () => {
     }
 
     const div = divisions.find((d) => d.id === formData.divisionId);
+    const validEmail = formData.email?.trim() || `${formData.nisn.trim()}@siswa.smkn1cerdas.sch.id`;
     const payload = {
       ...formData,
+      email: validEmail,
       divisionName: div?.name || 'Tanpa Divisi',
     };
 

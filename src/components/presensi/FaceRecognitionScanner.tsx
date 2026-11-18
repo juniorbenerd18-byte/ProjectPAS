@@ -45,6 +45,41 @@ interface FaceRecognitionScannerProps {
 // Models path (served from /public/models/)
 const MODEL_URL = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/models`;
 
+const BIOMETRIC_STORAGE_KEY = 'simo_biometric_face_descriptors_v1';
+
+function saveDescriptorsToStorage(cache: Map<string, Float32Array[]>) {
+  try {
+    const obj: Record<string, number[][]> = {};
+    cache.forEach((descriptors, id) => {
+      obj[id] = descriptors.map((d) => Array.from(d));
+    });
+    localStorage.setItem(BIOMETRIC_STORAGE_KEY, JSON.stringify(obj));
+  } catch (err) {
+    console.warn('Failed to save biometric descriptors to localStorage:', err);
+  }
+}
+
+function loadDescriptorsFromStorage(): Map<string, Float32Array[]> {
+  const map = new Map<string, Float32Array[]>();
+  try {
+    const raw = localStorage.getItem(BIOMETRIC_STORAGE_KEY);
+    if (raw) {
+      const obj = JSON.parse(raw) as Record<string, number[][]>;
+      Object.entries(obj).forEach(([id, arrays]) => {
+        if (Array.isArray(arrays)) {
+          map.set(
+            id,
+            arrays.map((arr) => new Float32Array(arr))
+          );
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('Failed to load biometric descriptors from localStorage:', err);
+  }
+  return map;
+}
+
 export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   meetingId,
   meetingTitle,
@@ -104,6 +139,8 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   // akan memeriksa token setelah setiap operasi async dan membatalkan diri jika sudah usang.
   const buildTokenRef = useRef<number>(0);
   const unknownStreakRef = useRef<number>(0);
+  const lastDetectedDescriptorRef = useRef<Float32Array | null>(null);
+  const lastDetectedSnapshotRef = useRef<string | null>(null);
 
   // Keep ref in sync
   useEffect(() => {
@@ -153,38 +190,58 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
   // =========================================================
   // 2. BUILD FACE MATCHER from members who have local photos
   // =========================================================
+  // Menyimpan descriptor cache yang dipersistensikan di localStorage
+  // sehingga data biometrik tetap diingat permanen meski refresh halaman
+  const descriptorCacheRef = useRef<Map<string, Float32Array[]>>(loadDescriptorsFromStorage());
+
+  const rebuildMatcherFromCache = useCallback(() => {
+    const labeled: faceapi.LabeledFaceDescriptors[] = [];
+    descriptorCacheRef.current.forEach((descriptors, memberId) => {
+      if (descriptors.length > 0) {
+        labeled.push(new faceapi.LabeledFaceDescriptors(memberId, descriptors));
+      }
+    });
+
+    if (labeled.length > 0) {
+      // Euclidean distance threshold 0.60 (standar optimal face-api.js)
+      faceMatcherRef.current = new faceapi.FaceMatcher(labeled, 0.60);
+      setRegisteredCount(labeled.length);
+    } else {
+      faceMatcherRef.current = null;
+      setRegisteredCount(0);
+    }
+  }, []);
+
   const buildFaceMatcher = useCallback(async () => {
     if (!modelsLoaded) return;
 
-    // Dapatkan token unik untuk build ini. Build lama akan membatalkan diri
-    // jika token berubah (artinya ada build baru yang lebih baru dimulai).
+    // Inisialisasi cepat dari storage jika sudah ada data terdaftar
+    rebuildMatcherFromCache();
+
+    // Dapatkan token unik untuk build ini
     const myToken = ++buildTokenRef.current;
 
-    // Langsung bersihkan matcher lama agar tidak ada wajah usang yang terdeteksi
-    // selama proses rebuild berlangsung.
-    faceMatcherRef.current = null;
+    const membersWithPhoto = members.filter((m) => !!m.avatarUrl);
 
-    // Only process members who have a data: URL (photo uploaded from device)
-    const membersWithPhoto = members.filter(
-      (m) => m.avatarUrl && (m.avatarUrl.startsWith('data:') || m.avatarUrl.startsWith('blob:'))
-    );
-
-    if (membersWithPhoto.length === 0) {
+    if (membersWithPhoto.length === 0 && descriptorCacheRef.current.size === 0) {
+      faceMatcherRef.current = null;
       setRegisteredCount(0);
       setIsBuilding(false);
       return;
     }
 
     setIsBuilding(true);
-    const labeledDescriptors: faceapi.LabeledFaceDescriptors[] = [];
+    let cacheChanged = false;
 
     for (const member of membersWithPhoto) {
-      // Batalkan build ini jika sudah ada build yang lebih baru
-      if (myToken !== buildTokenRef.current) {
-        return;
+      if (myToken !== buildTokenRef.current) return;
+
+      const cached = descriptorCacheRef.current.get(member.id);
+      if (cached && cached.length > 0) {
+        continue;
       }
+
       try {
-        // Create an image element from the data URL
         const img = await new Promise<HTMLImageElement>((resolve, reject) => {
           const el = document.createElement('img');
           el.crossOrigin = 'anonymous';
@@ -193,7 +250,6 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
           el.src = member.avatarUrl!;
         });
 
-        // Cek lagi setelah operasi async (image load)
         if (myToken !== buildTokenRef.current) return;
 
         const detection = await faceapi
@@ -201,37 +257,27 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
           .withFaceLandmarks()
           .withFaceDescriptor();
 
-        // Cek lagi setelah operasi async (face detection)
         if (myToken !== buildTokenRef.current) return;
 
         if (detection) {
-          labeledDescriptors.push(
-            new faceapi.LabeledFaceDescriptors(member.id, [detection.descriptor])
-          );
-        } else {
-          console.warn(`No face detected in photo of ${member.fullName}`);
+          const descriptors = [detection.descriptor];
+          descriptorCacheRef.current.set(member.id, descriptors);
+          cacheChanged = true;
         }
       } catch (err) {
         console.warn(`Could not process photo for ${member.fullName}:`, err);
       }
     }
 
-    // Cek final sebelum set matcher — pastikan ini masih build yang valid
     if (myToken !== buildTokenRef.current) return;
 
-    if (labeledDescriptors.length > 0) {
-      // Standar balanced Euclidean distance face-api: 0.58
-      // Mencegah mismatch sekaligus toleran terhadap variasi pencahayaan, jarak & ekspresi wajah
-      const distanceThreshold = 0.58;
-      faceMatcherRef.current = new faceapi.FaceMatcher(labeledDescriptors, distanceThreshold);
-      setRegisteredCount(labeledDescriptors.length);
-    } else {
-      faceMatcherRef.current = null;
-      setRegisteredCount(0);
+    if (cacheChanged) {
+      saveDescriptorsToStorage(descriptorCacheRef.current);
     }
 
+    rebuildMatcherFromCache();
     setIsBuilding(false);
-  }, [modelsLoaded, members]);
+  }, [modelsLoaded, members, rebuildMatcherFromCache]);
 
   // Rebuild matcher when models loaded or members change
   useEffect(() => {
@@ -391,7 +437,8 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         return;
       }
 
-      // Wajah terdeteksi — pindah ke status menganalisis
+      // Wajah terdeteksi — catat deskriptor aktif saat wajah tegak menghadap kamera
+      lastDetectedDescriptorRef.current = detection.descriptor;
       setScanStatus('verifying');
 
       if (!faceMatcherRef.current) {
@@ -399,6 +446,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         unknownStreakRef.current += 1;
         if (unknownStreakRef.current >= 4) {
           const snap = captureWebcamSnapshot();
+          lastDetectedSnapshotRef.current = snap;
           setSnapshotPhoto(snap);
           setScanStatus('unregistered');
           setIsEnrollModalOpen(true);
@@ -414,6 +462,7 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
         unknownStreakRef.current += 1;
         if (unknownStreakRef.current >= 4) {
           const snap = captureWebcamSnapshot();
+          lastDetectedSnapshotRef.current = snap;
           setSnapshotPhoto(snap);
           setScanStatus('unregistered');
           setIsEnrollModalOpen(true);
@@ -481,12 +530,46 @@ export const FaceRecognitionScanner: React.FC<FaceRecognitionScannerProps> = ({
 
   // =========================================================
   // 5. ENROLLMENT (register new face on-the-fly)
+  //    Gunakan deskriptor beresolusi tinggi yang terdeteksi saat wajah
+  //    tegak menghadap kamera, simpan ke cache dan localStorage
   // =========================================================
-  const handleEnrollAndCheckIn = (student: Member) => {
-    const snap = captureWebcamSnapshot() || snapshotPhoto || student.avatarUrl;
+  const handleEnrollAndCheckIn = async (student: Member) => {
+    // Ambil snapshot jernih saat wajah tegak menghadap kamera
+    const snap = lastDetectedSnapshotRef.current || snapshotPhoto || captureWebcamSnapshot() || student.avatarUrl;
 
-    // Save live snapshot as their registered face photo
+    // Simpan snapshot ke profil anggota
     updateMember(student.id, { avatarUrl: snap });
+
+    // Prioritaskan deskriptor yang tertangkap saat wajah sedang menghadap kamera
+    let descriptorToSave = lastDetectedDescriptorRef.current;
+
+    // Fallback: jika belum ada, coba tangkap dari video live
+    if (!descriptorToSave && videoRef.current && modelsLoaded) {
+      try {
+        const video = videoRef.current;
+        if (video.readyState >= 2 && video.videoWidth > 0) {
+          const liveDetection = await faceapi
+            .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.2 }))
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+          if (liveDetection) {
+            descriptorToSave = liveDetection.descriptor;
+          }
+        }
+      } catch (err) {
+        console.warn('Fallback detection error:', err);
+      }
+    }
+
+    if (descriptorToSave) {
+      const existing = descriptorCacheRef.current.get(student.id) || [];
+      const updated = [descriptorToSave, ...existing.slice(0, 2)];
+      descriptorCacheRef.current.set(student.id, updated);
+      saveDescriptorsToStorage(descriptorCacheRef.current);
+      rebuildMatcherFromCache();
+      console.log(`✅ Biometrik wajah untuk ${student.fullName} berhasil disimpan permanen`);
+    }
 
     const res = recordAttendance({
       targetType: 'rapat',

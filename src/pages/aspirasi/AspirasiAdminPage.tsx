@@ -159,7 +159,7 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
             <span>Kembali ke Dashboard</span>
           </button>
           <h1 className="text-2xl font-extrabold text-[#1F3A5F] dark:text-[#FAF6EE] flex items-center gap-2.5">
-            <span>Daftar Kotak Ide &amp; Aspirasi Siswa/Publik</span>
+            <span>Daftar Kotak Masuk Aspirasi Siswa/Publik</span>
             <span className="text-[13px] font-bold px-3 py-1 rounded-[8px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/40 text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
               {totalCount} Data
             </span>

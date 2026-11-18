@@ -114,6 +114,12 @@ interface Toast {
   type: 'success' | 'error' | 'info';
 }
 
+export interface ToastItem {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info';
+}
+
 interface StoredSession {
   memberId: string;
   nisn: string;
@@ -244,8 +250,8 @@ interface AppContextType {
     customPosition?: string
   ) => void;
 
-  keanggotaanTab: 'direktori' | 'struktur' | 'pendaftar';
-  setKeanggotaanTab: (tab: 'direktori' | 'struktur' | 'pendaftar') => void;
+  keanggotaanTab: 'direktori' | 'struktur' | 'pendaftar' | 'cerita';
+  setKeanggotaanTab: (tab: 'direktori' | 'struktur' | 'pendaftar' | 'cerita') => void;
 
   eventRegistrations: EventRegistration[];
   registerForEvent: (
@@ -270,6 +276,8 @@ interface AppContextType {
   toggleTheme: () => void;
 
   toast: Toast | null;
+  toasts: ToastItem[];
+  dismissToast: (id: string) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   resetAllData: () => void;
   importAllData: (jsonData: string) => boolean;
@@ -341,7 +349,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadStored('activePage', 'portal-publik')
   );
   const [keanggotaanTab, setKeanggotaanTab] = useState<
-    'direktori' | 'struktur' | 'pendaftar'
+    'direktori' | 'struktur' | 'pendaftar' | 'cerita'
   >('direktori');
   const [session, setSession] = useState<StoredSession | null>(() => readStoredSession());
   const [currentRole, setCurrentRole] = useState<UserRole>('ketua');
@@ -532,12 +540,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // TOAST
   // ==========================================
 
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
   const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    const id = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const newToast: ToastItem = { id, message, type };
     setToast({ message, type });
+    setToasts((prev) => [...prev.slice(-3), newToast]);
+
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 3800);
+
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
   }, []);
 
   // Report cloud failures to the UI instead of swallowing them.
@@ -1896,6 +1917,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setTheme,
         toggleTheme,
         toast,
+        toasts,
+        dismissToast,
         showToast,
         resetAllData,
         importAllData,

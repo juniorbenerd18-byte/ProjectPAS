@@ -388,7 +388,7 @@ export const DashboardPage: React.FC = () => {
                   <Lightbulb className="w-5 h-5" strokeWidth={2} />
                 </div>
                 <span className="text-[14px] font-bold text-[#5A6472] dark:text-[#9AA8B8]">
-                  Kotak Ide &amp; Aspirasi
+                  Kotak Masuk Aspirasi
                 </span>
               </div>
               <button

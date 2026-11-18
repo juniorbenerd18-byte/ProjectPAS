@@ -1098,9 +1098,6 @@ export const PengaturanPage: React.FC = () => {
               </button>
             </div>
           </div>
-
-          {/* SECTION 4: KELOLA CERITA DARI PENGURUS KAMI (TESTIMONI PORTAL) */}
-          <TestimonialAdminWidget />
         </div>
       )}
 

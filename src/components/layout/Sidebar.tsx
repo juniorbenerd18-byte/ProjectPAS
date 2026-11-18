@@ -10,6 +10,7 @@ import {
   Globe,
   ChevronRight,
   Lightbulb,
+  Inbox,
   LogOut,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
@@ -62,8 +63,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     },
     {
       id: 'aspirasi',
-      label: 'Kotak Ide & Aspirasi',
-      icon: <Lightbulb className="w-4 h-4 shrink-0 text-amber-500" />,
+      label: 'Kotak Masuk',
+      icon: <Inbox className="w-4 h-4 shrink-0 text-amber-500" />,
       badge: pendingAspirationsCount > 0 ? `${pendingAspirationsCount}` : null,
     },
   ];

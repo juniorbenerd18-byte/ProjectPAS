@@ -21,12 +21,14 @@ import {
   Eye,
   Sparkles,
   ExternalLink,
+  MessageSquare,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Member, UserRole, RecruitmentApplication } from '../../types';
 import { Modal } from '../../components/common/Modal';
 import { ImagePicker } from '../../components/common/ImagePicker';
 import { StrukturOrganisasi } from '../organisasi/StrukturOrganisasi';
+import { TestimonialAdminWidget } from '../../components/dashboard/TestimonialAdminWidget';
 
 export const KeanggotaanPage: React.FC = () => {
   const {
@@ -214,10 +216,12 @@ export const KeanggotaanPage: React.FC = () => {
     }
 
     const div = divisions.find((d) => d.id === formData.divisionId);
+    const validEmail = formData.email.trim() || `${cleanNisn}@siswa.smkn1cerdas.sch.id`;
     const payload = {
       ...formData,
       nisn: cleanNisn,
       fullName: cleanName,
+      email: validEmail,
       divisionName: div?.name || 'BPH',
     };
 
@@ -435,6 +439,20 @@ export const KeanggotaanPage: React.FC = () => {
             <span className="truncate">
               <span className="hidden sm:inline">Bagan Struktur</span>
               <span className="sm:hidden">Struktur</span>
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('cerita')}
+            className={`min-h-[38px] sm:min-h-[40px] px-1.5 sm:px-3.5 py-1 sm:py-1.5 text-[11px] sm:text-[14px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1 sm:gap-2 cursor-pointer ${
+              activeTab === 'cerita'
+                ? 'bg-[#1F3A5F] text-[#FAF6EE]'
+                : 'text-[#5A6472] dark:text-[#9AA8B8] hover:text-[#1F3A5F] dark:hover:text-[#FAF6EE]'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+            <span className="truncate">
+              <span className="hidden sm:inline">Cerita Pengurus</span>
+              <span className="sm:hidden">Cerita</span>
             </span>
           </button>
         </div>
@@ -957,6 +975,13 @@ export const KeanggotaanPage: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 4: CERITA PENGURUS */}
+      {activeTab === 'cerita' && (
+        <div className="space-y-6">
+          <TestimonialAdminWidget />
         </div>
       )}
 
