@@ -1453,17 +1453,52 @@ export async function deleteGalleryPhotoFromCloud(id: string): Promise<boolean> 
 // EVENT REGISTRATIONS
 // ==========================================
 
+export function parseToIsoTimestamp(val?: string): string {
+  if (!val) return new Date().toISOString();
+  const parsed = Date.parse(val);
+  if (!isNaN(parsed)) {
+    return new Date(parsed).toISOString();
+  }
+  // Format lokal Indonesia: "18/11/26, 07.39" atau "18/11/2026, 07:39" dsb
+  const match = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})(?:[,\s]+(\d{1,2})[.:](\d{2}))?/);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10) - 1;
+    let year = parseInt(match[3], 10);
+    if (year < 100) year += 2000;
+    const hour = match[4] ? parseInt(match[4], 10) : 0;
+    const min = match[5] ? parseInt(match[5], 10) : 0;
+    const d = new Date(year, month, day, hour, min);
+    if (!isNaN(d.getTime())) {
+      return d.toISOString();
+    }
+  }
+  return new Date().toISOString();
+}
+
 function mapEventRegistration(row: any): EventRegistration {
+  const rawDate = row.registered_at || row.created_at;
+  let formatted = rawDate || '';
+  if (rawDate) {
+    const d = new Date(rawDate);
+    if (!isNaN(d.getTime())) {
+      formatted = d.toLocaleString('id-ID', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      });
+    }
+  }
+
   return {
     id: row.id,
     ticketCode: row.ticket_code,
-    eventId: row.event_id,
+    eventId: row.event_id || '',
     eventTitle: row.event_title,
     studentName: row.student_name,
     nisn: row.nisn,
     classRoom: row.class_room || '',
     phone: row.phone || '',
-    registeredAt: row.registered_at || row.created_at || '',
+    registeredAt: formatted || row.registered_at || '',
   };
 }
 
@@ -1486,7 +1521,7 @@ function eventRegistrationPayload(r: EventRegistration): Record<string, any> {
     nisn: r.nisn,
     class_room: r.classRoom,
     phone: r.phone,
-    registered_at: r.registeredAt || new Date().toISOString(),
+    registered_at: parseToIsoTimestamp(r.registeredAt),
     status: 'terdaftar',
   };
 }
