@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { Quote, Plus, Edit2, Trash2, RotateCcw, Check, Sparkles, User, MessageSquare } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Quote, Plus, Edit2, Trash2, RotateCcw, Check, Sparkles, User, MessageSquare, Upload, Loader2, Image as ImageIcon, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { TestimonialItem } from '../../types';
 import { Modal } from '../common/Modal';
 import { ScrollReveal } from '../common/ScrollReveal';
+import { readLocalImageAsDataUrl } from '../../lib/supabase';
+import { uploadImageToStorage, isCloudConnected } from '../../lib/supabaseService';
 
 export const TestimonialAdminWidget: React.FC = () => {
   const { testimonials, addTestimonial, updateTestimonial, deleteTestimonial, resetTestimonials, showToast } =
@@ -11,6 +13,8 @@ export const TestimonialAdminWidget: React.FC = () => {
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TestimonialItem | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -18,6 +22,37 @@ export const TestimonialAdminWidget: React.FC = () => {
     avatarUrl: '',
     content: '',
   });
+
+  const handleLocalPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingPhoto(true);
+      try {
+        const dataUrl = await readLocalImageAsDataUrl(file);
+        let finalUrl = dataUrl;
+        if (isCloudConnected()) {
+          const cleanName = (file.name || 'avatar.jpg').replace(/[^a-zA-Z0-9.-]/g, '_');
+          const ext = file.type.split('/')[1] || 'jpg';
+          const fileName = cleanName.endsWith(`.${ext}`) ? cleanName : `${cleanName}.${ext}`;
+          const storagePath = `testimonials/${Date.now()}-${fileName}`;
+          const cloudUrl = await uploadImageToStorage(dataUrl, storagePath);
+          if (cloudUrl) {
+            finalUrl = cloudUrl;
+          }
+        }
+        setFormData((prev) => ({ ...prev, avatarUrl: finalUrl }));
+        showToast('Foto profil lokal berhasil dimuat!', 'success');
+      } catch (err) {
+        console.error('Failed to read image file:', err);
+        showToast('Gagal membaca file foto profil.', 'error');
+      } finally {
+        setIsUploadingPhoto(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    }
+  };
 
   const handleOpenAdd = () => {
     setEditingItem(null);
@@ -232,22 +267,87 @@ export const TestimonialAdminWidget: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1">
-                URL Foto Profil Avatar (Opsional)
+              <label className="block text-[13px] font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
+                Foto Profil Avatar
               </label>
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  value={formData.avatarUrl}
-                  onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
-                  className="flex-1 px-3.5 py-2 rounded-[12px] bg-white dark:bg-[#1C3048] border border-[#E6DFD0] dark:border-[#283D56] text-[12px] text-[#1F3A5F] dark:text-[#FAF6EE] focus:outline-none focus:border-[#1F3A5F]"
-                />
-                {formData.avatarUrl && (
-                  <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-300 shrink-0">
-                    <img src={formData.avatarUrl} alt="Preview" className="w-full h-full object-cover" />
+
+              {/* Input file lokal tersembunyi */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLocalPhotoUpload}
+                className="hidden"
+              />
+
+              <div className="p-3.5 rounded-[14px] bg-slate-50 dark:bg-[#152335] border border-[#E6DFD0] dark:border-[#283D56] space-y-3">
+                <div className="flex items-center gap-3">
+                  {/* Avatar Preview */}
+                  <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-[#1F3A5F] dark:border-[#F2B544] bg-white shrink-0 shadow-2xs relative">
+                    {formData.avatarUrl ? (
+                      <img
+                        src={formData.avatarUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
+                        <User className="w-6 h-6" />
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Tombol Upload File Lokal */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <button
+                      type="button"
+                      disabled={isUploadingPhoto}
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full sm:w-auto px-3.5 py-2 rounded-[10px] bg-[#1F3A5F] hover:bg-[#162B46] text-[#FAF6EE] text-[12px] font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors shadow-2xs disabled:opacity-60"
+                    >
+                      {isUploadingPhoto ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-[#F2B544]" />
+                          <span>Mengunggah...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-3.5 h-3.5 text-[#F2B544]" />
+                          <span>Pilih Foto dari HP / Komputer</span>
+                        </>
+                      )}
+                    </button>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Format JPG, PNG, WebP dari galeri perangkat (otomatis dioptimasi).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Input URL Alternatif */}
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-700/60 flex items-center gap-2">
+                  <span className="text-[11px] font-semibold text-slate-500 shrink-0">Atau URL:</span>
+                  <input
+                    type="url"
+                    value={formData.avatarUrl}
+                    onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
+                    placeholder="https://images.unsplash.com/..."
+                    className="flex-1 px-3 py-1.5 rounded-[8px] bg-white dark:bg-[#1C3048] border border-slate-200 dark:border-slate-700 text-[11px] text-[#1F3A5F] dark:text-[#FAF6EE] focus:outline-none focus:border-[#1F3A5F]"
+                  />
+                  {formData.avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, avatarUrl: '' })}
+                      className="p-1.5 text-slate-400 hover:text-rose-500 rounded cursor-pointer"
+                      title="Hapus foto"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
