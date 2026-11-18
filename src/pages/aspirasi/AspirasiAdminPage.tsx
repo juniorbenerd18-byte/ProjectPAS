@@ -3,14 +3,10 @@ import {
   Lightbulb,
   Mail,
   Search,
-  CheckCircle2,
-  Clock,
   ArrowLeft,
   Globe,
   Filter,
   X,
-  Inbox,
-  AlertCircle,
   Trash2,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
@@ -30,9 +26,6 @@ export const AspirasiAdminPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | StudentAspiration['status']>('all');
   const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all');
-  const [selectedAsp, setSelectedAsp] = useState<StudentAspiration | null>(null);
-  const [responseText, setResponseText] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<StudentAspiration['status']>('diproses');
   const [confirmDeleteAsp, setConfirmDeleteAsp] = useState<StudentAspiration | null>(null);
 
   // Metrics
@@ -95,55 +88,6 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
 
     window.open(gmailUrl, '_blank');
     showToast(`Membuka Gmail untuk membalas ke ${asp.email}`, 'info');
-  };
-
-  const handleSaveResponse = () => {
-    if (!selectedAsp) return;
-
-    updateAspirationStatus(
-      selectedAsp.id,
-      selectedStatus,
-      responseText.trim() || undefined
-    );
-
-    showToast('Tanggapan resmi & status berhasil disimpan!', 'success');
-    setSelectedAsp(null);
-    setResponseText('');
-  };
-
-  const getStatusBadge = (status: StudentAspiration['status']) => {
-    switch (status) {
-      case 'terealisasi':
-        return (
-          <span className="simo-badge-blue">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            Terealisasi
-          </span>
-        );
-      case 'diproses':
-        return (
-          <span className="simo-badge-amber">
-            <Clock className="w-3.5 h-3.5" />
-            Diproses
-          </span>
-        );
-      case 'diterima':
-        return (
-          <span className="simo-badge-neutral">
-            <Inbox className="w-3.5 h-3.5" />
-            Diterima
-          </span>
-        );
-      case 'ditolak':
-        return (
-          <span className="simo-badge-neutral">
-            <X className="w-3.5 h-3.5" />
-            Ditolak
-          </span>
-        );
-      default:
-        return null;
-    }
   };
 
   return (
@@ -372,11 +316,6 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                       <div className="text-[#5A6472] dark:text-[#9AA8B8] line-clamp-2 leading-relaxed text-[14px]">
                         "{asp.content}"
                       </div>
-                      {asp.response && (
-                        <div className="mt-2 p-2.5 rounded-[10px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/30 border border-[#E6DFD0] dark:border-[#283D56] text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE]">
-                          <span className="font-bold">Tanggapan OSIS:</span> {asp.response}
-                        </div>
-                      )}
                     </td>
 
                     {/* Kontak / Email */}
@@ -390,32 +329,48 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
 
                     {/* Status */}
                     <td className="py-4 px-4 text-center whitespace-nowrap">
-                      {getStatusBadge(asp.status)}
+                      <select
+                        value={asp.status}
+                        onChange={(e) => updateAspirationStatus(asp.id, e.target.value as StudentAspiration['status'])}
+                        className={`cursor-pointer text-[12px] font-bold uppercase rounded-[8px] px-2.5 py-1.5 border transition-all focus:outline-none focus:ring-2 focus:ring-[#1F3A5F]/20 ${
+                          asp.status === 'terealisasi'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                            : asp.status === 'diproses'
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800'
+                            : asp.status === 'ditolak'
+                            ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800'
+                            : 'bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border-[#E6DFD0] dark:border-[#283D56]'
+                        }`}
+                        title="Klik untuk mengubah status penanganan"
+                      >
+                        <option value="diterima">Diterima</option>
+                        <option value="diproses">Diproses</option>
+                        <option value="terealisasi">Terealisasi</option>
+                        <option value="ditolak">Ditolak</option>
+                      </select>
                     </td>
 
                     {/* Aksi */}
                     <td className="py-4 px-4 text-right whitespace-nowrap">
-                      <div className="inline-flex items-center gap-2">
-                        {asp.email && (
+                      <div className="inline-flex items-center gap-2 justify-end">
+                        {asp.email ? (
                           <button
                             onClick={() => handleOpenGmail(asp)}
-                            title="Balas ke pengirim via Gmail"
-                            className="simo-btn-outline min-h-[38px] px-3 py-1 rounded-[10px] text-[13px] flex items-center gap-1.5 cursor-pointer"
+                            title="Balas pesan langsung via Gmail"
+                            className="simo-btn-primary min-h-[38px] px-3.5 py-1 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow-md transition-all"
                           >
                             <Mail className="w-3.5 h-3.5" />
-                            <span>Gmail</span>
+                            <span>Balas Email</span>
                           </button>
+                        ) : (
+                          <span
+                            title="Pengirim tidak menyertakan email"
+                            className="inline-flex items-center gap-1 min-h-[38px] px-3 py-1 rounded-[10px] text-[12px] font-medium bg-[#F1F3F5] dark:bg-[#1E293B] text-[#868E96] dark:text-[#64748B] border border-[#DEE2E6] dark:border-[#334155] cursor-not-allowed"
+                          >
+                            <Mail className="w-3.5 h-3.5 opacity-50" />
+                            <span>Tanpa Email</span>
+                          </span>
                         )}
-                        <button
-                          onClick={() => {
-                            setSelectedAsp(asp);
-                            setResponseText(asp.response || '');
-                            setSelectedStatus(asp.status);
-                          }}
-                          className="simo-btn-primary min-h-[38px] px-3.5 py-1 rounded-[10px] text-[13px] cursor-pointer"
-                        >
-                          Tanggapi
-                        </button>
                         <button
                           type="button"
                           onClick={() => setConfirmDeleteAsp(asp)}
@@ -453,7 +408,25 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                 <span className="px-2.5 py-1 rounded-[8px] text-[12px] font-bold uppercase bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border border-[#E6DFD0] dark:border-[#283D56]">
                   {asp.category}
                 </span>
-                {getStatusBadge(asp.status)}
+                <select
+                  value={asp.status}
+                  onChange={(e) => updateAspirationStatus(asp.id, e.target.value as StudentAspiration['status'])}
+                  className={`cursor-pointer text-[12px] font-bold uppercase rounded-[8px] px-2.5 py-1 border transition-all focus:outline-none ${
+                    asp.status === 'terealisasi'
+                      ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800'
+                      : asp.status === 'diproses'
+                      ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800'
+                      : asp.status === 'ditolak'
+                      ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800'
+                      : 'bg-[#FAF6EE] dark:bg-[#17293E] text-[#1F3A5F] dark:text-[#FAF6EE] border-[#E6DFD0] dark:border-[#283D56]'
+                  }`}
+                  title="Klik untuk mengubah status penanganan"
+                >
+                  <option value="diterima">Diterima</option>
+                  <option value="diproses">Diproses</option>
+                  <option value="terealisasi">Terealisasi</option>
+                  <option value="ditolak">Ditolak</option>
+                </select>
               </div>
 
               <div>
@@ -473,159 +446,36 @@ Email Resmi: ${orgProfile.email || 'osis@smkn1cerdasbangsa.sch.id'}`;
                 )}
               </div>
 
-              {asp.response && (
-                <div className="p-3 rounded-[10px] bg-[#E4EAF2] dark:bg-[#1F3A5F]/30 border border-[#E6DFD0] dark:border-[#283D56] text-[13px] text-[#1F3A5F] dark:text-[#FAF6EE]">
-                  <span className="font-bold">Tanggapan OSIS:</span> {asp.response}
-                </div>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-[#E6DFD0] dark:border-[#283D56]">
                 <button
                   type="button"
                   onClick={() => setConfirmDeleteAsp(asp)}
-                  className="min-h-[44px] px-3.5 rounded-[12px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 text-[14px] font-bold flex items-center gap-1.5 cursor-pointer mr-auto"
+                  className="min-h-[40px] px-3.5 rounded-[10px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 text-[13px] font-bold flex items-center gap-1.5 cursor-pointer transition-colors"
                   title="Hapus pesan ini"
                 >
                   <Trash2 className="w-4 h-4" />
                   <span>Hapus</span>
                 </button>
-                {asp.email && (
+
+                {asp.email ? (
                   <button
                     onClick={() => handleOpenGmail(asp)}
-                    className="simo-btn-outline min-h-[44px] px-4 rounded-[12px] text-[14px] flex items-center gap-1.5 cursor-pointer"
+                    title="Balas via Gmail"
+                    className="simo-btn-primary min-h-[40px] px-4 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
                   >
                     <Mail className="w-4 h-4" />
-                    <span>Gmail</span>
+                    <span>Balas Email</span>
                   </button>
+                ) : (
+                  <span className="text-[12px] text-[#5A6472] dark:text-[#9AA8B8] italic">
+                    Tanpa Email
+                  </span>
                 )}
-                <button
-                  onClick={() => {
-                    setSelectedAsp(asp);
-                    setResponseText(asp.response || '');
-                    setSelectedStatus(asp.status);
-                  }}
-                  className="simo-btn-primary min-h-[44px] px-4 rounded-[12px] text-[14px] cursor-pointer"
-                >
-                  Tanggapi
-                </button>
               </div>
             </div>
           ))
         )}
       </div>
-
-      {/* 5. Modal Tindak Lanjut Ide / Aspirasi */}
-      <Modal
-        isOpen={Boolean(selectedAsp)}
-        onClose={() => setSelectedAsp(null)}
-        title="Tindak Lanjut Ide / Aspirasi"
-      >
-        {selectedAsp && (
-          <div className="space-y-4 text-[14px]">
-            {/* Info Pengirim */}
-            <div className="p-4 bg-[#FAF6EE] dark:bg-[#0E1B2C] rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] space-y-1">
-              <div className="flex items-center justify-between text-[13px] text-[#5A6472] dark:text-[#9AA8B8]">
-                <span className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
-                  {selectedAsp.title}
-                </span>
-                <span>{selectedAsp.date}</span>
-              </div>
-              <p className="text-[#5A6472] dark:text-[#9AA8B8] italic pt-1">
-                "{selectedAsp.content}"
-              </p>
-              <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] pt-1">
-                Dari: <b>{selectedAsp.studentName}</b> ({selectedAsp.email || 'Tanpa Email'})
-              </p>
-            </div>
-
-            {selectedAsp.email && (
-              <div className="p-4 bg-[#FBEBC8] dark:bg-[#F2B544]/20 rounded-[14px] border border-[#E6DFD0] dark:border-[#283D56] flex items-center justify-between gap-3">
-                <div>
-                  <p className="font-bold text-[#1F3A5F] dark:text-[#FAF6EE]">
-                    Diskusi Langsung via Gmail
-                  </p>
-                  <p className="text-[13px] text-[#5A6472] dark:text-[#9AA8B8] font-mono">
-                    {selectedAsp.email}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleOpenGmail(selectedAsp)}
-                  className="simo-btn-amber min-h-[40px] px-4 rounded-[10px] text-[13px] font-bold flex items-center gap-1.5 cursor-pointer"
-                >
-                  <Mail className="w-4 h-4" />
-                  <span>Buka Gmail</span>
-                </button>
-              </div>
-            )}
-
-            {/* Status Pilihan */}
-            <div>
-              <label className="block font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Status Penanganan
-              </label>
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value as any)}
-                className="simo-input min-h-[44px] text-[14px] w-full"
-              >
-                <option value="diterima">Diterima (Menunggu Peninjauan)</option>
-                <option value="diproses">Diproses (Sedang Ditindaklanjuti)</option>
-                <option value="terealisasi">Terealisasi (Selesai Dijalankan)</option>
-                <option value="ditolak">Ditolak / Belum Dapat Dilaksanakan</option>
-              </select>
-            </div>
-
-            {/* Tanggapan Resmi */}
-            <div>
-              <label className="block font-bold text-[#1F3A5F] dark:text-[#FAF6EE] mb-1.5">
-                Tanggapan Resmi Pengurus (Tampil di Portal Publik)
-              </label>
-              <textarea
-                rows={4}
-                value={responseText}
-                onChange={(e) => setResponseText(e.target.value)}
-                placeholder="Tuliskan tanggapan atau evaluasi pengurus OSIS terhadap ide ini..."
-                className="simo-input text-[14px] w-full p-3 leading-relaxed"
-              />
-            </div>
-
-            {/* Modal Actions */}
-            <div className="pt-3 flex items-center justify-between gap-3 border-t border-[#E6DFD0] dark:border-[#283D56]">
-              <button
-                type="button"
-                onClick={() => {
-                  const target = selectedAsp;
-                  setSelectedAsp(null);
-                  setConfirmDeleteAsp(target);
-                }}
-                className="min-h-[44px] px-4 rounded-[12px] bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60 text-[14px] font-bold cursor-pointer flex items-center gap-1.5 transition-colors"
-                title="Hapus pesan ini"
-              >
-                <Trash2 className="w-4 h-4" />
-                <span>Hapus Pesan</span>
-              </button>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setSelectedAsp(null)}
-                  className="simo-btn-outline min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveResponse}
-                  className="simo-btn-primary min-h-[44px] px-5 rounded-[12px] text-[14px] font-bold cursor-pointer"
-                >
-                  Simpan Status
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
 
       {/* Modal Konfirmasi Hapus Pesan Ide & Aspirasi */}
       {confirmDeleteAsp && (
